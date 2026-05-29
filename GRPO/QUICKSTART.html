@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>QUICKSTART</title>
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['$', '$']], displayMath: [['$$', '$$']] },
+  svg: { fontCache: 'global' }
+};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js" async></script>
+<style>
+  body { max-width: 820px; margin: 2rem auto; padding: 0 1rem;
+         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+         line-height: 1.6; color: #222; }
+  h1, h2, h3 { border-bottom: 1px solid #eee; padding-bottom: .2em; }
+  code { background: #f4f4f4; padding: .1em .3em; border-radius: 3px;
+          font-family: "SF Mono", Monaco, monospace; font-size: .92em; }
+  pre { background: #f6f8fa; padding: 1em; border-radius: 6px; overflow-x: auto; }
+  pre code { background: none; padding: 0; }
+  table { border-collapse: collapse; margin: 1em 0; }
+  th, td { border: 1px solid #ddd; padding: .4em .8em; text-align: left; }
+  th { background: #f6f8fa; }
+  blockquote { border-left: 4px solid #ddd; margin: 0; padding-left: 1em; color: #666; }
+  a { color: #0366d6; }
+  hr { border: none; border-top: 1px solid #eee; margin: 2em 0; }
+</style>
+</head>
+<body>
+<h1>Quickstart — run GRPO training on Modal</h1>
+<p>You should have already read <code>README.md</code> for the theory. This file is just commands.</p>
+<h2>1. One-time setup</h2>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Install Modal client (Python 3.10+)</span>
+pip<span class="w"> </span>install<span class="w"> </span>modal
+
+<span class="c1"># Authenticate (opens a browser, ~30 sec)</span>
+modal<span class="w"> </span>token<span class="w"> </span>new
+
+<span class="c1"># Confirm you have credits</span>
+modal<span class="w"> </span>profile<span class="w"> </span>current
+</code></pre></div>
+
+<p>You should see your account with credit balance. We expect to burn about <strong>$3-5</strong> on training and <strong>$1-2</strong> on eval.</p>
+<h2>2. Sanity check — run the base-model eval first (~$0.30)</h2>
+<p>This confirms the Modal setup works AND gives you a baseline number to compare against.</p>
+<div class="codehilite"><pre><span></span><code><span class="nb">cd</span><span class="w"> </span>/Users/himanshu/Git/LearningAI/GRPO
+
+modal<span class="w"> </span>run<span class="w"> </span>eval.py<span class="w"> </span>--which<span class="w"> </span>base<span class="w"> </span>--n<span class="w"> </span><span class="m">50</span>
+</code></pre></div>
+
+<p>Expected: ~5-15% accuracy. The model will probably mostly <em>not</em> use the <code>&lt;think&gt;</code>/<code>&lt;answer&gt;</code> format.</p>
+<h2>3. Train (~1.5-2 hours, ~$2-3)</h2>
+<div class="codehilite"><pre><span></span><code>modal<span class="w"> </span>run<span class="w"> </span>train_grpo.py
+</code></pre></div>
+
+<p>You'll see logs like:</p>
+<div class="codehilite"><pre><span></span><code>{&#39;loss&#39;: 0.012, &#39;reward&#39;: 0.15, &#39;reward_std&#39;: 0.18, &#39;kl&#39;: 0.001, ...}
+</code></pre></div>
+
+<p>What to watch:
+- <strong><code>reward</code></strong> — should climb from ~0.2 (just format reward) toward ~0.6+ (format + correctness on some problems)
+- <strong><code>reward_std</code></strong> — the spread <em>within a group</em>. If this collapses to near zero, all 8 completions are identical and GRPO can't learn — bump temperature.
+- <strong><code>kl</code></strong> — should stay small (&lt; 0.1ish). If it explodes, the policy is drifting too far from the reference; lower the LR or increase <code>beta</code>.</p>
+<p>The checkpoint lands in the persistent Modal volume <code>grpo-checkpoints</code> at <code>/checkpoints/qwen-0.5b-grpo-gsm8k/</code>.</p>
+<h2>4. Eval the trained model (~$0.30)</h2>
+<div class="codehilite"><pre><span></span><code>modal<span class="w"> </span>run<span class="w"> </span>eval.py<span class="w"> </span>--n<span class="w"> </span><span class="m">100</span>
+</code></pre></div>
+
+<p>This runs <strong>both</strong> base and trained on the same 100 problems and prints a summary. Hopefully you'll see a clear bump.</p>
+<h2>5. Iterate</h2>
+<p>Common things to try:
+- More steps: edit <code>max_steps=300</code> → <code>500</code> in <code>train_grpo.py</code>
+- Bigger group: <code>num_generations=8</code> → <code>16</code> (more memory, better baseline estimate)
+- Different model: swap <code>MODEL_ID</code> to <code>Qwen/Qwen2.5-1.5B-Instruct</code> (needs L4 GPU instead of A10G)
+- Custom reward: edit <code>rewards.py</code>, e.g. reward shorter answers, penalize repeated tokens, etc.</p>
+<h2>Troubleshooting</h2>
+<table>
+<thead>
+<tr>
+<th>Problem</th>
+<th>Fix</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OOM on A10G</td>
+<td>Drop <code>num_generations</code> to 4, or <code>max_completion_length</code> to 384</td>
+</tr>
+<tr>
+<td><code>reward_std</code> collapses to 0</td>
+<td>Raise <code>temperature</code> to 1.0, or lower it if completions are gibberish</td>
+</tr>
+<tr>
+<td>Loss explodes</td>
+<td>Lower <code>learning_rate</code> (try 1e-6)</td>
+</tr>
+<tr>
+<td><code>KL</code> explodes</td>
+<td>Raise <code>beta</code> (try 0.1)</td>
+</tr>
+<tr>
+<td>Modal can't find <code>rewards.py</code></td>
+<td>Make sure you run from the <code>GRPO/</code> directory</td>
+</tr>
+</tbody>
+</table>
+<h2>Cost breakdown (estimated, A10G at $1.10/hr)</h2>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Time</th>
+<th>Cost</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Base eval (50 problems)</td>
+<td>~10 min</td>
+<td>$0.20</td>
+</tr>
+<tr>
+<td>Training (300 steps)</td>
+<td>~90 min</td>
+<td>$1.65</td>
+</tr>
+<tr>
+<td>Both-model eval (100 problems)</td>
+<td>~20 min</td>
+<td>$0.40</td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td><strong>~2 hours</strong></td>
+<td><strong>~$2.25</strong></td>
+</tr>
+</tbody>
+</table>
+<p>You have ~$25 of headroom for iteration. Suggested next experiments:
+1. Train for 500 steps instead of 300 (~$1 more, check if accuracy keeps climbing)
+2. Try Qwen 1.5B on L4 (~$3-5 for same step count, much better baseline)
+3. Add a "concise answer" reward and see if completions shrink</p>
+</body>
+</html>

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>README</title>
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['$', '$']], displayMath: [['$$', '$$']] },
+  svg: { fontCache: 'global' }
+};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js" async></script>
+<style>
+  body { max-width: 820px; margin: 2rem auto; padding: 0 1rem;
+         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+         line-height: 1.6; color: #222; }
+  h1, h2, h3 { border-bottom: 1px solid #eee; padding-bottom: .2em; }
+  code { background: #f4f4f4; padding: .1em .3em; border-radius: 3px;
+          font-family: "SF Mono", Monaco, monospace; font-size: .92em; }
+  pre { background: #f6f8fa; padding: 1em; border-radius: 6px; overflow-x: auto; }
+  pre code { background: none; padding: 0; }
+  table { border-collapse: collapse; margin: 1em 0; }
+  th, td { border: 1px solid #ddd; padding: .4em .8em; text-align: left; }
+  th { background: #f6f8fa; }
+  blockquote { border-left: 4px solid #ddd; margin: 0; padding-left: 1em; color: #666; }
+  a { color: #0366d6; }
+  hr { border: none; border-top: 1px solid #eee; margin: 2em 0; }
+</style>
+</head>
+<body>
+<h1>GRPO from scratch — theory + hands-on training</h1>
+<p>You're going to train a 0.5B-parameter LLM to solve grade-school math problems using <strong>GRPO</strong> (Group Relative Policy Optimization), the algorithm DeepSeek used to train R1.</p>
+<p>By the end you'll understand:
+1. What RL is, in the LLM context
+2. Why PPO was the standard, and what's annoying about it
+3. What GRPO changes — and why that change is clever
+4. How to actually run a GRPO training job</p>
+<hr />
+<h2>Part 1 — RL for LLMs, the 30-second version</h2>
+<p>You already know <strong>supervised fine-tuning (SFT)</strong>: show the model input/output pairs, minimize cross-entropy. The model learns to imitate.</p>
+<p><strong>RL fine-tuning</strong> is different. You don't tell the model <em>what</em> to say. You let it generate something, then <strong>score</strong> it (high score = good, low score = bad), and update the model to make high-scoring outputs more likely.</p>
+<p>The pieces:</p>
+<table>
+<thead>
+<tr>
+<th>Term</th>
+<th>Meaning in LLM-land</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Policy</strong> $\pi_\theta$</td>
+<td>Your LLM. Given a prompt (state), it outputs token probabilities (actions).</td>
+</tr>
+<tr>
+<td><strong>Trajectory</strong></td>
+<td>A full generated sequence: prompt → token₁ → token₂ → ... → EOS</td>
+</tr>
+<tr>
+<td><strong>Reward</strong> $r$</td>
+<td>A scalar score for the whole trajectory. e.g. "did it get the math answer right?"</td>
+</tr>
+<tr>
+<td><strong>Advantage</strong> $A$</td>
+<td>How much better was this trajectory than expected? (Reward minus a baseline.)</td>
+</tr>
+</tbody>
+</table>
+<p>The <strong>policy gradient</strong> update — the foundational RL idea — is:</p>
+<p>$$
+\nabla_\theta J(\theta) = \mathbb{E}\Big[ A \cdot \nabla_\theta \log \pi_\theta(\text{trajectory}) \Big]
+$$</p>
+<p>In words: <strong>increase the log-probability of good trajectories, decrease it for bad ones, weighted by how good/bad they were</strong>. That's it. That's the whole game. Everything else (PPO, GRPO) is just refinements to make this stable in practice.</p>
+<hr />
+<h2>Part 2 — Why we need a baseline (and the "value function" problem)</h2>
+<p>Look at the advantage $A = r - b$ where $b$ is some baseline.</p>
+<p>Why subtract a baseline? Because if all rewards are positive (say, 0.1 to 1.0), every gradient pushes <em>up</em>. You'd just be amplifying everything. By subtracting a baseline (often the <em>expected</em> reward), you get: "this trajectory was <strong>better than average</strong> by X" — and only above-average trajectories get reinforced.</p>
+<p><strong>Classic RL approach:</strong> train a separate <strong>value network</strong> $V_\phi(s)$ that predicts expected reward from state $s$. Then $A = r - V_\phi(s)$. This is what <strong>PPO</strong> does.</p>
+<p>The catch: that value network is <strong>a second model the same size as your LLM</strong>. For a 7B policy, you're training a 7B critic alongside it. Memory cost: 2x. Compute cost: significant. And the value network is hard to train well for LLMs because reward signals are sparse (one scalar per long sequence).</p>
+<p>This is the pain point GRPO solves.</p>
+<hr />
+<h2>Part 3 — PPO in one paragraph</h2>
+<p>PPO (Proximal Policy Optimization) adds two things on top of vanilla policy gradient:</p>
+<ol>
+<li><strong>Clipping</strong>: don't let the policy change too much in one step. Specifically, clip the <em>ratio</em> $\rho = \pi_\theta(a)/\pi_{\theta_{\text{old}}}(a)$ to $[1-\epsilon, 1+\epsilon]$. This prevents catastrophic updates.</li>
+<li><strong>A value network</strong> for the baseline (the part we just complained about).</li>
+</ol>
+<p>PPO loss:</p>
+<p>$$
+L_{\text{PPO}} = \mathbb{E}\Big[ \min\big(\rho \cdot A, \; \text{clip}(\rho, 1-\epsilon, 1+\epsilon) \cdot A\big) \Big]
+$$</p>
+<p>PPO works. It's what trained ChatGPT. But the value network is expensive.</p>
+<hr />
+<h2>Part 4 — GRPO's clever trick</h2>
+<p><strong>Insight:</strong> instead of training a value network to estimate "expected reward from this state," just <strong>sample multiple completions for the same prompt and use their mean as the baseline</strong>.</p>
+<p>Concretely, for each prompt:
+1. Generate $G$ completions (typically G = 4, 8, or 16) with the current policy.
+2. Score each: $r_1, r_2, \ldots, r_G$.
+3. Compute group-relative advantage for completion $i$:</p>
+<p>$$
+A_i = \frac{r_i - \text{mean}(r_1, \ldots, r_G)}{\text{std}(r_1, \ldots, r_G)}
+$$</p>
+<p>That's it. <strong>No value network.</strong> The other completions in the group serve as the baseline. Completions that scored above the group average get positive advantage; below-average ones get negative.</p>
+<p>Then plug $A_i$ into the PPO clipped objective, plus a KL penalty against a reference model (to prevent the policy from drifting too far from the original):</p>
+<p>$$
+L_{\text{GRPO}} = \mathbb{E}\Big[ \min(\rho \cdot A, \; \text{clip}(\rho, 1-\epsilon, 1+\epsilon) \cdot A) \Big] - \beta \cdot \text{KL}\big(\pi_\theta \,|\, \pi_{\text{ref}}\big)
+$$</p>
+<h3>Why this is great for LLMs</h3>
+<ul>
+<li><strong>Memory:</strong> drop the value network → halve the GPU memory needed.</li>
+<li><strong>Stability:</strong> the baseline is computed from <em>actual rollouts</em>, not a learned estimator that might be wrong.</li>
+<li><strong>Verifiable rewards:</strong> works beautifully when reward is computed by a programmatic checker (e.g., "is the answer correct?") rather than a learned reward model.</li>
+</ul>
+<p>This last point is why GRPO took off for math/code: you don't need a reward model at all. You just check the answer.</p>
+<hr />
+<h2>Part 5 — What we're going to train</h2>
+<p><strong>Setup:</strong>
+- Model: <code>Qwen/Qwen2.5-0.5B-Instruct</code> (small enough to fit + iterate on an A10G)
+- Dataset: <strong>GSM8K</strong> — 8.5K grade-school math word problems with verified answers
+- Reward function: two parts
+  - <strong>Correctness reward</strong> (+1.0 if the final numeric answer matches, else 0)
+  - <strong>Format reward</strong> (+0.2 if the model wraps reasoning in <code>&lt;think&gt;...&lt;/think&gt;</code> and answer in <code>&lt;answer&gt;...&lt;/answer&gt;</code>)
+- Group size G = 8 (generate 8 attempts per problem)
+- ~300 training steps on an A10G ≈ <strong>1-2 hours, ~$2</strong></p>
+<h3>What we expect to see</h3>
+<p>The base 0.5B model gets maybe 5-15% on GSM8K (it's tiny). After GRPO, we hope to see:
+- Accuracy bump (maybe to 25-40%)
+- The model learning to use the <code>&lt;think&gt;</code>/<code>&lt;answer&gt;</code> format
+- Longer reasoning chains over time (the famous "thinking gets longer" pattern)</p>
+<p>It's a small model so don't expect miracles — the point is to <strong>see GRPO actually working</strong> and understand every piece.</p>
+<hr />
+<h2>Part 6 — Run it</h2>
+<p>See <a href="QUICKSTART.html"><code>QUICKSTART.md</code></a> for the actual commands. The training code lives in <a href="train_grpo.py"><code>train_grpo.py</code></a> with comments explaining each piece. Eval in <a href="eval.py"><code>eval.py</code></a>.</p>
+<h3>Files</h3>
+<ul>
+<li><code>README.md</code> — this file (theory)</li>
+<li><code>QUICKSTART.md</code> — commands to run</li>
+<li><code>train_grpo.py</code> — Modal app that runs GRPO training</li>
+<li><code>eval.py</code> — Modal app that benchmarks base vs trained</li>
+<li><code>rewards.py</code> — the reward functions (correctness + format)</li>
+</ul>
+<hr />
+<h2>Glossary cheat-sheet</h2>
+<ul>
+<li><strong>Rollout / completion</strong>: one generated sequence from the model.</li>
+<li><strong>Group</strong>: the G completions for the same prompt — GRPO's key innovation.</li>
+<li><strong>KL divergence</strong>: distance between two probability distributions. Used to keep the new policy close to the original ("don't change too much").</li>
+<li><strong>Reference model</strong>: a frozen copy of the original model. The KL penalty measures distance from <em>this</em>.</li>
+<li><strong>Old policy</strong> vs <strong>new policy</strong>: in PPO/GRPO you generate with the policy at step N (old), then do several gradient steps on that data updating the policy (new). The ratio $\rho$ tracks how much it's changed.</li>
+</ul>
+<hr />
+<h2>References for after you've finished this</h2>
+<ul>
+<li>DeepSeekMath paper (introduces GRPO): https://arxiv.org/abs/2402.03300</li>
+<li>DeepSeek-R1 paper (scales GRPO to reasoning): https://arxiv.org/abs/2501.12948</li>
+<li>TRL library's GRPOTrainer: https://huggingface.co/docs/trl/grpo_trainer</li>
+</ul>
+</body>
+</html>

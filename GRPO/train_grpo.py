@@ -26,8 +26,8 @@ image = (
     modal.Image.debian_slim(python_version="3.11")
     .pip_install(
         "torch==2.5.1",
-        "transformers==4.48.0",
-        "trl==0.14.0",
+        "transformers==4.50.0",
+        "trl>=0.15.0",
         "datasets==3.2.0",
         "accelerate==1.2.1",
         "peft==0.14.0",
@@ -141,8 +141,8 @@ def train():
 
         # Training schedule — small for a tutorial. Bump to ~500 for better results.
         max_steps=300,
-        per_device_train_batch_size=1,     # 1 prompt × 8 generations = 8 sequences
-        gradient_accumulation_steps=4,     # effective batch = 4 prompts
+        per_device_train_batch_size=2,     # 2 prompts × 8 generations = 16 sequences
+        gradient_accumulation_steps=4,     # effective batch = 8 prompts
         learning_rate=5e-6,                # RL likes small LRs
         lr_scheduler_type="cosine",
         warmup_ratio=0.1,
@@ -151,7 +151,7 @@ def train():
 
         # Memory / speed
         bf16=True,
-        gradient_checkpointing=True,
+        gradient_checkpointing=False,
         logging_steps=5,
         save_steps=100,
         save_total_limit=2,

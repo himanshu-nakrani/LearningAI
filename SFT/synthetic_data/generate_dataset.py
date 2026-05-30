@@ -148,6 +148,52 @@ def load_generator_model():
     return model, tokenizer, model_name
 
 
+def generate_text_batch(model, tokenizer, prompts: list[tuple[str, str]],
+                         max_new_tokens: int = 500, temperature: float = 0.8) -> list[str]:
+    """Generate text for multiple prompts in parallel.
+
+    Args:
+        prompts: List of (system_prompt, user_prompt) tuples
+    Returns:
+        List of generated responses
+    """
+    import torch
+
+    texts = []
+    for system_prompt, user_prompt in prompts:
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt},
+        ]
+        text = tokenizer.apply_chat_template(
+            messages, tokenize=False, add_generation_prompt=True
+        )
+        texts.append(text)
+
+    inputs = tokenizer(
+        texts, return_tensors="pt", padding=True, truncation=True, max_length=2048
+    ).to(model.device)
+
+    with torch.inference_mode():
+        outputs = model.generate(
+            **inputs,
+            max_new_tokens=max_new_tokens,
+            temperature=temperature,
+            top_p=TOP_P,
+            do_sample=True,
+            pad_token_id=tokenizer.pad_token_id,
+        )
+
+    responses = []
+    input_len = inputs["input_ids"].shape[1]
+    for i in range(len(prompts)):
+        new_tokens = outputs[i][input_len:]
+        response = tokenizer.decode(new_tokens, skip_special_tokens=True).strip()
+        responses.append(response)
+
+    return responses
+
+
 def generate_text(model, tokenizer, system_prompt: str, user_prompt: str,
                   max_new_tokens: int = 500, temperature: float = 0.8) -> str:
     """Generate text using the chat template."""
@@ -258,6 +304,135 @@ def test_generation():
         print(f"Instruction: {instruction[:200]}")
         print(f"Response: {response[:300]}...")
         print()
+
+
+@app.function(**_gen_kwargs)
+def generate_dataset_batched(num_examples: int = TOTAL_EXAMPLES, batch_size: int = 8):
+    """Generate dataset using batched generation (much faster)."""
+    from seed_prompts import CATEGORIES, get_category_distribution
+
+    _setup_env()
+    _hf_login()
+
+    model, tokenizer, model_name = load_generator_model()
+    distribution = get_category_distribution(num_examples)
+
+    print(f"\n{'='*60}")
+    print(f"Generating {num_examples} examples with {model_name}")
+    print(f"Batch size: {batch_size}")
+    print(f"{'='*60}")
+    for cat, count in distribution.items():
+        print(f"  {cat}: {count}")
+    print()
+
+    output_dir = Path("/data/dataset")
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    examples = []
+    save_path = output_dir / "synthetic_instructions.jsonl"
+
+    # Resume support
+    if save_path.exists():
+        with open(save_path, "r") as f:
+            examples = [json.loads(line) for line in f if line.strip()]
+        print(f"Resuming: loaded {len(examples)} existing examples")
+
+    completed_per_cat = {cat: 0 for cat in CATEGORIES.keys()}
+    for ex in examples:
+        if ex.get("category") in completed_per_cat:
+            completed_per_cat[ex["category"]] += 1
+
+    total_target = sum(distribution.values())
+    response_system = "You are a helpful, knowledgeable assistant. Provide clear, accurate, and detailed responses."
+
+    with open(save_path, "a") as f:
+        for category, target_count in distribution.items():
+            config = CATEGORIES[category]
+
+            while completed_per_cat[category] < target_count:
+                batch_topics = []
+                for _ in range(min(batch_size, target_count - completed_per_cat[category])):
+                    batch_topics.append(random.choice(config["topics"]))
+
+                # Stage 1: Batch generate instructions
+                instruction_prompts = [
+                    (config["system_prompt"], config["instruction_template"].format(topic=t))
+                    for t in batch_topics
+                ]
+                try:
+                    raw_instructions = generate_text_batch(
+                        model, tokenizer, instruction_prompts,
+                        max_new_tokens=MAX_NEW_TOKENS_INSTRUCTION,
+                        temperature=0.9,
+                    )
+                except Exception as e:
+                    print(f"  Batch instruction error: {e}")
+                    continue
+
+                # Parse and filter
+                valid_pairs = []
+                for topic, raw_inst in zip(batch_topics, raw_instructions):
+                    inst = parse_generated_instruction(raw_inst)
+                    if 20 <= len(inst) <= 500:
+                        valid_pairs.append((topic, inst))
+
+                if not valid_pairs:
+                    continue
+
+                # Stage 2: Batch generate responses
+                response_prompts = [(response_system, inst) for _, inst in valid_pairs]
+                try:
+                    raw_responses = generate_text_batch(
+                        model, tokenizer, response_prompts,
+                        max_new_tokens=MAX_NEW_TOKENS_RESPONSE,
+                        temperature=0.7,
+                    )
+                except Exception as e:
+                    print(f"  Batch response error: {e}")
+                    continue
+
+                # Save valid examples
+                for (topic, instruction), response in zip(valid_pairs, raw_responses):
+                    if len(response) < 50:
+                        continue
+
+                    example = {
+                        "instruction": instruction,
+                        "response": response,
+                        "category": category,
+                        "seed_topic": topic,
+                        "metadata": {
+                            "model": model_name,
+                            "temperature": TEMPERATURE,
+                            "generated_at": datetime.utcnow().isoformat(),
+                        }
+                    }
+                    examples.append(example)
+                    f.write(json.dumps(example, ensure_ascii=False) + "\n")
+                    f.flush()
+                    completed_per_cat[category] += 1
+
+                total_done = sum(completed_per_cat.values())
+                print(f"  Progress: {total_done}/{total_target} "
+                      f"({100*total_done/total_target:.1f}%) - "
+                      f"category: {category} ({completed_per_cat[category]}/{target_count})")
+
+                # Commit volume periodically
+                if total_done % 50 == 0:
+                    output_vol.commit()
+
+    output_vol.commit()
+    print(f"\nGenerated {len(examples)} total examples")
+    print(f"Saved to: {save_path}")
+
+    summary = {
+        "total_examples": len(examples),
+        "model": model_name,
+        "categories": completed_per_cat,
+        "generated_at": datetime.utcnow().isoformat(),
+    }
+    (output_dir / "summary.json").write_text(json.dumps(summary, indent=2))
+    output_vol.commit()
 
 
 @app.function(**_gen_kwargs)

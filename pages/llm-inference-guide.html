@@ -149,9 +149,63 @@
     pre, .ascii, .callout, table { page-break-inside: avoid; }
     .toc { page-break-after: always; }
   }
+  /* booknav */
+  .booknav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    margin: -40px -30px 30px;
+    padding: 10px 30px;
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+    font-size: 0.85em;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 12px;
+  }
+  .booknav .home {
+    font-weight: 600;
+    color: var(--accent);
+    text-decoration: none;
+    padding-right: 10px;
+    border-right: 1px solid var(--border);
+    margin-right: 4px;
+  }
+  .booknav a {
+    color: var(--muted);
+    text-decoration: none;
+    padding: 3px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+  .booknav a:hover { background: var(--accent-soft); color: var(--accent); }
+  .booknav a.current {
+    background: var(--accent);
+    color: #fff;
+    font-weight: 600;
+  }
+  @media (max-width: 700px) {
+    .booknav { margin: -40px -20px 24px; padding: 10px 20px; font-size: 0.8em; }
+  }
+  /* /booknav */
 </style>
 </head>
 <body>
+<nav class="booknav">
+  <a class="home" href="index.html">← Index</a>
+  <a href="ai-engineering-guide.html">AI Engineering</a>
+  <a href="agentic-ai-guide.html">Agentic AI</a>
+  <a href="llm-inference-guide.html" class="current">LLM Inference</a>
+  <a href="aws-guide.html">AWS</a>
+  <a href="azure-guide.html">Azure</a>
+  <a href="gcp-guide.html">GCP</a>
+  <a href="cloud-ai-comparison.html">Cloud AI Compare</a>
+  <a href="python-guide.html">Python</a>
+  <a href="dsa-guide.html">DSA</a>
+  <a href="system-design-guide.html">System Design</a>
+</nav>
 
 <h1>LLM Inference &amp; Serving Optimization</h1>
 <div class="meta">

@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Amazon Web Services Guide — Complete</title>
+<style>
+  :root {
+    --fg: #1a1a1a;
+    --muted: #555;
+    --bg: #fdfdfc;
+    --accent: #d97300;
+    --accent-soft: #fbeede;
+    --border: #d4d4d0;
+    --code-bg: #f4f1ec;
+    --code-fg: #2a2a2a;
+    --warn-bg: #fff8e0;
+    --warn-bd: #e0c560;
+    --tip-bg: #e8f3eb;
+    --tip-bd: #6ba577;
+    --gap-bg: #fbe8e6;
+    --gap-bd: #b8453a;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: Charter, "Iowan Old Style", Georgia, serif;
+    color: var(--fg);
+    background: var(--bg);
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 30px 80px;
+    line-height: 1.65;
+    font-size: 17px;
+  }
+  h1, h2, h3, h4 {
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+    color: var(--fg);
+    line-height: 1.25;
+    margin-top: 1.8em;
+    margin-bottom: 0.5em;
+  }
+  h1 {
+    font-size: 2.2em;
+    border-bottom: 3px solid var(--accent);
+    padding-bottom: 12px;
+    margin-top: 0.5em;
+  }
+  h2 {
+    font-size: 1.6em;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 6px;
+    margin-top: 2.5em;
+  }
+  h3 { font-size: 1.25em; color: var(--accent); }
+  h4 { font-size: 1.05em; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600; }
+  p, ul, ol { margin: 0.6em 0; }
+  ul, ol { padding-left: 1.6em; }
+  li { margin: 0.3em 0; }
+  code {
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    background: var(--code-bg);
+    color: var(--code-fg);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 0.88em;
+  }
+  pre {
+    background: var(--code-bg);
+    color: var(--code-fg);
+    padding: 14px 18px;
+    border-radius: 6px;
+    border-left: 3px solid var(--accent);
+    overflow-x: auto;
+    font-size: 0.85em;
+    line-height: 1.5;
+  }
+  pre code { background: none; padding: 0; font-size: 1em; }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 1em 0;
+    font-size: 0.92em;
+  }
+  th, td {
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: left;
+    vertical-align: top;
+  }
+  th { background: var(--code-bg); font-weight: 600; }
+  blockquote {
+    border-left: 3px solid var(--muted);
+    margin: 1em 0;
+    padding: 0.4em 1em;
+    color: var(--muted);
+    font-style: italic;
+  }
+  .tag {
+    display: inline-block;
+    font-size: 0.7em;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 3px;
+    margin-left: 6px;
+    vertical-align: middle;
+    font-family: -apple-system, sans-serif;
+    letter-spacing: 0.04em;
+  }
+  .tag-core { background: #d97300; color: white; }
+  .tag-concept { background: #4a7ba6; color: white; }
+  .tag-prod { background: #b8453a; color: white; }
+  .callout {
+    padding: 12px 18px;
+    margin: 1em 0;
+    border-radius: 6px;
+    border-left: 4px solid;
+  }
+  .callout-warn { background: var(--warn-bg); border-color: var(--warn-bd); }
+  .callout-tip { background: var(--tip-bg); border-color: var(--tip-bd); }
+  .callout-gap { background: var(--gap-bg); border-color: var(--gap-bd); }
+  .callout strong { display: block; margin-bottom: 4px; font-family: -apple-system, sans-serif; }
+  .toc {
+    background: var(--code-bg);
+    padding: 20px 28px;
+    border-radius: 8px;
+    margin: 2em 0;
+  }
+  .toc h2 { margin-top: 0; border: none; }
+  .toc ol { padding-left: 1.4em; }
+  .toc a { color: var(--accent); text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+  .ascii {
+    font-family: "SF Mono", Menlo, monospace;
+    white-space: pre;
+    background: var(--code-bg);
+    padding: 14px 18px;
+    border-radius: 6px;
+    border-left: 3px solid var(--accent);
+    overflow-x: auto;
+    font-size: 0.78em;
+    line-height: 1.4;
+  }
+  hr { border: none; border-top: 1px solid var(--border); margin: 2.5em 0; }
+  .meta { color: var(--muted); font-size: 0.9em; margin-bottom: 2em; }
+  @media print {
+    body { font-size: 11pt; max-width: 100%; padding: 0; }
+    h1, h2, h3 { page-break-after: avoid; }
+    pre, .ascii, .callout, table { page-break-inside: avoid; }
+    .toc { page-break-after: always; }
+  }
+</style>
+</head>
+<body>
+
+<h1>Amazon Web Services Guide — Complete</h1>
+<div class="meta">
+  Self-contained reference for AWS. Open in browser, or print to PDF.<br>
+  Covers the global infrastructure, core services across every category, networking, and the AI/ML &amp; agentic stack (Bedrock).<br>
+  Service names current as of 2026; verify specifics in docs.<br>
+  Legend:
+  <span class="tag tag-core">CORE</span> must know
+  <span class="tag tag-concept">CONCEPT</span> foundational idea
+  <span class="tag tag-prod">PROD</span> production concern
+</div>
+
+<div class="toc">
+<h2>Table of Contents</h2>
+<ol>
+  <li><a href="#part-0">Part 0 — Mental model &amp; global infrastructure</a></li>
+  <li><a href="#part-1">Part 1 — Accounts, Organizations &amp; governance</a></li>
+  <li><a href="#part-2">Part 2 — Identity &amp; access (IAM)</a></li>
+  <li><a href="#part-3">Part 3 — Compute (EC2)</a></li>
+  <li><a href="#part-4">Part 4 — Containers &amp; Kubernetes</a></li>
+  <li><a href="#part-5">Part 5 — Serverless (Lambda &amp; friends)</a></li>
+  <li><a href="#part-6">Part 6 — Storage (S3 &amp; friends)</a></li>
+  <li><a href="#part-7">Part 7 — Databases</a></li>
+  <li><a href="#part-8">Part 8 — Networking (VPC)</a></li>
+  <li><a href="#part-9">Part 9 — Messaging &amp; integration</a></li>
+  <li><a href="#part-10">Part 10 — Data &amp; analytics</a></li>
+  <li><a href="#part-11">Part 11 — AI &amp; machine learning (Bedrock &amp; SageMaker)</a></li>
+  <li><a href="#part-12">Part 12 — DevOps, IaC &amp; observability</a></li>
+  <li><a href="#part-13">Part 13 — Security &amp; cost management</a></li>
+  <li><a href="#part-14">Part 14 — Architecture patterns &amp; cheat sheet</a></li>
+</ol>
+</div>
+
+<h2 id="part-0">Part 0 — Mental model &amp; global infrastructure <span class="tag tag-core">CORE</span></h2>
+
+<p>AWS is the largest and most mature cloud provider, with the broadest service catalog. Its strengths are breadth, depth, market share, and a vast ecosystem. The trade-off: sheer size means a steeper learning curve and many overlapping services.</p>
+
+<h3>The geographic hierarchy</h3>
+<div class="ascii">  AWS GLOBAL
+    +-- REGION (e.g. "us-east-1" N. Virginia) — isolated
+    |     geographic area, has its own services &amp; pricing
+    |     +-- AVAILABILITY ZONE us-east-1a  (1+ discrete DCs)
+    |     +-- AVAILABILITY ZONE us-east-1b
+    |     +-- AVAILABILITY ZONE us-east-1c
+    |
+    +-- EDGE LOCATIONS (100s, for CloudFront CDN / Route 53)
+
+  Deploy across AZs (multi-AZ) to survive a DC failure.
+  Deploy across REGIONS for disaster recovery / latency.
+  Edge locations cache content close to users globally.</div>
+
+<table>
+  <tr><th>Concept</th><th>What it is</th><th>Protects against</th></tr>
+  <tr><td>Availability Zone (AZ)</td><td>One or more discrete DCs with independent power/network</td><td>Datacenter failure</td></tr>
+  <tr><td>Region</td><td>A cluster of AZs in one geography</td><td>(multi-region) regional outage</td></tr>
+  <tr><td>Edge location</td><td>CDN/DNS PoP near users</td><td>(latency — not a failure domain)</td></tr>
+</table>
+
+<div class="callout callout-tip">
+  <strong>Multi-AZ is the baseline for production</strong>
+  Spreading resources across at least two AZs is the single most important availability practice on AWS. Managed services (RDS, ELB, etc.) make this easy. Most regional services let you go multi-AZ with a checkbox or by placing resources in multiple AZ subnets. us-east-1 is the oldest/largest region and where new services launch first.
+</div>
+
+<h3>How you interact with AWS</h3>
+<ul>
+  <li><strong>AWS Management Console</strong> — the web GUI.</li>
+  <li><strong>AWS CLI</strong> (<code>aws</code>) — command line for scripting.</li>
+  <li><strong>CloudShell</strong> — browser terminal with the CLI pre-configured.</li>
+  <li><strong>CloudFormation / CDK / Terraform</strong> — infrastructure as code.</li>
+  <li><strong>SDKs</strong> — boto3 (Python), AWS SDK for JS/Java/Go, etc.</li>
+</ul>
+
+<pre><code># AWS CLI basics
+aws configure                       # set keys, region
+aws s3 ls                           # list buckets
+aws ec2 run-instances \
+  --image-id ami-xxxxxxxx --instance-type t3.micro \
+  --key-name my-key --count 1</code></pre>
+
+<hr>
+
+<h2 id="part-1">Part 1 — Accounts, Organizations &amp; governance <span class="tag tag-concept">CONCEPT</span></h2>
+
+<p>The AWS <strong>account</strong> is the fundamental boundary for billing, security, and resource isolation. Mature setups use <em>many</em> accounts, managed centrally with AWS Organizations.</p>
+
+<div class="ascii">  AWS ORGANIZATION (management/payer account at the root)
+        |
+   ORGANIZATIONAL UNITS (OUs)  — group accounts by
+        |                        team / env / function
+   ACCOUNTS  (prod, dev, staging, security, logging...)
+        |
+   RESOURCES (EC2, S3, RDS, etc., live inside an account
+              and a region)
+
+  Service Control Policies (SCPs) set guardrails at the
+  OU/account level — they LIMIT what even admins can do.</div>
+
+<table>
+  <tr><th>Tool</th><th>Purpose</th></tr>
+  <tr><td>AWS Organizations</td><td>Manage many accounts, consolidated billing</td></tr>
+  <tr><td>Service Control Policies (SCPs)</td><td>Org-wide permission guardrails (max allowed)</td></tr>
+  <tr><td>AWS Control Tower</td><td>Set up &amp; govern a secure multi-account landing zone</td></tr>
+  <tr><td>AWS Config</td><td>Track resource configuration &amp; compliance</td></tr>
+  <tr><td>Tags + Cost Allocation</td><td>Organize resources &amp; attribute cost</td></tr>
+</table>
+
+<div class="callout callout-tip">
+  <strong>Multi-account is the AWS best practice</strong>
+  Rather than one big account, use separate accounts per environment/team (e.g., prod, dev, security, logging) under Organizations. This gives hard isolation of blast radius, billing, and access. Control Tower automates setting this up with sensible guardrails. SCPs enforce rules no one in the account can override.
+</div>
+
+<hr>
+
+<h2 id="part-2">Part 2 — Identity &amp; access (IAM) <span class="tag tag-core">CORE</span></h2>
+
+<p>IAM controls authentication and authorization for everything in AWS. It's the most important service to understand deeply — most security incidents trace back to IAM misconfiguration.</p>
+
+<h3>The IAM building blocks</h3>
+<table>
+  <tr><th>Entity</th><th>What it is</th></tr>
+  <tr><td>User</td><td>A person or app with long-term credentials (avoid for apps)</td></tr>
+  <tr><td>Group</td><td>A collection of users sharing policies</td></tr>
+  <tr><td>Role</td><td>An identity assumed temporarily; no long-term keys</td></tr>
+  <tr><td>Policy</td><td>JSON document granting/denying permissions</td></tr>
+</table>
+
+<h3>How a policy is evaluated</h3>
+<div class="ascii">  request: "principal X wants to do ACTION on RESOURCE"
+        |
+   1. explicit DENY anywhere?  --yes--> DENIED
+        | no
+   2. is there an explicit ALLOW? --no--> DENIED (implicit)
+        | yes
+   3. ALLOWED (unless an SCP / boundary restricts it)
+
+  Default is DENY. You must be explicitly allowed.
+  An explicit DENY always wins over any allow.</div>
+
+<pre><code>// IAM policy: allow read-only on one S3 bucket
+{
+  "Version": "2012-10-17",
+  "Statement": [{
+    "Effect": "Allow",
+    "Action": ["s3:GetObject", "s3:ListBucket"],
+    "Resource": [
+      "arn:aws:s3:::my-bucket",
+      "arn:aws:s3:::my-bucket/*"
+    ]
+  }]
+}</code></pre>
+
+<h3>Roles: the right way to grant access to workloads</h3>
+<p>Instead of putting access keys in code, give an EC2 instance, Lambda, or container an IAM <strong>role</strong>. The service automatically receives temporary, auto-rotated credentials.</p>
+<div class="ascii">  WITHOUT (bad):  app stores AWS access keys in config
+                  -> long-lived secret, big leak risk
+
+  WITH a role (good):
+     Lambda / EC2 / ECS task runs WITH an IAM role
+     -> AWS hands it temporary credentials automatically
+     -> no keys in code, auto-rotated
+
+  Cross-account: a role in account B can be ASSUMED by a
+  principal in account A (sts:AssumeRole) -> secure
+  delegation without sharing credentials.
+
+  For workloads outside AWS / in Kubernetes: use IAM
+  Roles for Service Accounts (IRSA) or OIDC federation.</div>
+
+<div class="callout callout-warn">
+  <strong>IAM golden rules</strong>
+  <ul>
+    <li>Never use the <strong>root account</strong> for daily work; lock it down with MFA and put it away.</li>
+    <li>Use <strong>roles, not access keys</strong>, for applications and services.</li>
+    <li>Apply <strong>least privilege</strong> — start minimal, add permissions as needed.</li>
+    <li>Require <strong>MFA</strong> for all human users.</li>
+    <li>Use <strong>IAM Identity Center</strong> (SSO) for human access at scale instead of IAM users.</li>
+  </ul>
+</div>
+
+<hr>
+
+<h2 id="part-3">Part 3 — Compute (EC2) <span class="tag tag-core">CORE</span></h2>
+
+<div class="ascii">  more control                          less ops burden
+  <-------------------------------------------------->
+  EC2        Auto Scaling   ECS/EKS    Fargate    Lambda
+  (VMs)      Groups         (containers) (serverless (FaaS)
+  you patch                              containers)
+  the OS                                          AWS runs
+                                                  it all</div>
+
+<h3>EC2 (Elastic Compute Cloud)</h3>
+<p>Resizable virtual servers. You pick an AMI (machine image), an instance type, storage, and networking. Instance families target different workloads:</p>
+<table>
+  <tr><th>Family</th><th>Optimized for</th><th>Examples</th></tr>
+  <tr><td>T (burstable)</td><td>General, bursty, low-cost</td><td>t3, t4g</td></tr>
+  <tr><td>M (general)</td><td>Balanced CPU/RAM</td><td>m6i, m7g</td></tr>
+  <tr><td>C (compute)</td><td>High CPU</td><td>c7g, c6i</td></tr>
+  <tr><td>R / X (memory)</td><td>Large RAM (DBs, caches)</td><td>r7g, x2</td></tr>
+  <tr><td>P / G / Inf / Trn</td><td>GPU / AI accelerators</td><td>p5, g6, inf2, trn2</td></tr>
+  <tr><td>I / D (storage)</td><td>High local disk throughput</td><td>i4i, d3</td></tr>
+</table>
+<p><strong>Graviton</strong> (the <code>g</code> suffix) are AWS's own ARM CPUs — better price/performance for many workloads.</p>
+
+<h3>Scaling &amp; availability</h3>
+<ul>
+  <li><strong>Auto Scaling Groups (ASG)</strong> — maintain/scale a fleet of EC2 across AZs, replace unhealthy instances.</li>
+  <li><strong>Elastic Load Balancing (ELB)</strong> — distribute traffic: ALB (L7/HTTP), NLB (L4/TCP), GWLB (appliances).</li>
+  <li><strong>EBS</strong> — durable network block storage for instances; <strong>instance store</strong> is ephemeral local disk.</li>
+</ul>
+
+<h3>EC2 pricing models</h3>
+<table>
+  <tr><th>Model</th><th>Best for</th><th>Savings</th></tr>
+  <tr><td>On-Demand</td><td>Short-term, unpredictable</td><td>—</td></tr>
+  <tr><td>Savings Plans</td><td>Commit to $/hr for 1–3 yr (flexible)</td><td>up to ~72%</td></tr>
+  <tr><td>Reserved Instances</td><td>Commit to specific instance for 1–3 yr</td><td>up to ~72%</td></tr>
+  <tr><td>Spot Instances</td><td>Interruptible, fault-tolerant work</td><td>up to ~90%</td></tr>
+</table>
+
+<div class="callout callout-tip">
+  <strong>Savings Plans over RIs for most</strong>
+  Savings Plans give similar discounts to Reserved Instances but with more flexibility (apply across instance families, regions, even Fargate/Lambda for Compute Savings Plans). Use Spot for batch, CI, and stateless/fault-tolerant fleets. Reserve/commit only your steady baseline.
+</div>
+
+<hr>
+
+<h2 id="part-4">Part 4 — Containers &amp; Kubernetes <span class="tag tag-core">CORE</span></h2>
+
+<table>
+  <tr><th>Service</th><th>What it is</th></tr>
+  <tr><td>ECR (Elastic Container Registry)</td><td>Private Docker image registry</td></tr>
+  <tr><td>ECS (Elastic Container Service)</td><td>AWS-native container orchestration (simpler than K8s)</td></tr>
+  <tr><td>EKS (Elastic Kubernetes Service)</td><td>Managed Kubernetes</td></tr>
+  <tr><td>Fargate</td><td>Serverless compute engine for ECS &amp; EKS (no servers to manage)</td></tr>
+</table>
+
+<h3>ECS vs EKS, and the Fargate dimension</h3>
+<div class="ascii">  ORCHESTRATOR:           LAUNCH TYPE (who runs the nodes):
+  ----------------        --------------------------------
+  ECS (AWS-native,        EC2     -> you manage the
+    simpler)                         underlying instances
+  EKS (Kubernetes,        Fargate -> serverless; AWS runs
+    portable, complex)               the compute, you just
+                                     define the container
+
+  Two independent choices:
+    ECS + Fargate  -> simplest serverless containers on AWS
+    ECS + EC2      -> ECS, you control the hosts
+    EKS + Fargate  -> Kubernetes API, no node management
+    EKS + EC2      -> full Kubernetes with node control</div>
+
+<div class="callout callout-tip">
+  <strong>ECS+Fargate for simplicity, EKS for portability</strong>
+  If you have no Kubernetes requirement, ECS on Fargate is the lowest-friction way to run containers on AWS — no cluster, no control plane to think about. Choose EKS when you need Kubernetes specifically: multi-cloud portability, the K8s ecosystem (Helm, operators), or existing K8s expertise. Fargate removes node management from either.
+</div>
+
+<hr>
+
+<h2 id="part-5">Part 5 — Serverless (Lambda &amp; friends) <span class="tag tag-core">CORE</span></h2>
+
+<p>AWS pioneered modern serverless with Lambda. You run code without provisioning servers, paying only for compute time consumed.</p>
+
+<h3>AWS Lambda (FaaS)</h3>
+<div class="ascii">  EVENT SOURCE                 LAMBDA
+  ------------                 ------
+  API Gateway (HTTP)   ---->  [ your function ]
+  S3 object created    ---->  (Python, Node, Java,
+  DynamoDB stream      ---->   Go, Ruby, .NET, custom)
+  SQS / SNS message    ---->  
+  EventBridge event    ---->  scales automatically per event
+  Step Functions step  ---->  pay per request + duration + memory
+
+  Limits: up to 15 min runtime, configurable memory/CPU,
+  ephemeral storage. Stateless by design.</div>
+
+<h3>The serverless application stack</h3>
+<table>
+  <tr><th>Service</th><th>Role</th></tr>
+  <tr><td>Lambda</td><td>Run function code on events</td></tr>
+  <tr><td>API Gateway</td><td>Managed REST/HTTP/WebSocket APIs in front of Lambda</td></tr>
+  <tr><td>Step Functions</td><td>Orchestrate multi-step workflows (state machine)</td></tr>
+  <tr><td>EventBridge</td><td>Event bus / routing &amp; scheduling</td></tr>
+  <tr><td>AppSync</td><td>Managed GraphQL APIs</td></tr>
+  <tr><td>DynamoDB</td><td>The natural serverless database partner</td></tr>
+</table>
+
+<h3>Step Functions: orchestrating serverless</h3>
+<div class="ascii">  A visual state machine chains Lambdas &amp; services:
+
+  [validate] -> [charge] -> choice? --ok--> [ship]
+                              |--fail--> [refund] -> [notify]
+  
+  Handles retries, error catching, parallel branches,
+  waits, and human-approval steps -- so your functions
+  stay small and the workflow logic is declarative.</div>
+
+<div class="callout callout-warn">
+  <strong>Lambda design constraints</strong>
+  Functions are stateless, time-limited (15 min max), and can cold-start after idle (use provisioned concurrency for latency-sensitive APIs). Keep deployment packages small, reuse connections across invocations (initialize outside the handler), and make handlers idempotent — events like SQS/S3 can deliver more than once.
+</div>
+
+<hr>
+
+<h2 id="part-6">Part 6 — Storage (S3 &amp; friends) <span class="tag tag-core">CORE</span></h2>
+
+<table>
+  <tr><th>Service</th><th>Model</th><th>Use for</th></tr>
+  <tr><td>S3 (Simple Storage Service)</td><td>Object storage (buckets → objects)</td><td>Files, media, backups, data lakes, static sites</td></tr>
+  <tr><td>EBS (Elastic Block Store)</td><td>Block storage for EC2</td><td>VM disks, databases</td></tr>
+  <tr><td>EFS</td><td>Managed elastic NFS file system</td><td>Shared Linux filesystems</td></tr>
+  <tr><td>FSx</td><td>Managed Windows / Lustre / NetApp file systems</td><td>Specialized file workloads</td></tr>
+  <tr><td>Storage Gateway</td><td>Hybrid on-prem ↔ cloud storage</td><td>Hybrid setups</td></tr>
+</table>
+
+<h3>S3 — the foundational object store</h3>
+<p>S3 is one of AWS's oldest and most central services. It's effectively infinite, extremely durable (11 nines), and the backbone of data lakes, backups, static hosting, and ML data.</p>
+
+<h3>S3 storage classes (cost vs access pattern)</h3>
+<div class="ascii">  STANDARD            frequent access, hot data
+  INTELLIGENT-TIERING auto-moves objects between tiers
+                      based on access (set &amp; forget)
+  STANDARD-IA         infrequent access (lower storage cost)
+  ONE ZONE-IA         infrequent, single AZ (cheaper, less HA)
+  GLACIER INSTANT     archive, millisecond retrieval
+  GLACIER FLEXIBLE    archive, minutes-to-hours retrieval
+  GLACIER DEEP ARCHIVE cheapest, ~12 hr retrieval
+
+  Lifecycle rules auto-transition/expire objects by age.
+  Intelligent-Tiering is great when access is unpredictable.</div>
+
+<h3>Key S3 features</h3>
+<ul>
+  <li><strong>Versioning</strong> — keep multiple versions; protect against overwrites/deletes.</li>
+  <li><strong>Strong read-after-write consistency</strong> — reads immediately reflect writes.</li>
+  <li><strong>Presigned URLs</strong> — time-limited direct upload/download (don't proxy big files through your app).</li>
+  <li><strong>Encryption</strong> — server-side by default (SSE-S3 or SSE-KMS).</li>
+  <li><strong>Static website hosting</strong> + CloudFront for a cheap global static site.</li>
+  <li><strong>Event notifications</strong> — trigger Lambda/SQS/SNS on object events.</li>
+</ul>
+
+<div class="callout callout-warn">
+  <strong>Block public access by default</strong>
+  Public S3 buckets are a classic data-breach source. "Block Public Access" is on by default — keep it on unless you intentionally host public content. Use bucket policies + IAM for access, presigned URLs for temporary sharing, and CloudFront (with OAC) to serve content without making the bucket public.
+</div>
+
+<hr>
+
+<h2 id="part-7">Part 7 — Databases <span class="tag tag-core">CORE</span></h2>
+
+<h3>Relational</h3>
+<table>
+  <tr><th>Service</th><th>What it is</th></tr>
+  <tr><td>RDS</td><td>Managed relational DB: PostgreSQL, MySQL, MariaDB, Oracle, SQL Server</td></tr>
+  <tr><td>Aurora</td><td>AWS's cloud-native MySQL/Postgres-compatible DB — faster, auto-scaling storage, multi-AZ</td></tr>
+  <tr><td>Aurora Serverless v2</td><td>Aurora that auto-scales capacity (incl. near zero) by load</td></tr>
+</table>
+
+<h3>RDS vs Aurora</h3>
+<div class="ascii">  RDS:    managed standard engines (Postgres, MySQL...)
+          you pick instance size; storage up to limits;
+          Multi-AZ standby for failover.
+
+  AURORA: AWS-built, wire-compatible with MySQL/Postgres
+          - storage auto-grows, replicated 6 ways across 3 AZs
+          - up to 15 read replicas, fast failover
+          - higher performance, higher cost
+          - Serverless v2 scales capacity automatically
+  
+  Use RDS for standard needs/compatibility; Aurora when
+  you want more performance, scale, and resilience.</div>
+
+<h3>NoSQL &amp; specialized</h3>
+<table>
+  <tr><th>Service</th><th>Model</th><th>Use for</th></tr>
+  <tr><td>DynamoDB</td><td>Serverless key-value / document, single-digit-ms</td><td>High-scale apps, serverless, gaming, IoT</td></tr>
+  <tr><td>ElastiCache</td><td>Managed Redis / Memcached</td><td>Caching, sessions, leaderboards</td></tr>
+  <tr><td>DocumentDB</td><td>MongoDB-compatible document DB</td><td>Document workloads</td></tr>
+  <tr><td>Keyspaces</td><td>Managed Cassandra</td><td>Wide-column at scale</td></tr>
+  <tr><td>Neptune</td><td>Graph database</td><td>Social graphs, knowledge graphs</td></tr>
+  <tr><td>Timestream</td><td>Time-series database</td><td>IoT, metrics, telemetry</td></tr>
+  <tr><td>MemoryDB</td><td>Redis-compatible, durable in-memory DB</td><td>Ultra-fast primary DB</td></tr>
+</table>
+
+<div class="callout callout-tip">
+  <strong>DynamoDB is the serverless-native choice</strong>
+  DynamoDB needs no servers, scales to massive throughput, and bills on-demand or provisioned. It rewards designing your table around access patterns (single-table design, careful partition keys) rather than relational normalization. Pair it with Lambda for a fully serverless backend. Avoid scans; design for key-based queries.
+</div>
+
+<hr>
+
+<h2 id="part-8">Part 8 — Networking (VPC) <span class="tag tag-core">CORE</span></h2>
+
+<h3>VPC — your isolated network</h3>
+<p>A Virtual Private Cloud is your private, logically isolated network in a region. You carve it into subnets across AZs, and control traffic with security groups and route tables. VPCs are <strong>regional</strong> (subnets are AZ-specific).</p>
+<div class="ascii">  VPC  10.0.0.0/16  (in one region)
+   +-- PUBLIC subnet  us-east-1a  10.0.1.0/24
+   |     -> route to Internet Gateway (has public IPs)
+   |     [ Load Balancer / bastion ]
+   +-- PRIVATE subnet us-east-1a  10.0.2.0/24
+   |     -> outbound via NAT Gateway; no inbound internet
+   |     [ app servers ]
+   +-- PRIVATE subnet us-east-1b  10.0.3.0/24
+         [ databases ]   (multi-AZ for HA)
+
+  Security Group  = stateful firewall on a resource (ENI)
+  Network ACL     = stateless firewall on a subnet</div>
+
+<h3>Core networking services</h3>
+<table>
+  <tr><th>Service</th><th>Role</th></tr>
+  <tr><td>Security Group</td><td>Stateful instance-level firewall (allow rules)</td></tr>
+  <tr><td>Network ACL</td><td>Stateless subnet-level firewall (allow + deny)</td></tr>
+  <tr><td>Internet Gateway</td><td>Public internet access for a VPC</td></tr>
+  <tr><td>NAT Gateway</td><td>Outbound internet for private subnets</td></tr>
+  <tr><td>Elastic Load Balancing</td><td>ALB (L7), NLB (L4), GWLB (appliances)</td></tr>
+  <tr><td>Route 53</td><td>DNS + health checks + routing policies</td></tr>
+  <tr><td>CloudFront</td><td>CDN (edge caching) + WAF integration</td></tr>
+  <tr><td>VPC Endpoints / PrivateLink</td><td>Reach AWS services privately (no internet)</td></tr>
+  <tr><td>Direct Connect / VPN</td><td>Connect on-prem (dedicated line / encrypted tunnel)</td></tr>
+  <tr><td>Transit Gateway</td><td>Hub to connect many VPCs &amp; on-prem networks</td></tr>
+</table>
+
+<h3>Security Group vs Network ACL</h3>
+<div class="ascii">  SECURITY GROUP (on the resource):
+    stateful -> if you allow inbound, the response is
+    automatically allowed out. Allow rules only.
+    The everyday firewall you'll configure most.
+
+  NETWORK ACL (on the subnet):
+    stateless -> you must allow BOTH directions explicitly.
+    Supports DENY rules. Coarse, subnet-wide guardrail.</div>
+
+<div class="callout callout-warn">
+  <strong>Keep databases in private subnets</strong>
+  Data and app tiers belong in private subnets with no inbound internet route. Put load balancers (and only those) in public subnets. Use NAT Gateways for outbound, VPC Endpoints/PrivateLink to reach AWS services (S3, DynamoDB) without traversing the internet, and tighten security groups to the minimum ports/sources.
+</div>
+
+<hr>
+
+<h2 id="part-9">Part 9 — Messaging &amp; integration <span class="tag tag-concept">CONCEPT</span></h2>
+
+<table>
+  <tr><th>Service</th><th>Pattern</th><th>Use for</th></tr>
+  <tr><td>SQS (Simple Queue Service)</td><td>Message queue (point-to-point)</td><td>Decouple, buffer, background jobs</td></tr>
+  <tr><td>SNS (Simple Notification Service)</td><td>Pub/sub fan-out</td><td>Broadcast to many subscribers</td></tr>
+  <tr><td>EventBridge</td><td>Event bus + routing + scheduling</td><td>Event-driven architectures, SaaS events</td></tr>
+  <tr><td>Kinesis</td><td>Real-time data streaming</td><td>Telemetry, logs, clickstream, analytics</td></tr>
+  <tr><td>MSK</td><td>Managed Apache Kafka</td><td>Kafka workloads</td></tr>
+</table>
+
+<h3>SQS vs SNS vs EventBridge vs Kinesis</h3>
+<div class="ascii">  SQS (queue):  producer -> [ queue ] -> one consumer
+       buffer work; each message processed once.
+       Standard (at-least-once) or FIFO (ordered, exactly-once).
+
+  SNS (pub/sub): publisher -> TOPIC -+-> SQS queue
+                                     +-> Lambda
+                                     +-> email / HTTP
+       fan a message out to many subscribers at once.
+
+  EVENTBRIDGE (event bus): rich routing/filtering by event
+       content; integrates SaaS + AWS events; scheduling.
+
+  KINESIS (stream): ordered, replayable stream of records
+       for real-time analytics; many consumers, retention.
+
+  Common combo: SNS -> SQS "fan-out" (topic delivers to
+  several queues, each feeding its own worker fleet).</div>
+
+<div class="callout callout-tip">
+  <strong>The SNS + SQS fan-out pattern</strong>
+  A classic AWS design: publish once to an SNS topic that delivers to multiple SQS queues, each consumed by a different service. This decouples producers from consumers and lets each consumer process at its own pace with its own retry/DLQ. Make consumers idempotent (at-least-once delivery).
+</div>
+
+<hr>
+
+<h2 id="part-10">Part 10 — Data &amp; analytics <span class="tag tag-concept">CONCEPT</span></h2>
+
+<div class="ascii">  INGEST          STORE            PROCESS          SERVE
+  ------          -----            -------          -----
+  Kinesis     ->  S3 (data lake) <- Glue (ETL)    -> Athena
+  DMS             Lake Formation    EMR (Spark/      (query S3)
+  Kinesis         (governance)      Hadoop)          Redshift
+  Firehose                          Glue ETL         QuickSight
+                                                     (BI)</div>
+
+<table>
+  <tr><th>Service</th><th>Role</th></tr>
+  <tr><td>S3</td><td>The data lake foundation</td></tr>
+  <tr><td>AWS Glue</td><td>Serverless ETL + data catalog</td></tr>
+  <tr><td>Athena</td><td>Serverless SQL queries directly over S3 (Presto/Trino)</td></tr>
+  <tr><td>Redshift</td><td>Petabyte-scale data warehouse (+ Serverless)</td></tr>
+  <tr><td>EMR</td><td>Managed Spark / Hadoop / Presto clusters</td></tr>
+  <tr><td>Kinesis Data Firehose</td><td>Load streaming data into S3/Redshift/OpenSearch</td></tr>
+  <tr><td>Lake Formation</td><td>Build &amp; govern a secure data lake</td></tr>
+  <tr><td>OpenSearch Service</td><td>Search &amp; log analytics (Elasticsearch-compatible)</td></tr>
+  <tr><td>QuickSight</td><td>Business intelligence &amp; dashboards</td></tr>
+</table>
+
+<div class="callout callout-tip">
+  <strong>S3 + Athena + Glue = the serverless lake pattern</strong>
+  A very common AWS analytics stack: land raw data in S3, catalog it with Glue, and query it in place with Athena using standard SQL — no clusters to manage, pay per query (bytes scanned). Add Redshift when you need a high-performance warehouse for heavy/interactive BI. Partition your S3 data to cut Athena cost.
+</div>
+
+<hr>
+
+<h2 id="part-11">Part 11 — AI &amp; machine learning (Bedrock &amp; SageMaker) <span class="tag tag-core">CORE</span></h2>
+
+<p>AWS's AI stack centers on <strong>Bedrock</strong> (managed access to foundation models + agents) and <strong>SageMaker</strong> (custom ML platform), plus a set of pre-built AI services.</p>
+
+<h3>The layers of AWS AI</h3>
+<div class="ascii">  1. PRE-BUILT AI SERVICES (call an API)
+     Rekognition (vision), Transcribe (speech-to-text),
+     Polly (text-to-speech), Comprehend (NLP),
+     Textract (document extraction), Translate
+
+  2. GENERATIVE AI (foundation models) -- AMAZON BEDROCK
+     Managed access to models from Anthropic (Claude),
+     Meta (Llama), Mistral, Cohere, Amazon (Nova/Titan),
+     Stability AI -- via ONE API. Plus:
+       - Knowledge Bases (managed RAG)
+       - Agents / AgentCore (build & run agents)
+       - Guardrails (safety filters)
+       - model evaluation, fine-tuning, provisioned throughput
+
+  3. CUSTOM ML -- AMAZON SAGEMAKER
+     Full lifecycle: label, build, train, tune, deploy,
+     monitor. SageMaker Studio is the IDE; pipelines,
+     feature store, model registry, endpoints.</div>
+
+<table>
+  <tr><th>Service</th><th>Use for</th></tr>
+  <tr><td>Amazon Bedrock</td><td>Access many foundation models (Claude, Llama, Nova, etc.) via one managed API</td></tr>
+  <tr><td>Bedrock Knowledge Bases</td><td>Managed RAG: ingest, embed, retrieve, ground — minimal plumbing</td></tr>
+  <tr><td>Bedrock Agents / AgentCore</td><td>Build, deploy &amp; operate agents that reason &amp; call tools/APIs</td></tr>
+  <tr><td>Bedrock Guardrails</td><td>Content filters, denied topics, PII redaction, prompt-injection defense</td></tr>
+  <tr><td>Amazon SageMaker</td><td>Custom model training &amp; full MLOps</td></tr>
+  <tr><td>Amazon Q</td><td>AI assistant for business (Q Business) &amp; developers (Q Developer)</td></tr>
+  <tr><td>Pre-built AI APIs</td><td>Rekognition, Transcribe, Comprehend, Textract, Polly</td></tr>
+</table>
+
+<h3>Bedrock AgentCore — production agents</h3>
+<p>AgentCore is AWS's framework for building, deploying, and operating production AI agents. It's <strong>framework-agnostic</strong> (use LangGraph, CrewAI, Strands, or your own) and provides the managed runtime plus supporting services — think "managed infrastructure for agents".</p>
+<div class="ascii">  AgentCore building blocks (mix &amp; match):
+    Runtime   -> secure, serverless, scalable agent hosting
+    Gateway   -> turn APIs/Lambdas into agent tools (MCP)
+    Memory    -> short- &amp; long-term agent memory
+    Identity  -> secure agent auth &amp; access to resources
+    Browser   -> managed headless browser tool
+    Code Interpreter -> sandboxed code execution
+    Observability -> trace &amp; monitor agent behavior
+
+  Bring any framework/model; AgentCore runs &amp; operates it.</div>
+
+<h3>A typical RAG architecture on AWS</h3>
+<div class="ascii">  docs in S3 -> Bedrock Knowledge Base
+                  (chunk + embed via Titan/Cohere ->
+                   store in OpenSearch / Aurora pgvector)
+
+  user question
+     -> Bedrock Knowledge Base "retrieve_and_generate"
+        (embed -> vector search -> Claude generates
+         grounded answer + citations)
+     -> Bedrock Guardrails filter input/output
+  
+  Or wire it yourself: Lambda + Bedrock InvokeModel +
+  a vector store (OpenSearch / Aurora pgvector / Pinecone).</div>
+
+<div class="callout callout-tip">
+  <strong>Bedrock's edge: model choice + AWS integration</strong>
+  Bedrock's value is one managed, serverless API across many top models (notably Anthropic's Claude), with data staying in your AWS account, IAM-based access, and tight integration with the rest of AWS (S3, Lambda, OpenSearch, Guardrails, AgentCore). For AWS-centric orgs building GenAI/agentic systems, it minimizes undifferentiated plumbing.
+</div>
+
+<hr>
+
+<h2 id="part-12">Part 12 — DevOps, IaC &amp; observability <span class="tag tag-prod">PROD</span></h2>
+
+<h3>Infrastructure as Code</h3>
+<table>
+  <tr><th>Tool</th><th>Notes</th></tr>
+  <tr><td>CloudFormation</td><td>Native IaC (YAML/JSON templates)</td></tr>
+  <tr><td>AWS CDK</td><td>Define infra in real code (TS, Python, Java) → synthesizes CloudFormation</td></tr>
+  <tr><td>AWS SAM</td><td>Simplified IaC for serverless apps</td></tr>
+  <tr><td>Terraform</td><td>Multi-cloud, very popular on AWS too</td></tr>
+</table>
+
+<pre><code># AWS CDK (Python) — an S3 bucket
+from aws_cdk import App, Stack, aws_s3 as s3
+class MyStack(Stack):
+    def __init__(self, scope, id):
+        super().__init__(scope, id)
+        s3.Bucket(self, "DataBucket",
+                  versioned=True,
+                  encryption=s3.BucketEncryption.S3_MANAGED)</code></pre>
+
+<h3>CI/CD &amp; developer tools</h3>
+<ul>
+  <li><strong>CodePipeline / CodeBuild / CodeDeploy</strong> — AWS-native CI/CD.</li>
+  <li><strong>CodeCommit / CodeArtifact</strong> — git repos &amp; package registry.</li>
+  <li><strong>Amazon Q Developer</strong> — AI coding assistant.</li>
+</ul>
+
+<h3>Observability: CloudWatch &amp; X-Ray</h3>
+<div class="ascii">  CloudWatch (the core):
+    +-- Metrics    numeric time-series (CPU, latency, custom)
+    +-- Logs       centralized logs + Logs Insights (query)
+    +-- Alarms     thresholds -> SNS / auto-scaling / actions
+    +-- Dashboards visualize
+    +-- Synthetics canaries probe endpoints
+  
+  X-Ray:  distributed tracing -> see a request flow across
+          services, find latency/error hotspots.
+  
+  CloudTrail: records every API call (audit/forensics) —
+              distinct from CloudWatch (operational metrics).</div>
+
+<div class="callout callout-tip">
+  <strong>CloudWatch vs CloudTrail</strong>
+  Easy to confuse: <strong>CloudWatch</strong> is for operational monitoring (metrics, logs, alarms — "is it healthy?"). <strong>CloudTrail</strong> is for auditing (who made which API call, when — "who did what?"). You want both: CloudWatch for performance, CloudTrail for security/compliance forensics.
+</div>
+
+<hr>
+
+<h2 id="part-13">Part 13 — Security &amp; cost management <span class="tag tag-core">CORE</span> <span class="tag tag-prod">PROD</span></h2>
+
+<h3>Security services</h3>
+<table>
+  <tr><th>Service</th><th>Role</th></tr>
+  <tr><td>IAM + IAM Identity Center</td><td>Access control &amp; SSO</td></tr>
+  <tr><td>KMS</td><td>Managed encryption keys</td></tr>
+  <tr><td>Secrets Manager</td><td>Store/rotate secrets (DB creds, API keys)</td></tr>
+  <tr><td>GuardDuty</td><td>Threat detection (analyzes logs for malicious activity)</td></tr>
+  <tr><td>Security Hub</td><td>Aggregated security posture &amp; findings</td></tr>
+  <tr><td>WAF &amp; Shield</td><td>Web app firewall + DDoS protection</td></tr>
+  <tr><td>Macie</td><td>Discover &amp; protect sensitive data (PII) in S3</td></tr>
+  <tr><td>Inspector</td><td>Automated vulnerability scanning</td></tr>
+</table>
+
+<h3>Security mantras</h3>
+<ul>
+  <li><strong>Lock down root</strong>; use IAM Identity Center for humans, roles for workloads.</li>
+  <li><strong>Least privilege</strong> everywhere; review with IAM Access Analyzer.</li>
+  <li><strong>Secrets in Secrets Manager</strong>, keys in KMS — never in code.</li>
+  <li><strong>Encrypt</strong> at rest (KMS) and in transit (TLS) — default on most services.</li>
+  <li><strong>Block public S3</strong>; use private subnets + VPC endpoints for data.</li>
+  <li><strong>Turn on GuardDuty + CloudTrail + Security Hub</strong> org-wide.</li>
+</ul>
+
+<h3>Cost management</h3>
+<ul>
+  <li><strong>Savings Plans / Reserved Instances</strong> for steady compute (up to ~72%).</li>
+  <li><strong>Spot Instances</strong> for fault-tolerant/batch (up to ~90%).</li>
+  <li><strong>Right-size</strong> with Compute Optimizer; delete idle resources.</li>
+  <li><strong>S3 Intelligent-Tiering</strong> &amp; lifecycle rules; clean up old snapshots.</li>
+  <li><strong>Serverless</strong> (Lambda/Fargate/Aurora Serverless) to pay only for use.</li>
+  <li><strong>Cost Explorer + Budgets + tags</strong> for visibility &amp; alerts.</li>
+</ul>
+
+<div class="callout callout-warn">
+  <strong>Shared responsibility model</strong>
+  AWS is responsible for security <em>of</em> the cloud (hardware, global infrastructure, managed-service internals). You are responsible for security <em>in</em> the cloud — your IAM, data, encryption, network config, and (for EC2) OS patching. The boundary moves with the service: more on you for EC2, more on AWS for Lambda/managed services.
+</div>
+
+<hr>
+
+<h2 id="part-14">Part 14 — Architecture patterns &amp; cheat sheet</h2>
+
+<h3>Reference: a typical 3-tier web app on AWS</h3>
+<div class="ascii">          Route 53 (DNS)
+              |
+          CloudFront (CDN) + WAF
+              |
+          Application Load Balancer  (public subnets)
+              |
+        +-----+------+
+        |  ECS/Fargate or EC2 (ASG)  |  (app tier,
+        |  across 2+ AZs             |   private subnets)
+        +-----+------+
+              |
+        RDS/Aurora (Multi-AZ)  +  DynamoDB   (data tier,
+              |                              private subnets)
+        ElastiCache (Redis)                  (caching)
+  
+  Cross-cutting: IAM roles, Secrets Manager/KMS,
+  CloudWatch + X-Ray + CloudTrail, VPC endpoints,
+  S3 for assets/backups.</div>
+
+<h3>The Well-Architected Framework (6 pillars)</h3>
+<table>
+  <tr><th>Pillar</th><th>Focus</th></tr>
+  <tr><td>Operational Excellence</td><td>Run &amp; monitor; automate (IaC, CI/CD)</td></tr>
+  <tr><td>Security</td><td>Protect data &amp; systems (IAM, encryption)</td></tr>
+  <tr><td>Reliability</td><td>Recover from failure (Multi-AZ, retries)</td></tr>
+  <tr><td>Performance Efficiency</td><td>Use resources efficiently &amp; scale</td></tr>
+  <tr><td>Cost Optimization</td><td>Avoid unnecessary spend</td></tr>
+  <tr><td>Sustainability</td><td>Minimize environmental impact</td></tr>
+</table>
+
+<h3>Service selection cheat sheet</h3>
+<table>
+  <tr><th>Need</th><th>Reach for</th></tr>
+  <tr><td>Virtual servers</td><td>EC2</td></tr>
+  <tr><td>Serverless functions</td><td>Lambda</td></tr>
+  <tr><td>Serverless containers</td><td>ECS + Fargate</td></tr>
+  <tr><td>Full Kubernetes</td><td>EKS</td></tr>
+  <tr><td>Object storage</td><td>S3</td></tr>
+  <tr><td>Relational DB</td><td>RDS / Aurora</td></tr>
+  <tr><td>Serverless NoSQL</td><td>DynamoDB</td></tr>
+  <tr><td>Cache</td><td>ElastiCache</td></tr>
+  <tr><td>Queue</td><td>SQS</td></tr>
+  <tr><td>Pub/sub fan-out</td><td>SNS</td></tr>
+  <tr><td>Event bus</td><td>EventBridge</td></tr>
+  <tr><td>Streaming</td><td>Kinesis / MSK</td></tr>
+  <tr><td>Secrets</td><td>Secrets Manager</td></tr>
+  <tr><td>Data warehouse</td><td>Redshift</td></tr>
+  <tr><td>Query S3 with SQL</td><td>Athena</td></tr>
+  <tr><td>GenAI / LLMs / agents</td><td>Bedrock (+ AgentCore)</td></tr>
+  <tr><td>Custom ML</td><td>SageMaker</td></tr>
+  <tr><td>Monitoring / tracing / audit</td><td>CloudWatch / X-Ray / CloudTrail</td></tr>
+</table>
+
+<div class="callout callout-tip">
+  <strong>Final advice</strong>
+  AWS wins on breadth and maturity — if a capability exists in the cloud, AWS almost certainly has it (often several ways). Lead with IAM (roles, least privilege), default to Multi-AZ and managed/serverless services, isolate workloads with multi-account + VPC, and codify with CDK/Terraform. For GenAI and agents, Bedrock + AgentCore keep everything in your AWS security boundary.
+</div>
+
+<hr>
+<div class="meta">End of AWS guide. Service names and limits change frequently — always confirm current details in the official AWS documentation.</div>
+
+</body>
+</html>

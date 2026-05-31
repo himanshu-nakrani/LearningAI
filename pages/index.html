@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Learning AI — Guides Index</title>
+<style>
+  :root {
+    --fg: #1a1a1a;
+    --muted: #555;
+    --bg: #fdfdfc;
+    --accent: #0f7b8a;
+    --accent-soft: #e3f1f3;
+    --border: #d4d4d0;
+    --card-bg: #ffffff;
+    --card-hover: #f7f5f1;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: Charter, "Iowan Old Style", Georgia, serif;
+    color: var(--fg);
+    background: var(--bg);
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 50px 30px 90px;
+    line-height: 1.65;
+    font-size: 17px;
+  }
+  h1, h2, h3 {
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+    color: var(--fg);
+    line-height: 1.25;
+  }
+  h1 {
+    font-size: 2.4em;
+    border-bottom: 3px solid var(--accent);
+    padding-bottom: 14px;
+    margin: 0.2em 0 0.3em;
+  }
+  .tagline {
+    color: var(--muted);
+    font-size: 1.05em;
+    margin-bottom: 2.5em;
+  }
+  h2 {
+    font-size: 1.4em;
+    color: var(--accent);
+    margin-top: 2.5em;
+    margin-bottom: 0.8em;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 600;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+  }
+  a.card {
+    display: block;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--accent);
+    border-radius: 6px;
+    padding: 18px 20px;
+    text-decoration: none;
+    color: var(--fg);
+    transition: background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  a.card:hover {
+    background: var(--card-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  }
+  .card-title {
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+    font-weight: 600;
+    font-size: 1.05em;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+  .card-desc {
+    color: var(--muted);
+    font-size: 0.92em;
+    line-height: 1.45;
+  }
+  footer {
+    margin-top: 4em;
+    padding-top: 1.5em;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 0.9em;
+  }
+</style>
+</head>
+<body>
+
+<h1>Learning AI — Guides</h1>
+<p class="tagline">A consolidated index of long-form study notes covering AI engineering, cloud platforms, and core software fundamentals.</p>
+
+<h2>AI &amp; Machine Learning</h2>
+<div class="grid">
+  <a class="card" href="ai-engineering-guide.html">
+    <div class="card-title">AI Engineering Guide</div>
+    <div class="card-desc">End-to-end overview of building production AI systems — data, training, evaluation, deployment.</div>
+  </a>
+  <a class="card" href="agentic-ai-guide.html">
+    <div class="card-title">Agentic AI</div>
+    <div class="card-desc">Engineering guide to agents, tool use, planning loops, and multi-step reasoning systems.</div>
+  </a>
+  <a class="card" href="llm-inference-guide.html">
+    <div class="card-title">LLM Inference &amp; Serving</div>
+    <div class="card-desc">Optimization techniques for serving large language models — batching, quantization, throughput.</div>
+  </a>
+</div>
+
+<h2>Cloud Platforms</h2>
+<div class="grid">
+  <a class="card" href="aws-guide.html">
+    <div class="card-title">Amazon Web Services</div>
+    <div class="card-desc">Core AWS services, compute, storage, networking, and AI/ML offerings.</div>
+  </a>
+  <a class="card" href="azure-guide.html">
+    <div class="card-title">Microsoft Azure</div>
+    <div class="card-desc">Azure platform fundamentals with a focus on enterprise and AI workloads.</div>
+  </a>
+  <a class="card" href="gcp-guide.html">
+    <div class="card-title">Google Cloud Platform</div>
+    <div class="card-desc">GCP services, Vertex AI, BigQuery, and the wider Google data ecosystem.</div>
+  </a>
+  <a class="card" href="cloud-ai-comparison.html">
+    <div class="card-title">Cloud AI Comparison</div>
+    <div class="card-desc">Side-by-side comparison of AWS, Azure, and GCP AI/ML services.</div>
+  </a>
+</div>
+
+<h2>Software Engineering Fundamentals</h2>
+<div class="grid">
+  <a class="card" href="python-guide.html">
+    <div class="card-title">Python</div>
+    <div class="card-desc">From basics to advanced — idioms, async, typing, performance, and tooling.</div>
+  </a>
+  <a class="card" href="dsa-guide.html">
+    <div class="card-title">Data Structures &amp; Algorithms</div>
+    <div class="card-desc">Interview-oriented walkthrough from basic to medium difficulty problems.</div>
+  </a>
+  <a class="card" href="system-design-guide.html">
+    <div class="card-title">System Design</div>
+    <div class="card-desc">Architectural patterns, scalability, reliability, and trade-off analysis.</div>
+  </a>
+</div>
+
+<footer>
+  Part of the <a href="../" style="color: var(--accent);">LearningAI</a> repository.
+</footer>
+
+</body>
+</html>

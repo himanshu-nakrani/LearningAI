@@ -1,0 +1,1345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>System Design Guide — Complete</title>
+<style>
+  :root {
+    --fg: #1a1a1a;
+    --muted: #555;
+    --bg: #fdfdfc;
+    --accent: #6b4fa0;
+    --accent-soft: #efe9f6;
+    --border: #d4d4d0;
+    --code-bg: #f4f1ec;
+    --code-fg: #2a2a2a;
+    --warn-bg: #fff8e0;
+    --warn-bd: #e0c560;
+    --tip-bg: #e8f3eb;
+    --tip-bd: #6ba577;
+    --gap-bg: #fbe8e6;
+    --gap-bd: #b8453a;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: Charter, "Iowan Old Style", Georgia, serif;
+    color: var(--fg);
+    background: var(--bg);
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 30px 80px;
+    line-height: 1.65;
+    font-size: 17px;
+  }
+  h1, h2, h3, h4 {
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+    color: var(--fg);
+    line-height: 1.25;
+    margin-top: 1.8em;
+    margin-bottom: 0.5em;
+  }
+  h1 {
+    font-size: 2.2em;
+    border-bottom: 3px solid var(--accent);
+    padding-bottom: 12px;
+    margin-top: 0.5em;
+  }
+  h2 {
+    font-size: 1.6em;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 6px;
+    margin-top: 2.5em;
+  }
+  h3 { font-size: 1.25em; color: var(--accent); }
+  h4 { font-size: 1.05em; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600; }
+  p, ul, ol { margin: 0.6em 0; }
+  ul, ol { padding-left: 1.6em; }
+  li { margin: 0.3em 0; }
+  code {
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    background: var(--code-bg);
+    color: var(--code-fg);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 0.88em;
+  }
+  pre {
+    background: var(--code-bg);
+    color: var(--code-fg);
+    padding: 14px 18px;
+    border-radius: 6px;
+    border-left: 3px solid var(--accent);
+    overflow-x: auto;
+    font-size: 0.85em;
+    line-height: 1.5;
+  }
+  pre code { background: none; padding: 0; font-size: 1em; }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 1em 0;
+    font-size: 0.92em;
+  }
+  th, td {
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: left;
+    vertical-align: top;
+  }
+  th { background: var(--code-bg); font-weight: 600; }
+  blockquote {
+    border-left: 3px solid var(--muted);
+    margin: 1em 0;
+    padding: 0.4em 1em;
+    color: var(--muted);
+    font-style: italic;
+  }
+  .tag {
+    display: inline-block;
+    font-size: 0.7em;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 3px;
+    margin-left: 6px;
+    vertical-align: middle;
+    font-family: -apple-system, sans-serif;
+    letter-spacing: 0.04em;
+  }
+  .tag-core { background: #6b4fa0; color: white; }
+  .tag-concept { background: #4a7ba6; color: white; }
+  .tag-scale { background: #b8453a; color: white; }
+  .callout {
+    padding: 12px 18px;
+    margin: 1em 0;
+    border-radius: 6px;
+    border-left: 4px solid;
+  }
+  .callout-warn { background: var(--warn-bg); border-color: var(--warn-bd); }
+  .callout-tip { background: var(--tip-bg); border-color: var(--tip-bd); }
+  .callout-gap { background: var(--gap-bg); border-color: var(--gap-bd); }
+  .callout strong { display: block; margin-bottom: 4px; font-family: -apple-system, sans-serif; }
+  .toc {
+    background: var(--code-bg);
+    padding: 20px 28px;
+    border-radius: 8px;
+    margin: 2em 0;
+  }
+  .toc h2 { margin-top: 0; border: none; }
+  .toc ol { padding-left: 1.4em; }
+  .toc a { color: var(--accent); text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+  .ascii {
+    font-family: "SF Mono", Menlo, monospace;
+    white-space: pre;
+    background: var(--code-bg);
+    padding: 14px 18px;
+    border-radius: 6px;
+    border-left: 3px solid var(--accent);
+    overflow-x: auto;
+    font-size: 0.78em;
+    line-height: 1.4;
+  }
+  hr { border: none; border-top: 1px solid var(--border); margin: 2.5em 0; }
+  .meta { color: var(--muted); font-size: 0.9em; margin-bottom: 2em; }
+  @media print {
+    body { font-size: 11pt; max-width: 100%; padding: 0; }
+    h1, h2, h3 { page-break-after: avoid; }
+    pre, .ascii, .callout, table { page-break-inside: avoid; }
+    .toc { page-break-after: always; }
+  }
+</style>
+</head>
+<body>
+
+<h1>System Design Guide — Complete</h1>
+<div class="meta">
+  Self-contained reference for system design interviews and real-world architecture. Open in browser, or print to PDF.<br>
+  Covers fundamentals, building blocks, scaling techniques, and full worked design walkthroughs.<br>
+  Legend:
+  <span class="tag tag-core">CORE</span> must know
+  <span class="tag tag-concept">CONCEPT</span> foundational idea
+  <span class="tag tag-scale">SCALE</span> scaling technique
+</div>
+
+<div class="toc">
+<h2>Table of Contents</h2>
+<ol>
+  <li><a href="#part-0">Part 0 — The interview framework (how to drive a design)</a></li>
+  <li><a href="#part-1">Part 1 — Back-of-the-envelope estimation</a></li>
+  <li><a href="#part-2">Part 2 — Core concepts: latency, throughput, availability</a></li>
+  <li><a href="#part-3">Part 3 — The CAP theorem &amp; consistency models</a></li>
+  <li><a href="#part-4">Part 4 — Networking, DNS, load balancing</a></li>
+  <li><a href="#part-5">Part 5 — Caching</a></li>
+  <li><a href="#part-6">Part 6 — Databases: SQL vs NoSQL</a></li>
+  <li><a href="#part-7">Part 7 — Replication &amp; partitioning (sharding)</a></li>
+  <li><a href="#part-8">Part 8 — Messaging, queues &amp; event streaming</a></li>
+  <li><a href="#part-9">Part 9 — Microservices, APIs &amp; communication</a></li>
+  <li><a href="#part-10">Part 10 — Storage, CDN &amp; blob systems</a></li>
+  <li><a href="#part-11">Part 11 — Consistency patterns &amp; distributed transactions</a></li>
+  <li><a href="#part-12">Part 12 — Reliability, observability &amp; failure handling</a></li>
+  <li><a href="#part-13">Part 13 — Security &amp; rate limiting</a></li>
+  <li><a href="#part-14">Part 14 — Design patterns &amp; building blocks cheat sheet</a></li>
+  <li><a href="#part-15">Part 15 — Worked design: URL shortener</a></li>
+  <li><a href="#part-16">Part 16 — Worked design: news feed (social network)</a></li>
+  <li><a href="#part-17">Part 17 — Worked design: chat / messaging</a></li>
+  <li><a href="#part-18">Part 18 — Worked design: rate limiter, typeahead &amp; more</a></li>
+  <li><a href="#part-19">Part 19 — Final checklist &amp; numbers to memorize</a></li>
+</ol>
+</div>
+
+<h2 id="part-0">Part 0 — The interview framework <span class="tag tag-core">CORE</span></h2>
+
+<p>A system design interview is open-ended on purpose. The interviewer wants to see <em>how you think</em>, not a memorized answer. The biggest mistake is jumping straight to boxes and arrows. Drive the conversation with a repeatable framework so you never freeze.</p>
+
+<h3>The RESHADED-style flow (use this every time)</h3>
+<ol>
+  <li><strong>Requirements</strong> — clarify functional &amp; non-functional needs. Never skip this.</li>
+  <li><strong>Estimate</strong> — back-of-envelope scale: users, QPS, storage, bandwidth.</li>
+  <li><strong>API design</strong> — define the key endpoints / contracts.</li>
+  <li><strong>Data model</strong> — what entities, what storage.</li>
+  <li><strong>High-level design</strong> — the box-and-arrow diagram.</li>
+  <li><strong>Deep dive</strong> — pick the 1–2 hardest components and detail them.</li>
+  <li><strong>Bottlenecks &amp; scale</strong> — find the weak points, fix with caching/sharding/replication.</li>
+  <li><strong>Wrap up</strong> — trade-offs, what you'd monitor, what you'd do with more time.</li>
+</ol>
+
+<div class="ascii">  TIME BUDGET for a 45-min interview:
+
+  Requirements   |####|                      ~5 min
+  Estimation     |##|                        ~3 min
+  API + data     |###|                       ~5 min
+  High-level     |######|                    ~10 min
+  Deep dive      |#########|                 ~15 min
+  Scale/wrap     |####|                       ~7 min
+                 +-----------------------------------> 
+  Don't spend 20 minutes on requirements, and don't
+  start drawing before you know what you're building.</div>
+
+<h3>Step 1: nail the requirements</h3>
+<p>Spend the first few minutes asking questions. This shows seniority and stops you building the wrong thing.</p>
+<ul>
+  <li><strong>Functional</strong>: What must it do? (e.g., "post a tweet, follow users, view a feed")</li>
+  <li><strong>Non-functional</strong>: How well? (availability, latency, consistency, scale)</li>
+  <li><strong>Scope</strong>: What's explicitly out of scope? Lock it down so you don't sprawl.</li>
+  <li><strong>Scale</strong>: How many users? Read-heavy or write-heavy? Global or regional?</li>
+</ul>
+
+<div class="callout callout-tip">
+  <strong>The read/write ratio drives everything</strong>
+  Ask early: is this read-heavy or write-heavy? A read-heavy system (Twitter feed, ~100:1) leans on caching and read replicas. A write-heavy system (logging, metrics) leans on partitioning, write buffers, and append-only stores. State your assumption out loud and design accordingly.
+</div>
+
+<h3>Functional vs non-functional requirements</h3>
+<table>
+  <tr><th>Functional (what)</th><th>Non-functional (how well)</th></tr>
+  <tr><td>Upload a video</td><td>99.9% availability</td></tr>
+  <tr><td>Search for a user</td><td>&lt; 200 ms p99 latency</td></tr>
+  <tr><td>Send a message</td><td>Handle 10k messages/sec</td></tr>
+  <tr><td>Process a payment</td><td>Strong consistency, no double-charge</td></tr>
+</table>
+
+<hr>
+
+<h2 id="part-1">Part 1 — Back-of-the-envelope estimation <span class="tag tag-core">CORE</span></h2>
+
+<p>Estimation justifies your design choices with numbers. You don't need precision — you need the right order of magnitude. Round aggressively.</p>
+
+<h3>Powers of two &amp; ten you must know</h3>
+<table>
+  <tr><th>Power</th><th>Approx value</th><th>Name</th></tr>
+  <tr><td>2¹⁰</td><td>~1 thousand</td><td>1 KB</td></tr>
+  <tr><td>2²⁰</td><td>~1 million</td><td>1 MB</td></tr>
+  <tr><td>2³⁰</td><td>~1 billion</td><td>1 GB</td></tr>
+  <tr><td>2⁴⁰</td><td>~1 trillion</td><td>1 TB</td></tr>
+  <tr><td>2⁵⁰</td><td>~10¹⁵</td><td>1 PB</td></tr>
+</table>
+
+<h3>Latency numbers every engineer should know</h3>
+<div class="ascii">  Operation                          Time          Relative
+  ----------------------------------------------------------
+  L1 cache reference                 ~1 ns         |
+  L2 cache reference                 ~4 ns         |
+  Main memory (RAM) reference        ~100 ns       |
+  Read 1 MB sequentially from RAM    ~3 us         |
+  SSD random read                    ~16 us        | getting
+  Read 1 MB from SSD                 ~50 us        | slower
+  Round trip within same datacenter  ~500 us       | ||
+  Read 1 MB from disk (HDD)          ~2 ms         | vv
+  Inter-region round trip (US->EU)   ~70-150 ms    |
+  ----------------------------------------------------------
+  RULE OF THUMB:
+    Memory is fast, disk is slow, network is slower,
+    cross-region is slowest. Keep hot data in RAM.</div>
+
+<h3>A worked estimation: Twitter-like service</h3>
+<pre><code>Assume:
+  300M monthly active users
+  50% use it daily            -> 150M daily active users (DAU)
+  Each user posts 2 tweets/day
+
+Write QPS (tweets per second):
+  150M DAU * 2 tweets = 300M tweets/day
+  300M / 86,400 sec   ~= 3,500 tweets/sec  (average)
+  Peak ~= 2x average  ~= 7,000 tweets/sec
+
+Read QPS (timeline views):
+  Each user reads timeline ~20x/day
+  150M * 20 = 3B reads/day
+  3B / 86,400 ~= 35,000 reads/sec  -> READ-HEAVY (~10:1)
+
+Storage (5 years of tweets):
+  Tweet ~= 300 bytes (text + metadata)
+  300M tweets/day * 365 * 5 ~= 550B tweets
+  550B * 300 bytes ~= 165 TB (text only)
+  Media dominates -> petabytes with images/video</code></pre>
+
+<div class="callout callout-tip">
+  <strong>Estimation shortcuts</strong>
+  Seconds in a day ≈ 86,400 ≈ <strong>100,000</strong> (round up for easy math). 1 million writes/day ≈ ~12/sec. Always compute average QPS first, then multiply by 2–3× for peak. State storage in GB/TB/PB so the interviewer can sanity-check your data tier.
+</div>
+
+<hr>
+
+<h2 id="part-2">Part 2 — Core concepts: latency, throughput, availability <span class="tag tag-concept">CONCEPT</span></h2>
+
+<h3>Latency vs throughput</h3>
+<p>They're different and often in tension. <strong>Latency</strong> is how long one request takes. <strong>Throughput</strong> is how many requests you handle per second. A highway analogy: latency is how long your car takes to travel the road; throughput is how many cars pass per minute. Adding lanes (parallelism) raises throughput without lowering any single car's travel time.</p>
+<div class="ascii">  LATENCY (per request)        THROUGHPUT (system-wide)
+  request --[ 200ms ]--> resp   ====> 10,000 req/sec ====>
+
+  Low latency, low throughput:  fast but serves few
+  High latency, high throughput: slow each, serves many
+  Goal: low latency AND high throughput (hard, costs money)</div>
+
+<h3>Measure tail latency, not averages</h3>
+<p>Averages lie. If 1% of requests take 5 seconds, the average may still look fine, but those users are furious. Use <strong>percentiles</strong>: p50 (median), p95, p99, p999. The "tail" (p99+) is what users remember and what cascades into outages.</p>
+<div class="ascii">  latency distribution:
+   count
+    |####
+    |######
+    |########
+    |#########               p50 = 80ms   (typical)
+    |#######  ##             p95 = 250ms
+    |#####     #  #          p99 = 600ms  <- the tail
+    |###        #   # #      p999 = 2s    <- worst 0.1%
+    +----------------------------> latency
+    A few slow requests don't move the average much
+    but ruin the experience for many users at scale.</div>
+
+<h3>Availability: the nines</h3>
+<table>
+  <tr><th>Availability</th><th>Downtime / year</th><th>Downtime / day</th></tr>
+  <tr><td>99% (two nines)</td><td>3.65 days</td><td>14.4 min</td></tr>
+  <tr><td>99.9% (three nines)</td><td>8.77 hours</td><td>1.44 min</td></tr>
+  <tr><td>99.99% (four nines)</td><td>52.6 min</td><td>8.6 sec</td></tr>
+  <tr><td>99.999% (five nines)</td><td>5.26 min</td><td>0.86 sec</td></tr>
+</table>
+
+<p>Each additional nine costs roughly an order of magnitude more in engineering effort. Components in series multiply: two 99.9% services in a chain give 99.9% × 99.9% ≈ 99.8%. Redundancy in parallel improves availability.</p>
+
+<div class="callout callout-warn">
+  <strong>SLA vs SLO vs SLI</strong>
+  An <strong>SLI</strong> (indicator) is the measured metric (e.g., % of requests under 300ms). An <strong>SLO</strong> (objective) is your internal target (99.9%). An <strong>SLA</strong> (agreement) is the contractual promise to customers, usually looser than the SLO, with penalties if breached.
+</div>
+
+<hr>
+
+<h2 id="part-3">Part 3 — The CAP theorem &amp; consistency models <span class="tag tag-concept">CONCEPT</span></h2>
+
+<p>The CAP theorem says a distributed system can guarantee only two of these three during a network partition:</p>
+<ul>
+  <li><strong>C</strong>onsistency — every read sees the most recent write (or an error).</li>
+  <li><strong>A</strong>vailability — every request gets a (non-error) response.</li>
+  <li><strong>P</strong>artition tolerance — the system keeps working despite dropped network messages.</li>
+</ul>
+
+<p>In the real world networks <em>do</em> partition, so P is non-negotiable. The real choice is <strong>C vs A</strong> when a partition happens.</p>
+
+<div class="ascii">        Network partition splits the cluster:
+
+         Node A   X---X   Node B   (can't talk)
+           |               |
+        client1         client2
+
+  CP choice (consistency): refuse writes on the minority
+     side so data never diverges. -> some requests fail.
+     Examples: traditional RDBMS, HBase, MongoDB(default),
+               ZooKeeper, etcd.
+
+  AP choice (availability): accept writes on both sides,
+     reconcile later. -> always answers, may serve stale.
+     Examples: Cassandra, DynamoDB, Riak, CouchDB.</div>
+
+<h3>The consistency spectrum</h3>
+<p>"Consistency" isn't binary. From strongest to weakest:</p>
+<table>
+  <tr><th>Model</th><th>Guarantee</th><th>Use case</th></tr>
+  <tr><td>Strong / linearizable</td><td>Reads always see latest write</td><td>Bank balance, locks</td></tr>
+  <tr><td>Read-your-writes</td><td>You see your own updates</td><td>Profile edits</td></tr>
+  <tr><td>Monotonic reads</td><td>Never go backwards in time</td><td>Timelines</td></tr>
+  <tr><td>Eventual</td><td>Converges if writes stop</td><td>DNS, likes count, feeds</td></tr>
+</table>
+
+<div class="callout callout-tip">
+  <strong>PACELC: the fuller picture</strong>
+  CAP only describes behavior during a partition. PACELC adds: <em>else</em> (when running normally), you still trade <strong>L</strong>atency vs <strong>C</strong>onsistency. Strong consistency requires coordination (more latency); eventual consistency is faster but stale. Most systems tune this per-operation.
+</div>
+
+<hr>
+
+<h2 id="part-4">Part 4 — Networking, DNS, load balancing <span class="tag tag-core">CORE</span></h2>
+
+<h3>What happens when you type a URL</h3>
+<div class="ascii">  browser
+    |  1. DNS lookup: example.com -> 93.184.x.x
+    v
+  DNS resolver --------------------> returns IP
+    |  2. TCP handshake (SYN/SYN-ACK/ACK) + TLS
+    v
+  Load Balancer (the public IP)
+    |  3. picks a healthy backend
+    v
+  +----------+  +----------+  +----------+
+  | server 1 |  | server 2 |  | server 3 |
+  +----------+  +----------+  +----------+
+    |  4. app queries cache/DB, builds response
+    v
+  response travels back -> browser renders</div>
+
+<h3>Load balancing</h3>
+<p>A load balancer spreads traffic across servers so no single machine is overwhelmed, and routes around failed ones. It's the front door to a scalable system.</p>
+
+<h4>Layer 4 vs Layer 7</h4>
+<table>
+  <tr><th>L4 (transport)</th><th>L7 (application)</th></tr>
+  <tr><td>Routes by IP + port</td><td>Routes by URL, headers, cookies</td></tr>
+  <tr><td>Fast, protocol-agnostic</td><td>Smarter, content-aware</td></tr>
+  <tr><td>Can't read request body</td><td>Can do path-based routing, SSL termination</td></tr>
+</table>
+
+<h4>Balancing algorithms</h4>
+<ul>
+  <li><strong>Round robin</strong> — rotate through servers in order. Simple.</li>
+  <li><strong>Least connections</strong> — send to the server with fewest active requests. Good for uneven workloads.</li>
+  <li><strong>Weighted</strong> — bigger servers get more traffic.</li>
+  <li><strong>IP hash / consistent hash</strong> — same client always hits the same server (sticky sessions).</li>
+</ul>
+
+<div class="callout callout-warn">
+  <strong>The load balancer is a single point of failure</strong>
+  If you have one LB, its death takes everything down. Run them in pairs (active-passive or active-active) with a floating IP and health checks. In the cloud, managed LBs (ALB/NLB, Cloud Load Balancing) handle this redundancy for you.
+</div>
+
+<h3>Stateless vs stateful servers</h3>
+<p>Prefer <strong>stateless</strong> application servers: they store no session data locally, so any server can handle any request and you can add/remove them freely. Push state to a shared store (Redis, database). Stateful servers force sticky routing and complicate scaling.</p>
+<div class="ascii">  STATELESS (good):           STATEFUL (avoid if possible):
+   any server, any request      session pinned to server 2
+   session in Redis/DB           if server 2 dies -> logged out
+   add servers freely            scaling = data migration pain
+        client                        client
+       /  |  \                          |
+   srv1 srv2 srv3                     srv2 (only)
+      \  |  /                           |
+    shared session store            local memory</div>
+
+<hr>
+
+<h2 id="part-5">Part 5 — Caching <span class="tag tag-scale">SCALE</span></h2>
+
+<p>A cache stores copies of data closer to where it's needed so you avoid slow recomputation or database hits. Caching is the single highest-leverage scaling technique for read-heavy systems. The principle: most systems access a small "hot" subset of data far more often than the rest (the 80/20 rule).</p>
+
+<h3>Where caches live (closest to farthest from the user)</h3>
+<div class="ascii">  browser cache        (user's device, fastest)
+       |
+  CDN edge cache       (geographically near user)
+       |
+  load balancer / reverse proxy cache
+       |
+  application in-memory cache  (local to server)
+       |
+  distributed cache    (Redis / Memcached cluster)
+       |
+  database             (the source of truth, slowest)
+
+  Each layer absorbs reads so fewer requests reach the DB.</div>
+
+<h3>Cache reading strategies</h3>
+<table>
+  <tr><th>Pattern</th><th>How it works</th><th>Trade-off</th></tr>
+  <tr><td>Cache-aside (lazy)</td><td>App checks cache; on miss, reads DB and populates cache</td><td>Most common; first request is slow, possible staleness</td></tr>
+  <tr><td>Read-through</td><td>Cache itself loads from DB on miss</td><td>Simpler app code; needs cache library support</td></tr>
+  <tr><td>Write-through</td><td>Write to cache and DB together, synchronously</td><td>Cache always fresh; slower writes</td></tr>
+  <tr><td>Write-back</td><td>Write to cache, flush to DB later (async)</td><td>Fast writes; risk of data loss on crash</td></tr>
+</table>
+
+<h3>Cache-aside, step by step (the default you should describe)</h3>
+<div class="ascii">  READ:
+    1. app asks cache for key
+    2. HIT  -> return cached value (fast path)
+       MISS -> read from DB
+            -> write value into cache (with TTL)
+            -> return value
+
+  WRITE:
+    1. write to DB
+    2. invalidate (delete) the cache key
+       (next read repopulates it)
+
+   client --> [cache] --hit--> done
+                 |miss
+                 v
+              [database] --> backfill cache</div>
+
+<h3>Eviction policies</h3>
+<p>A cache has limited memory, so when full it must evict something:</p>
+<ul>
+  <li><strong>LRU</strong> (least recently used) — evict what hasn't been touched longest. Most common default.</li>
+  <li><strong>LFU</strong> (least frequently used) — evict the least-accessed item.</li>
+  <li><strong>FIFO</strong> — evict oldest inserted. Simple but ignores access patterns.</li>
+  <li><strong>TTL</strong> — every entry expires after a fixed time, independent of the above.</li>
+</ul>
+
+<div class="callout callout-warn">
+  <strong>The three cache failure modes</strong>
+  <ul>
+    <li><strong>Cache penetration</strong> — queries for keys that don't exist bypass the cache and hammer the DB. Fix: cache "null" results or use a bloom filter.</li>
+    <li><strong>Cache avalanche</strong> — many keys expire at once, flooding the DB. Fix: jitter the TTLs.</li>
+    <li><strong>Cache stampede</strong> — a hot key expires and thousands of requests rebuild it simultaneously. Fix: locking / single-flight so only one request recomputes.</li>
+  </ul>
+</div>
+
+<div class="callout callout-tip">
+  <strong>Cache invalidation is hard</strong>
+  "There are only two hard things in computer science: cache invalidation and naming things." Stale data is the cost of caching. Decide your tolerance: a likes counter can be seconds stale; a bank balance cannot. Use TTLs for bounded staleness and explicit invalidation on writes for correctness.
+</div>
+
+<hr>
+
+<h2 id="part-6">Part 6 — Databases: SQL vs NoSQL <span class="tag tag-core">CORE</span></h2>
+
+<p>Choosing the right datastore is often the most consequential design decision. There's no universally "better" option — it depends on your access patterns, consistency needs, and scale.</p>
+
+<h3>SQL (relational)</h3>
+<p>Data in tables with fixed schemas and relationships. Strong consistency, powerful queries via joins, and <strong>ACID</strong> transactions. Scales <em>up</em> (bigger machine) more easily than <em>out</em>. Examples: PostgreSQL, MySQL.</p>
+
+<h3>NoSQL (non-relational)</h3>
+<p>Flexible schema, designed to scale <em>out</em> horizontally. Trades joins and strong consistency for throughput and availability. Four main families:</p>
+<table>
+  <tr><th>Type</th><th>Model</th><th>Examples</th><th>Good for</th></tr>
+  <tr><td>Key-value</td><td>key → blob</td><td>Redis, DynamoDB</td><td>Caching, sessions</td></tr>
+  <tr><td>Document</td><td>JSON documents</td><td>MongoDB, Couchbase</td><td>Flexible records, catalogs</td></tr>
+  <tr><td>Wide-column</td><td>rows with dynamic columns</td><td>Cassandra, HBase</td><td>Time-series, huge write volume</td></tr>
+  <tr><td>Graph</td><td>nodes + edges</td><td>Neo4j, Neptune</td><td>Social graphs, recommendations</td></tr>
+</table>
+
+<h3>ACID vs BASE</h3>
+<div class="ascii">  ACID (SQL)                    BASE (NoSQL)
+  -------------------           ----------------------
+  Atomicity                     Basically Available
+  Consistency                   Soft state
+  Isolation                     Eventual consistency
+  Durability
+
+  "All-or-nothing, always       "Stay up and fast,
+   correct" -> safety            converge later" -> scale</div>
+
+<h3>How to choose (say this in the interview)</h3>
+<table>
+  <tr><th>Choose SQL when…</th><th>Choose NoSQL when…</th></tr>
+  <tr><td>Complex queries &amp; joins</td><td>Simple key-based access at scale</td></tr>
+  <tr><td>Strong consistency / transactions (payments)</td><td>Massive write throughput</td></tr>
+  <tr><td>Well-defined, stable schema</td><td>Flexible / evolving schema</td></tr>
+  <tr><td>Moderate scale fits one big box (+ replicas)</td><td>Need horizontal scale across many nodes</td></tr>
+</table>
+
+<div class="callout callout-tip">
+  <strong>"It depends" — but justify it</strong>
+  Don't just say SQL or NoSQL. Tie it to access patterns: "Reads are key-lookups by user_id at very high QPS with flexible fields, so a key-value/document store fits. But the payments piece needs ACID, so I'll keep that in Postgres." Polyglot persistence — different stores for different needs — is a strong senior answer.
+</div>
+
+<h3>Indexes: the read/write trade-off</h3>
+<p>An index is a sorted lookup structure (usually a B-tree) that turns an O(n) table scan into an O(log n) lookup. The cost: every write must also update the index, and indexes consume storage. Index the columns you filter/sort on; don't index everything.</p>
+<div class="ascii">  Without index: WHERE email = 'x'  -> scan all N rows  O(N)
+  With B-tree index on email:       -> tree descent     O(log N)
+
+         [m]
+        /   \
+      [d]   [t]        find 'email' by descending
+     /  \   /  \       the sorted tree, not scanning
+   ... leaves point to rows ...</div>
+
+<hr>
+
+<h2 id="part-7">Part 7 — Replication &amp; partitioning (sharding) <span class="tag tag-scale">SCALE</span></h2>
+
+<p>Two distinct techniques, often confused. <strong>Replication</strong> = copies of the same data for redundancy and read scaling. <strong>Partitioning (sharding)</strong> = splitting different data across machines for write scaling and capacity.</p>
+
+<h3>Replication</h3>
+<div class="ascii">  PRIMARY-REPLICA (a.k.a. master-slave):
+
+       writes
+         |
+         v
+     +---------+   replicate    +---------+   +---------+
+     | PRIMARY | -------------> | REPLICA | | REPLICA |
+     +---------+                +---------+   +---------+
+         ^                          ^             ^
+       writes                     reads         reads
+   
+  Writes go to primary; reads fan out to replicas.
+  Great for READ-HEAVY systems. Replicas can lag slightly
+  (replication lag) -> reads may be momentarily stale.</div>
+
+<table>
+  <tr><th>Mode</th><th>Behavior</th><th>Trade-off</th></tr>
+  <tr><td>Synchronous</td><td>Primary waits for replica to confirm</td><td>No data loss, higher write latency</td></tr>
+  <tr><td>Asynchronous</td><td>Primary replies before replicas catch up</td><td>Fast writes, risk of losing recent writes on failover</td></tr>
+</table>
+
+<p><strong>Multi-primary / leaderless</strong> setups (e.g., Cassandra, Dynamo) accept writes anywhere and reconcile conflicts (last-write-wins, vector clocks, or quorum reads/writes: <code>R + W &gt; N</code>).</p>
+
+<h3>Partitioning (sharding)</h3>
+<p>When data or write volume exceeds one machine, split it. Each shard holds a subset and runs independently.</p>
+<div class="ascii">  All users (too big for one DB):
+  +------------------------------------------+
+  | user 1 ... user 100,000,000              |
+  +------------------------------------------+
+                    | shard by user_id
+        +-----------+-----------+
+        v           v           v
+   +--------+  +--------+  +--------+
+   | shard0 |  | shard1 |  | shard2 |
+   | users  |  | users  |  | users  |
+   | 0-33M  |  | 33-66M |  | 66-100M|
+   +--------+  +--------+  +--------+</div>
+
+<h3>Sharding strategies</h3>
+<table>
+  <tr><th>Strategy</th><th>How</th><th>Risk</th></tr>
+  <tr><td>Range-based</td><td>Split by key ranges (A–M, N–Z)</td><td>Hot spots if data skews to one range</td></tr>
+  <tr><td>Hash-based</td><td><code>hash(key) % N</code> picks shard</td><td>Even spread, but resharding moves most data</td></tr>
+  <tr><td>Consistent hashing</td><td>Keys + nodes on a hash ring</td><td>Adding a node moves only ~1/N of keys</td></tr>
+  <tr><td>Directory-based</td><td>Lookup table maps key → shard</td><td>Flexible, but the directory is a bottleneck/SPOF</td></tr>
+</table>
+
+<h3>Consistent hashing (the interview favorite)</h3>
+<p>Naive <code>hash(key) % N</code> breaks when N changes — almost every key moves to a new shard. Consistent hashing places both keys and nodes on a circular hash ring; each key belongs to the next node clockwise. Adding or removing a node only relocates the keys between it and its neighbor.</p>
+<div class="ascii">          0 / 360
+            o  Node A
+       N_C o     o key1 -> goes to Node A (next clockwise)
+          /        \
+         o          o  Node B
+   key3 o            o key2 -> goes to Node B
+         \          /
+      Node C o----o
+                key... 
+
+  Add Node D between B and C? Only keys in that arc move.
+  Used by: Cassandra, DynamoDB, memcached clients, CDNs.</div>
+
+<div class="callout callout-warn">
+  <strong>Sharding costs you things</strong>
+  Cross-shard joins and transactions become hard or impossible. Queries that don't include the shard key must fan out to all shards (scatter-gather). Choose a shard key that matches your most common access pattern and spreads load evenly. Avoid keys that create hot spots (e.g., sharding by timestamp for append-heavy data).
+</div>
+
+<hr>
+
+<h2 id="part-8">Part 8 — Messaging, queues &amp; event streaming <span class="tag tag-scale">SCALE</span></h2>
+
+<p>Message queues decouple producers from consumers. Instead of calling a service directly and waiting, you drop a message and move on; consumers process at their own pace. This absorbs spikes, enables async work, and isolates failures.</p>
+
+<h3>Synchronous vs asynchronous</h3>
+<div class="ascii">  SYNCHRONOUS (tight coupling):
+    client --> service A --> service B --> service C
+    client waits for the whole chain. If C is slow,
+    everyone waits. If C is down, the request fails.
+
+  ASYNCHRONOUS (via queue):
+    client --> service A --> [ QUEUE ] --> worker
+    A replies immediately ("accepted"). Worker processes
+    later. Spikes buffer in the queue. C down? messages
+    wait safely until it recovers.</div>
+
+<h3>Queue vs pub/sub</h3>
+<table>
+  <tr><th>Message queue (point-to-point)</th><th>Pub/sub (publish-subscribe)</th></tr>
+  <tr><td>Each message consumed by ONE worker</td><td>Each message delivered to ALL subscribers</td></tr>
+  <tr><td>Work distribution, task processing</td><td>Event broadcast, fan-out</td></tr>
+  <tr><td>e.g., SQS, RabbitMQ (work queue)</td><td>e.g., SNS, Kafka topics, Redis pub/sub</td></tr>
+</table>
+
+<div class="ascii">  QUEUE (one consumer gets each job):
+    producer -> [ A B C D ] -> worker1 (gets A, C)
+                            -> worker2 (gets B, D)
+
+  PUB/SUB (every subscriber gets every event):
+                       +-> subscriber 1 (email)
+    publisher -> topic +-> subscriber 2 (analytics)
+                       +-> subscriber 3 (audit log)</div>
+
+<h3>Event streaming (Kafka model)</h3>
+<p>A log-based stream like Kafka keeps an ordered, durable, replayable record of events. Unlike a traditional queue that deletes a message once consumed, the log retains events so multiple consumers can read independently and replay history.</p>
+<div class="ascii">  Kafka topic = an append-only log, split into partitions:
+
+  partition 0: [e0][e1][e2][e3][e4]...   (ordered)
+                          ^         ^
+              consumer-group-A    producer appends here
+              reads at offset 2
+  
+  - Order guaranteed WITHIN a partition (not across).
+  - Consumers track their own offset -> replay anytime.
+  - Partitions enable parallel consumption + scale.</div>
+
+<h3>Delivery guarantees</h3>
+<ul>
+  <li><strong>At-most-once</strong> — may lose messages, never duplicates. (fire and forget)</li>
+  <li><strong>At-least-once</strong> — never lost, but may duplicate. Most common; requires <em>idempotent</em> consumers.</li>
+  <li><strong>Exactly-once</strong> — no loss, no dupes. Hardest and most expensive; often approximated with dedup + idempotency keys.</li>
+</ul>
+
+<div class="callout callout-tip">
+  <strong>Design consumers to be idempotent</strong>
+  Since at-least-once delivery can replay a message, processing it twice must be safe. Use an idempotency key (e.g., dedup on <code>message_id</code>) so "charge card for order 123" runs once even if delivered three times. This single habit prevents a huge class of distributed-systems bugs.
+</div>
+
+<div class="callout callout-warn">
+  <strong>Dead letter queues</strong>
+  A message that repeatedly fails processing shouldn't block the queue forever. After N retries, route it to a Dead Letter Queue (DLQ) for inspection. This isolates "poison" messages and keeps the main pipeline flowing.
+</div>
+
+<hr>
+
+<h2 id="part-9">Part 9 — Microservices, APIs &amp; communication <span class="tag tag-concept">CONCEPT</span></h2>
+
+<h3>Monolith vs microservices</h3>
+<p>A <strong>monolith</strong> is one deployable unit — simple to build and debug, but every change redeploys everything and one bug can crash the whole app. <strong>Microservices</strong> split the system into independently deployable services owned by small teams, at the cost of operational and network complexity.</p>
+<div class="ascii">  MONOLITH                    MICROSERVICES
+  +------------------+        +------+  +------+  +------+
+  | auth | orders    |        | auth |  |orders|  | pay  |
+  | pay  | inventory |        +------+  +------+  +------+
+  +------------------+           |   each: own DB,
+  one codebase, one DB           |   own deploy, own team
+  one deploy                  +------+
+  simple but coupled          |invtry|  network calls between
+                              +------+  them -> complexity</div>
+
+<table>
+  <tr><th>Monolith wins</th><th>Microservices win</th></tr>
+  <tr><td>Small team, early stage</td><td>Large org, many teams</td></tr>
+  <tr><td>Simple deployment</td><td>Independent scaling &amp; deploys</td></tr>
+  <tr><td>Easy local debugging</td><td>Fault isolation, tech diversity</td></tr>
+  <tr><td>No network overhead</td><td>Scale only the hot services</td></tr>
+</table>
+
+<div class="callout callout-tip">
+  <strong>Start with a monolith</strong>
+  Most successful systems begin as a well-structured monolith and extract services only when team size or scaling pain demands it. Premature microservices add distributed-systems complexity (network failures, eventual consistency, distributed tracing) before you can afford it.
+</div>
+
+<h3>API styles</h3>
+<table>
+  <tr><th>Style</th><th>Strength</th><th>Best for</th></tr>
+  <tr><td>REST</td><td>Simple, cacheable, ubiquitous</td><td>Public CRUD APIs</td></tr>
+  <tr><td>GraphQL</td><td>Client picks exactly the fields it needs</td><td>Complex, nested data; mobile</td></tr>
+  <tr><td>gRPC</td><td>Fast binary (protobuf), streaming</td><td>Internal service-to-service</td></tr>
+  <tr><td>WebSocket</td><td>Bidirectional, persistent</td><td>Chat, live updates, gaming</td></tr>
+</table>
+
+<h3>The API Gateway</h3>
+<p>A single entry point in front of many microservices. It handles cross-cutting concerns so each service doesn't have to: authentication, rate limiting, routing, request aggregation, SSL termination, and logging.</p>
+<div class="ascii">                  +-------------+
+   clients  --->  | API GATEWAY |  auth, rate-limit, route
+                  +-------------+
+                    |    |    |
+            +-------+    |    +-------+
+            v            v            v
+        +------+     +------+     +------+
+        | auth |     |orders|     | pay  |
+        +------+     +------+     +------+
+
+  Clients talk to ONE endpoint; the gateway fans out.</div>
+
+<h3>Resilience patterns for service calls</h3>
+<ul>
+  <li><strong>Timeout</strong> — never wait forever on a downstream call.</li>
+  <li><strong>Retry with backoff</strong> — retry transient failures, with exponential delay + jitter (don't retry instantly in a tight loop).</li>
+  <li><strong>Circuit breaker</strong> — after repeated failures, "trip" and fail fast for a while instead of hammering a dying service, then probe to recover.</li>
+  <li><strong>Bulkhead</strong> — isolate resource pools so one failing dependency can't exhaust all threads.</li>
+</ul>
+<div class="ascii">  CIRCUIT BREAKER states:
+
+   CLOSED  --(too many failures)-->  OPEN
+   (calls       requests pass         (fail fast,
+    flow)                              don't even try)
+      ^                                   |
+      |                                   | after cooldown
+      +---(probe succeeds)-- HALF-OPEN <--+
+                            (let a few test calls through)</div>
+
+<hr>
+
+<h2 id="part-10">Part 10 — Storage, CDN &amp; blob systems <span class="tag tag-scale">SCALE</span></h2>
+
+<h3>Storage types</h3>
+<table>
+  <tr><th>Type</th><th>Model</th><th>Examples</th><th>Use for</th></tr>
+  <tr><td>Block storage</td><td>Raw volumes, like a disk</td><td>EBS, attached SSD</td><td>Databases, low-level I/O</td></tr>
+  <tr><td>File storage</td><td>Hierarchical files/dirs</td><td>NFS, EFS</td><td>Shared filesystems</td></tr>
+  <tr><td>Object storage</td><td>Flat key → blob + metadata</td><td>S3, GCS, Azure Blob</td><td>Media, backups, static assets</td></tr>
+</table>
+
+<p><strong>Object storage</strong> is the workhorse for large unstructured data (images, video, logs). It's cheap, virtually infinite, and durable (S3 advertises 11 nines of durability). You store the blob in object storage and keep only a URL/reference in your database — never store large blobs in the DB.</p>
+
+<h3>Content Delivery Network (CDN)</h3>
+<p>A CDN caches static content (images, CSS, JS, video) on edge servers physically close to users worldwide. Instead of every request crossing the globe to your origin, users hit a nearby edge — cutting latency dramatically and offloading your servers.</p>
+<div class="ascii">  WITHOUT CDN:                  WITH CDN:
+  user (Tokyo)                  user (Tokyo)
+     | 150ms                       | 10ms
+     v                             v
+  origin (US)                   edge (Tokyo) -- cache hit!
+                                   | (only on miss)
+                                   v
+                                origin (US)
+
+  Edge caches absorb most reads; origin handles misses
+  and dynamic content. Push (preload) or pull (on-demand).</div>
+
+<div class="callout callout-tip">
+  <strong>Static vs dynamic content</strong>
+  Serve static assets from a CDN and object storage. Keep dynamic, personalized content (your feed, your cart) on application servers, but cache the static shell. Many designs win latency just by correctly separating these two.
+</div>
+
+<h3>Designing a blob upload flow (pre-signed URLs)</h3>
+<p>Don't proxy large uploads through your app servers — it wastes bandwidth and ties up workers. Instead, issue a <strong>pre-signed URL</strong> so the client uploads directly to object storage.</p>
+<div class="ascii">  1. client asks app: "I want to upload photo.jpg"
+  2. app returns a pre-signed S3 URL (short-lived token)
+  3. client uploads the file DIRECTLY to S3
+  4. S3 notifies app (event) -> app saves the object key
+  
+  client ---(1 request)---> app ---(presign)---> client
+  client ---------------(big upload)------------> S3
+  app's bandwidth is never touched by the file itself.</div>
+
+<hr>
+
+<h2 id="part-11">Part 11 — Consistency patterns &amp; distributed transactions <span class="tag tag-concept">CONCEPT</span></h2>
+
+<p>When a single business operation spans multiple services or databases, you can't use one ACID transaction. You need patterns that keep data consistent across boundaries.</p>
+
+<h3>The dual-write problem</h3>
+<p>If you write to a database and then publish an event (or write to a second service), a crash between the two leaves the system inconsistent. The fixes below address this.</p>
+
+<h3>Two-phase commit (2PC)</h3>
+<p>A coordinator asks all participants to "prepare," then "commit" only if all agreed. Strong consistency, but blocking and fragile — if the coordinator dies mid-commit, participants are stuck holding locks. Rarely used at scale.</p>
+<div class="ascii">  Phase 1 (prepare):  coordinator -> "can you commit?"
+                      A: yes   B: yes   C: yes
+  Phase 2 (commit):   coordinator -> "commit!"
+                      all commit together.
+
+  If ANY says no -> everyone aborts.
+  Problem: coordinator crash = participants block. SPOF.</div>
+
+<h3>The Saga pattern (preferred for microservices)</h3>
+<p>Break a distributed transaction into a sequence of local transactions, each with a <strong>compensating action</strong> to undo it. If a step fails, run the compensations in reverse to roll back.</p>
+<div class="ascii">  Book a trip (3 services):
+
+  forward:  reserve flight -> reserve hotel -> charge card
+                 OK              OK             FAILS!
+  compensate: <- cancel flight <- cancel hotel <-+
+  
+  Each step commits locally and emits an event that
+  triggers the next. On failure, compensating
+  transactions undo the prior steps. Eventually consistent.</div>
+
+<table>
+  <tr><th>Orchestration saga</th><th>Choreography saga</th></tr>
+  <tr><td>Central coordinator directs each step</td><td>Services react to each other's events</td></tr>
+  <tr><td>Easier to monitor &amp; debug</td><td>More decoupled, no central point</td></tr>
+  <tr><td>Coordinator is a focal point</td><td>Hard to track the overall flow</td></tr>
+</table>
+
+<h3>Outbox pattern (solving dual-write)</h3>
+<p>Write the business change and an "event to publish" into the same database transaction (the outbox table). A separate process reads the outbox and publishes to the message broker. Now the DB write and the intent-to-publish are atomic.</p>
+<div class="ascii">  ONE local transaction:
+    +-- update orders table
+    +-- insert row into OUTBOX table   (atomic together)
+  
+  Separate relay process:
+    poll OUTBOX -> publish to Kafka -> mark row sent
+  
+  No lost events: if the order committed, the event row
+  did too, and the relay will eventually publish it.</div>
+
+<div class="callout callout-tip">
+  <strong>CQRS &amp; event sourcing (advanced)</strong>
+  <strong>CQRS</strong> separates the write model from the read model — you write to one optimized store and serve reads from another (often denormalized) view. <strong>Event sourcing</strong> stores the full sequence of state-changing events as the source of truth, rebuilding current state by replaying them. Powerful for audit trails and complex domains, but adds significant complexity — mention them, don't reach for them by default.
+</div>
+
+<hr>
+
+<h2 id="part-12">Part 12 — Reliability, observability &amp; failure handling <span class="tag tag-core">CORE</span></h2>
+
+<p>At scale, failure is constant — disks die, networks blip, deploys go bad. Reliable systems are designed to <em>expect</em> failure and degrade gracefully rather than collapse.</p>
+
+<h3>Eliminate single points of failure (SPOF)</h3>
+<div class="ascii">  SPOF (one of everything):       REDUNDANT (no SPOF):
+   client                          client
+     |                            /      \
+   1 LB    <- dies = outage     LB1      LB2  (failover)
+     |                            \      /
+   1 server                      server pool (N+1)
+     |                              |
+   1 DB    <- dies = outage    primary + replicas
+                                 (auto-failover)
+  
+  Rule: for every critical component, ask
+  "what happens when this one instance dies?"</div>
+
+<h3>Redundancy &amp; failover</h3>
+<ul>
+  <li><strong>Active-passive</strong> — standby takes over when primary fails (failover delay, simpler).</li>
+  <li><strong>Active-active</strong> — all instances serve traffic; failure just removes capacity (no failover gap, more complex).</li>
+  <li><strong>N+1 / N+2</strong> — provision enough spare capacity to survive 1 (or 2) node losses.</li>
+</ul>
+
+<h3>Graceful degradation</h3>
+<p>When a dependency fails, serve a reduced experience instead of an error. If the recommendation service is down, show generic popular items. If the avatar service is down, show a default avatar. The core function keeps working.</p>
+
+<h3>Observability: the three pillars</h3>
+<div class="ascii">  +-----------+   +-----------+   +-----------+
+  |  METRICS  |   |   LOGS    |   |  TRACES   |
+  +-----------+   +-----------+   +-----------+
+  numbers over    timestamped     follow ONE
+  time: QPS,      events: errors, request across
+  latency, CPU    debug detail    all services
+  "IS something   "WHY did it      "WHERE did the
+   wrong?"         happen?"          time/error go?"
+
+  Together they answer: is it broken, why, and where.</div>
+
+<table>
+  <tr><th>Pillar</th><th>Answers</th><th>Tools</th></tr>
+  <tr><td>Metrics</td><td>Is something wrong? (alerting)</td><td>Prometheus, CloudWatch, Datadog</td></tr>
+  <tr><td>Logs</td><td>What exactly happened?</td><td>ELK, Loki, CloudWatch Logs</td></tr>
+  <tr><td>Traces</td><td>Where in the call chain?</td><td>Jaeger, X-Ray, OpenTelemetry</td></tr>
+</table>
+
+<div class="callout callout-warn">
+  <strong>Health checks &amp; heartbeats</strong>
+  Load balancers and orchestrators (Kubernetes) poll each instance's health endpoint. A <strong>liveness</strong> check asks "are you alive?" (restart if not); a <strong>readiness</strong> check asks "can you take traffic?" (route around if not). Distinguishing them prevents sending requests to a booting or overloaded instance.
+</div>
+
+<div class="callout callout-tip">
+  <strong>Design for failure explicitly</strong>
+  In the interview, proactively name failure modes: "If this cache cluster dies, reads fall through to the DB — so I'll size the DB to survive a cache outage, or accept degraded latency." Naming and handling failure is a senior signal.
+</div>
+
+<hr>
+
+<h2 id="part-13">Part 13 — Security &amp; rate limiting <span class="tag tag-core">CORE</span></h2>
+
+<h3>Authentication vs authorization</h3>
+<ul>
+  <li><strong>Authentication (authn)</strong> — who are you? (login, tokens, sessions)</li>
+  <li><strong>Authorization (authz)</strong> — what are you allowed to do? (roles, permissions)</li>
+</ul>
+
+<h3>Tokens &amp; sessions</h3>
+<table>
+  <tr><th>Session-based</th><th>Token-based (JWT)</th></tr>
+  <tr><td>Server stores session; client holds session ID</td><td>Self-contained signed token; server stores nothing</td></tr>
+  <tr><td>Easy to revoke (delete session)</td><td>Hard to revoke before expiry</td></tr>
+  <tr><td>Needs shared session store to scale</td><td>Stateless, scales horizontally</td></tr>
+</table>
+
+<h3>Security essentials to mention</h3>
+<ul>
+  <li><strong>Encrypt in transit</strong> (TLS everywhere) and <strong>at rest</strong> (disk/DB encryption).</li>
+  <li><strong>Hash passwords</strong> with a slow salted hash (bcrypt, Argon2) — never store plaintext or fast hashes.</li>
+  <li><strong>Validate &amp; sanitize input</strong> — prevent SQL injection (parameterized queries), XSS, etc.</li>
+  <li><strong>Principle of least privilege</strong> — every service/user gets only the access it needs.</li>
+  <li><strong>Secrets management</strong> — keep keys in a vault (AWS Secrets Manager, HashiCorp Vault), not in code.</li>
+</ul>
+
+<h3>Rate limiting algorithms</h3>
+<p>Rate limiting protects against abuse, runaway clients, and cascading overload. Four common algorithms:</p>
+<table>
+  <tr><th>Algorithm</th><th>Idea</th><th>Note</th></tr>
+  <tr><td>Token bucket</td><td>Tokens refill at a rate; each request spends one</td><td>Allows bursts up to bucket size. Most popular.</td></tr>
+  <tr><td>Leaky bucket</td><td>Requests queue and drain at a fixed rate</td><td>Smooths bursts into a steady flow</td></tr>
+  <tr><td>Fixed window</td><td>Count per time window (e.g., 100/min)</td><td>Simple but allows 2x burst at window edges</td></tr>
+  <tr><td>Sliding window</td><td>Rolling count over the last interval</td><td>Smoother, more accurate, more state</td></tr>
+</table>
+<div class="ascii">  TOKEN BUCKET:
+    bucket holds up to 10 tokens, refills 1/sec
+    
+    [* * * * * * * * * *]  full -> burst of 10 allowed
+    request -> take a token (* -> _)
+    [* * * * * * * * * _]
+    empty bucket -> requests rejected (429) until refill
+
+  Allows short bursts while capping the long-run rate.</div>
+
+<div class="callout callout-tip">
+  <strong>Where to rate limit</strong>
+  Apply limits at the API gateway / edge so abusive traffic is rejected before consuming backend resources. In a distributed setup, store counters in a shared fast store (Redis) so the limit is enforced globally, not per-server. Return HTTP 429 with a <code>Retry-After</code> header.
+</div>
+
+<hr>
+
+<h2 id="part-14">Part 14 — Design patterns &amp; building blocks cheat sheet</h2>
+
+<h3>The building blocks and what each solves</h3>
+<table>
+  <tr><th>Building block</th><th>Solves</th><th>When to add it</th></tr>
+  <tr><td>Load balancer</td><td>Distribute traffic, remove SPOF</td><td>More than one server</td></tr>
+  <tr><td>Cache (Redis)</td><td>Slow repeated reads</td><td>Read-heavy, hot keys</td></tr>
+  <tr><td>CDN</td><td>High-latency static content</td><td>Global users, media/assets</td></tr>
+  <tr><td>Read replicas</td><td>Read scaling</td><td>Reads &gt;&gt; writes</td></tr>
+  <tr><td>Sharding</td><td>Data/writes exceed one node</td><td>Write-heavy, huge dataset</td></tr>
+  <tr><td>Message queue</td><td>Spiky load, async work</td><td>Decouple, buffer, background jobs</td></tr>
+  <tr><td>Object storage</td><td>Large blobs (media)</td><td>Files, images, video, backups</td></tr>
+  <tr><td>Search index (Elasticsearch)</td><td>Full-text / complex search</td><td>Search features</td></tr>
+  <tr><td>API gateway</td><td>Cross-cutting concerns</td><td>Many microservices</td></tr>
+</table>
+
+<h3>The standard scaling journey</h3>
+<p>Most systems evolve along the same path as load grows. Knowing this lets you say "we'd start simple and add X when we hit Y."</p>
+<div class="ascii">  STAGE 1: single server (app + DB on one box)
+     client -> [ server + DB ]
+
+  STAGE 2: split tiers, add a load balancer
+     client -> LB -> [app][app] -> [ DB ]
+
+  STAGE 3: add caching + read replicas
+     client -> LB -> [app][app] -> cache
+                                 -> primary DB -> replicas
+
+  STAGE 4: CDN, queues, shard the DB, microservices
+     client -> CDN -> LB -> gateway -> services
+                                    -> queue -> workers
+                                    -> sharded DBs + caches</div>
+
+<h3>Trade-off vocabulary (sprinkle these in)</h3>
+<ul>
+  <li>Consistency vs availability (CAP) and latency (PACELC)</li>
+  <li>Read performance vs write performance (indexes, denormalization)</li>
+  <li>Latency vs throughput</li>
+  <li>Strong vs eventual consistency</li>
+  <li>Normalization (less duplication) vs denormalization (faster reads)</li>
+  <li>Push (precompute) vs pull (compute on read)</li>
+  <li>Cost vs performance vs complexity</li>
+</ul>
+
+<div class="callout callout-tip">
+  <strong>Push vs pull — a recurring decision</strong>
+  Should you precompute and store a result (push, fast reads, heavy writes/storage) or compute it on demand (pull, cheap writes, slower reads)? The news-feed "fan-out" question below is the classic example. The right answer often depends on the read/write ratio and on outliers (celebrities).
+</div>
+
+<hr>
+
+<h2 id="part-15">Part 15 — Worked design: URL shortener (TinyURL) <span class="tag tag-core">CORE</span></h2>
+
+<p>A great warm-up problem that touches encoding, storage, caching, and read-heavy scale.</p>
+
+<h3>1. Requirements</h3>
+<ul>
+  <li><strong>Functional</strong>: shorten a long URL; redirect a short URL to the original; optional custom alias and expiry.</li>
+  <li><strong>Non-functional</strong>: highly available, low-latency redirects, short codes, massively read-heavy.</li>
+</ul>
+
+<h3>2. Estimation</h3>
+<pre><code>100M new URLs/day -> ~1,200 writes/sec
+Read:write ~= 100:1 -> ~120,000 redirects/sec  (READ-HEAVY)
+Store 5 years: 100M * 365 * 5 ~= 180B URLs
+Each record ~500 bytes -> ~90 TB</code></pre>
+
+<h3>3. The core question: how to generate the short code?</h3>
+<p>A short code is just the long URL's ID encoded in base62 (<code>a-z A-Z 0-9</code>). Base62 packs more values into fewer characters than base10.</p>
+<div class="ascii">  62^6 = ~56 billion   6 chars
+  62^7 = ~3.5 trillion 7 chars   -> plenty of space
+
+  Approach A: auto-increment ID -> base62 encode it
+     id 125 -> "cb"   (sequential, predictable)
+  Approach B: hash(URL) -> take first 7 chars
+     risk of collisions -> check &amp; retry
+  Approach C: pre-generate keys with a Key Generation
+     Service (KGS) and hand them out -> no collisions,
+     no encoding at write time. (often preferred)</div>
+
+<h3>4. API &amp; data model</h3>
+<pre><code>POST /shorten   { long_url, custom_alias?, expiry? }  -> { short_url }
+GET  /{code}    -> 301/302 redirect to long_url
+
+Table urls:
+  short_code (PK)  | long_url | created_at | expiry | user_id</code></pre>
+
+<h3>5. High-level design</h3>
+<div class="ascii">  CREATE:
+   client -> LB -> app -> get key from KGS
+                       -> store {code -> long_url} in DB
+                       -> return short URL
+
+  REDIRECT (the hot path, 100x more traffic):
+   client -> LB -> app -> check CACHE for code
+                            hit -> 302 redirect (fast!)
+                            miss-> read DB, cache it, redirect
+
+   +--------+   +-----+   +-------+   +-------------+
+   | client |-->| LB  |-->|  app  |-->| Redis cache |
+   +--------+   +-----+   +-------+   +-------------+
+                              |  miss      |
+                              v            v
+                          +----------------------+
+                          | DB (key-value store) |
+                          +----------------------+</div>
+
+<h3>6. Scale &amp; trade-offs</h3>
+<ul>
+  <li>Redirects are read-heavy → aggressive caching (Redis) + CDN; cache hit serves in single-digit ms.</li>
+  <li>Data is simple key→value at huge scale → a NoSQL key-value store (DynamoDB/Cassandra) shards naturally by code.</li>
+  <li>301 (permanent) caches in the browser and skips your server on repeat visits, but kills click analytics; 302 (temporary) keeps every redirect coming to you. Pick based on whether you need analytics.</li>
+  <li>Custom aliases need a uniqueness check; expiry needs a background cleanup job.</li>
+</ul>
+
+<hr>
+
+<h2 id="part-16">Part 16 — Worked design: news feed (Twitter/Facebook) <span class="tag tag-scale">SCALE</span></h2>
+
+<p>The canonical "fan-out" problem. The whole interview hinges on one decision: compute the feed on write or on read?</p>
+
+<h3>1. Requirements</h3>
+<ul>
+  <li><strong>Functional</strong>: post content; follow users; view a home feed of followees' posts, newest first.</li>
+  <li><strong>Non-functional</strong>: feed loads fast (&lt; 200ms), read-heavy, eventual consistency is fine (a post can appear a few seconds late).</li>
+</ul>
+
+<h3>2. The central decision: fan-out on write vs read</h3>
+<div class="ascii">  FAN-OUT ON WRITE (push):
+    when Alice posts, immediately insert that post into
+    the precomputed feed cache of EVERY follower.
+    
+    Alice posts -> [push to follower1 feed]
+                -> [push to follower2 feed]
+                -> [push to followerN feed]
+    
+    + Reads are instant (feed already built)
+    - Writes are expensive; a user with 50M followers
+      triggers 50M writes ("celebrity problem")
+
+  FAN-OUT ON READ (pull):
+    build the feed when the user opens the app, by
+    fetching recent posts from everyone they follow.
+    
+    Bob opens app -> fetch posts from all followees
+                  -> merge + sort by time -> show
+    
+    + Writes are cheap (just store the post once)
+    - Reads are expensive &amp; slow (query many users live)</div>
+
+<h3>3. The hybrid answer (what to actually say)</h3>
+<p>Use <strong>fan-out on write for most users</strong> (fast reads), but <strong>fan-out on read for celebrities</strong> (avoid millions of writes per post). At read time, merge a user's precomputed feed with the latest posts from the few celebrities they follow.</p>
+
+<div class="ascii">  normal followee posts -> pushed into your feed cache
+  celebrity posts       -> NOT pushed (too many followers)
+
+  when you open the app:
+     your precomputed feed  (from normal users)
+       +  live-fetch recent celebrity posts you follow
+       =  merge, sort, return
+  
+  Best of both: cheap celebrity writes, fast normal reads.</div>
+
+<h3>4. High-level design</h3>
+<div class="ascii">  WRITE PATH:
+   post -> post service -> store in DB
+                        -> enqueue fan-out job
+   fan-out worker -> push post id into followers'
+                     feed cache (Redis list per user)
+
+  READ PATH:
+   GET feed -> feed service -> read user's feed cache
+                            -> merge celebrity posts
+                            -> hydrate post details (cache/DB)
+                            -> return page
+
+   [post svc]->[queue]->[fan-out workers]->[feed cache]
+                                                 ^
+   client -> [feed svc] ----------------------- + -> DB</div>
+
+<h3>5. Scale &amp; trade-offs</h3>
+<ul>
+  <li>Feed cache (Redis) stores post IDs only; hydrate full content separately so cache stays small.</li>
+  <li>Fan-out is async via a queue so posting feels instant and spikes are absorbed.</li>
+  <li>Eventual consistency is acceptable — a slight delay before a post appears is fine.</li>
+  <li>Store media in object storage + CDN; the feed holds references, not blobs.</li>
+  <li>Paginate with cursors (not offsets) for stable, efficient infinite scroll.</li>
+</ul>
+
+<hr>
+
+<h2 id="part-17">Part 17 — Worked design: chat / messaging (WhatsApp) <span class="tag tag-scale">SCALE</span></h2>
+
+<p>Tests real-time delivery, connection management, and presence — a different flavor from request/response systems.</p>
+
+<h3>1. Requirements</h3>
+<ul>
+  <li><strong>Functional</strong>: 1:1 messaging, group chat, delivery/read receipts, online presence, message history.</li>
+  <li><strong>Non-functional</strong>: real-time (low latency), reliable delivery (no lost messages), ordered within a conversation.</li>
+</ul>
+
+<h3>2. The key insight: persistent connections</h3>
+<p>HTTP request/response can't push a message to a user the instant it arrives. Chat needs a <strong>persistent bidirectional connection</strong> — typically WebSocket — so the server can push to the client at any time.</p>
+<div class="ascii">  POLLING (bad):  client repeatedly asks "anything new?"
+     wasteful, laggy.
+
+  WEBSOCKET (good): one long-lived connection, both
+     sides push anytime.
+     
+     client A  <==== persistent WS ====>  chat server
+                                              ^
+     client B  <==== persistent WS ==========+
+     
+  Server holds millions of open connections, mapping
+  user_id -> which server holds their connection.</div>
+
+<h3>3. How a message flows</h3>
+<div class="ascii">  1. A sends msg over its WebSocket to chat-server-1
+  2. server persists msg (so it's not lost) + assigns ID
+  3. look up: which server holds B's connection?
+        (a session registry: user_id -> server, in Redis)
+  4. route msg to chat-server-2 (B's server)
+  5. server-2 pushes msg down B's WebSocket
+  6. B's client ACKs -> sender sees "delivered"
+  
+  If B is OFFLINE: store in B's inbox/queue; deliver
+  when B reconnects (and send a push notification).</div>
+
+<h3>4. Core components</h3>
+<ul>
+  <li><strong>Connection/gateway servers</strong> — hold the WebSocket connections (stateful; one user pinned to one server).</li>
+  <li><strong>Session registry</strong> — maps <code>user_id → connection server</code> (Redis), so servers can route to each other.</li>
+  <li><strong>Message store</strong> — persists messages; a wide-column store (Cassandra) suits the huge write volume and "fetch recent messages by conversation" access pattern.</li>
+  <li><strong>Presence service</strong> — tracks online/offline via heartbeats; last-seen timestamps.</li>
+  <li><strong>Push notification service</strong> — for offline users (APNs/FCM).</li>
+</ul>
+
+<h3>5. Scale &amp; trade-offs</h3>
+<ul>
+  <li>Connection servers are stateful — use a load balancer that supports sticky WebSocket connections, and a registry so any server can reach any user.</li>
+  <li>Ordering: assign a per-conversation sequence number; clients sort by it. A single partition per conversation preserves order.</li>
+  <li>Group chat is fan-out: deliver to each online member's connection; store once per recipient inbox or once per conversation depending on read pattern.</li>
+  <li>Delivery guarantee: persist before ACK, dedup on message ID, retry on reconnect → at-least-once with idempotent clients.</li>
+  <li>End-to-end encryption (if required) means the server only routes ciphertext.</li>
+</ul>
+
+<hr>
+
+<h2 id="part-18">Part 18 — More worked designs (rate limiter, typeahead, notifications) <span class="tag tag-concept">CONCEPT</span></h2>
+
+<h3>Distributed rate limiter</h3>
+<p><em>Limit each user to N requests per window across a fleet of servers.</em> The challenge: the count must be shared, or each server enforces its own limit and the global rate is N × servers.</p>
+<div class="ascii">  Per-server counters (WRONG): user gets N * serverCount
+  
+  Shared counter in Redis (RIGHT):
+     every server INCR a Redis key per user+window
+     reject when the count exceeds N
+  
+   srv1 --INCR user:123--+
+   srv2 --INCR user:123--+--> [ Redis ] -> count, enforce
+   srv3 --INCR user:123--+
+  
+  Token bucket implemented with Redis atomic ops (or a
+  Lua script) keeps it correct under concurrency.</div>
+<p>Put the limiter at the API gateway, fail fast with HTTP 429, and use a sliding window or token bucket for smoothness. Accept tiny inaccuracy for performance.</p>
+
+<h3>Typeahead / autocomplete</h3>
+<p><em>Suggest completions as the user types, in &lt; 100ms.</em> The data structure is a <strong>trie</strong> (prefix tree); precompute the top-K suggestions at each node so a lookup is a quick descent, not a search.</p>
+<div class="ascii">  trie for "ca", "cat", "car", "card":
+        (root)
+          |c
+          (c)
+          |a
+          (a)  top-K here: [cat, car, card...]
+         /   \
+       (t)   (r)
+              |d
+             (d)
+  
+  type "ca" -> jump to that node -> return its cached
+  top-K list. Build offline from search-frequency logs;
+  refresh periodically. Cache hot prefixes in Redis.</div>
+
+<h3>Notification system</h3>
+<p><em>Send email / SMS / push to millions of users.</em> Decouple producers from senders with queues, and isolate each channel so one slow provider doesn't block the others.</p>
+<div class="ascii">  event -> notification service -> [ queue per channel ]
+                                      |        |       |
+                                    email     sms     push
+                                    worker   worker   worker
+                                      |        |       |
+                                  SendGrid  Twilio   APNs/FCM
+  
+  - rate-limit per provider, retry with backoff + DLQ
+  - dedup so users aren't spammed (idempotency keys)
+  - respect user preferences / opt-outs
+  - template service for content</div>
+
+<div class="callout callout-tip">
+  <strong>Notice the recurring building blocks</strong>
+  Every design above reuses the same parts: a load balancer, a cache, a queue for async work, a sharded datastore, and idempotent processing. System design is largely about combining a small set of well-understood components to fit the specific read/write pattern and consistency needs.
+</div>
+
+<hr>
+
+<h2 id="part-19">Part 19 — Final checklist &amp; numbers to memorize</h2>
+
+<h3>The interview checklist</h3>
+<ol>
+  <li>Clarify functional + non-functional requirements; state scope.</li>
+  <li>Estimate scale (QPS, storage, bandwidth); identify read vs write heavy.</li>
+  <li>Sketch the API and data model.</li>
+  <li>Draw the high-level architecture (client → LB → app → cache → DB).</li>
+  <li>Deep-dive the 1–2 hardest components.</li>
+  <li>Find bottlenecks; apply caching, replication, sharding, queues.</li>
+  <li>Address reliability (SPOF, failover) and observability.</li>
+  <li>State trade-offs out loud; mention what you'd do with more time.</li>
+</ol>
+
+<h3>Numbers worth memorizing</h3>
+<table>
+  <tr><th>Quantity</th><th>Value</th></tr>
+  <tr><td>Memory reference</td><td>~100 ns</td></tr>
+  <tr><td>SSD random read</td><td>~16 µs</td></tr>
+  <tr><td>Same-DC round trip</td><td>~0.5 ms</td></tr>
+  <tr><td>Disk (HDD) seek</td><td>~2–10 ms</td></tr>
+  <tr><td>Cross-region round trip</td><td>~70–150 ms</td></tr>
+  <tr><td>Seconds in a day</td><td>~86,400 (≈100k)</td></tr>
+  <tr><td>Char (ASCII)</td><td>1 byte</td></tr>
+  <tr><td>Typical small record</td><td>~100 bytes – 1 KB</td></tr>
+  <tr><td>1 server modern QPS</td><td>~1k–10k (varies hugely)</td></tr>
+  <tr><td>99.9% availability</td><td>~8.7 hrs downtime/year</td></tr>
+</table>
+
+<h3>The mantras</h3>
+<ul>
+  <li><strong>Clarify before you design.</strong> Wrong assumptions waste the whole interview.</li>
+  <li><strong>Read-heavy? Cache and replicate. Write-heavy? Partition and queue.</strong></li>
+  <li><strong>Everything is a trade-off.</strong> There's no "best" — only "best for these requirements."</li>
+  <li><strong>Design for failure.</strong> Assume every component will die; plan the response.</li>
+  <li><strong>Start simple, scale when needed.</strong> Don't over-engineer for scale you don't have.</li>
+  <li><strong>Keep app servers stateless.</strong> Push state to shared stores so you can scale horizontally.</li>
+  <li><strong>Make operations idempotent.</strong> Retries and at-least-once delivery demand it.</li>
+</ul>
+
+<div class="callout callout-tip">
+  <strong>Final advice</strong>
+  There's no single correct answer in system design — interviewers want to see structured thinking, sensible trade-offs, and the ability to go deep when probed. Drive the conversation with the framework, justify every choice with requirements and numbers, and proactively name the weaknesses of your own design. That self-awareness is what separates senior candidates.
+</div>
+
+<hr>
+<div class="meta">End of system design guide. Pair this with practice: pick a well-known product, set a 45-minute timer, and design it end-to-end out loud. Review the numbers and the framework the morning of your interview.</div>
+
+</body>
+</html>

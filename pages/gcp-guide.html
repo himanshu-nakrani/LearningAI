@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Google Cloud Platform Guide — Complete</title>
+<style>
+  :root {
+    --fg: #1a1a1a;
+    --muted: #555;
+    --bg: #fdfdfc;
+    --accent: #1a73e8;
+    --accent-soft: #e8f0fe;
+    --border: #d4d4d0;
+    --code-bg: #f4f1ec;
+    --code-fg: #2a2a2a;
+    --warn-bg: #fff8e0;
+    --warn-bd: #e0c560;
+    --tip-bg: #e8f3eb;
+    --tip-bd: #6ba577;
+    --gap-bg: #fbe8e6;
+    --gap-bd: #b8453a;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: Charter, "Iowan Old Style", Georgia, serif;
+    color: var(--fg);
+    background: var(--bg);
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 30px 80px;
+    line-height: 1.65;
+    font-size: 17px;
+  }
+  h1, h2, h3, h4 {
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+    color: var(--fg);
+    line-height: 1.25;
+    margin-top: 1.8em;
+    margin-bottom: 0.5em;
+  }
+  h1 {
+    font-size: 2.2em;
+    border-bottom: 3px solid var(--accent);
+    padding-bottom: 12px;
+    margin-top: 0.5em;
+  }
+  h2 {
+    font-size: 1.6em;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 6px;
+    margin-top: 2.5em;
+  }
+  h3 { font-size: 1.25em; color: var(--accent); }
+  h4 { font-size: 1.05em; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600; }
+  p, ul, ol { margin: 0.6em 0; }
+  ul, ol { padding-left: 1.6em; }
+  li { margin: 0.3em 0; }
+  code {
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    background: var(--code-bg);
+    color: var(--code-fg);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 0.88em;
+  }
+  pre {
+    background: var(--code-bg);
+    color: var(--code-fg);
+    padding: 14px 18px;
+    border-radius: 6px;
+    border-left: 3px solid var(--accent);
+    overflow-x: auto;
+    font-size: 0.85em;
+    line-height: 1.5;
+  }
+  pre code { background: none; padding: 0; font-size: 1em; }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 1em 0;
+    font-size: 0.92em;
+  }
+  th, td {
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: left;
+    vertical-align: top;
+  }
+  th { background: var(--code-bg); font-weight: 600; }
+  blockquote {
+    border-left: 3px solid var(--muted);
+    margin: 1em 0;
+    padding: 0.4em 1em;
+    color: var(--muted);
+    font-style: italic;
+  }
+  .tag {
+    display: inline-block;
+    font-size: 0.7em;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 3px;
+    margin-left: 6px;
+    vertical-align: middle;
+    font-family: -apple-system, sans-serif;
+    letter-spacing: 0.04em;
+  }
+  .tag-core { background: #1a73e8; color: white; }
+  .tag-concept { background: #4a7ba6; color: white; }
+  .tag-prod { background: #b8453a; color: white; }
+  .callout {
+    padding: 12px 18px;
+    margin: 1em 0;
+    border-radius: 6px;
+    border-left: 4px solid;
+  }
+  .callout-warn { background: var(--warn-bg); border-color: var(--warn-bd); }
+  .callout-tip { background: var(--tip-bg); border-color: var(--tip-bd); }
+  .callout-gap { background: var(--gap-bg); border-color: var(--gap-bd); }
+  .callout strong { display: block; margin-bottom: 4px; font-family: -apple-system, sans-serif; }
+  .toc {
+    background: var(--code-bg);
+    padding: 20px 28px;
+    border-radius: 8px;
+    margin: 2em 0;
+  }
+  .toc h2 { margin-top: 0; border: none; }
+  .toc ol { padding-left: 1.4em; }
+  .toc a { color: var(--accent); text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+  .ascii {
+    font-family: "SF Mono", Menlo, monospace;
+    white-space: pre;
+    background: var(--code-bg);
+    padding: 14px 18px;
+    border-radius: 6px;
+    border-left: 3px solid var(--accent);
+    overflow-x: auto;
+    font-size: 0.78em;
+    line-height: 1.4;
+  }
+  hr { border: none; border-top: 1px solid var(--border); margin: 2.5em 0; }
+  .meta { color: var(--muted); font-size: 0.9em; margin-bottom: 2em; }
+  @media print {
+    body { font-size: 11pt; max-width: 100%; padding: 0; }
+    h1, h2, h3 { page-break-after: avoid; }
+    pre, .ascii, .callout, table { page-break-inside: avoid; }
+    .toc { page-break-after: always; }
+  }
+</style>
+</head>
+<body>
+
+<h1>Google Cloud Platform Guide — Complete</h1>
+<div class="meta">
+  Self-contained reference for Google Cloud (GCP). Open in browser, or print to PDF.<br>
+  Covers the resource hierarchy, core services across every category, networking, and Google's leading AI/data stack.<br>
+  Service names current as of 2026; verify specifics in docs.<br>
+  Legend:
+  <span class="tag tag-core">CORE</span> must know
+  <span class="tag tag-concept">CONCEPT</span> foundational idea
+  <span class="tag tag-prod">PROD</span> production concern
+</div>
+
+<div class="toc">
+<h2>Table of Contents</h2>
+<ol>
+  <li><a href="#part-0">Part 0 — Mental model &amp; global infrastructure</a></li>
+  <li><a href="#part-1">Part 1 — Resource hierarchy &amp; projects</a></li>
+  <li><a href="#part-2">Part 2 — Identity &amp; access (IAM)</a></li>
+  <li><a href="#part-3">Part 3 — Compute</a></li>
+  <li><a href="#part-4">Part 4 — Containers &amp; Kubernetes (GKE)</a></li>
+  <li><a href="#part-5">Part 5 — Serverless</a></li>
+  <li><a href="#part-6">Part 6 — Storage</a></li>
+  <li><a href="#part-7">Part 7 — Databases</a></li>
+  <li><a href="#part-8">Part 8 — Networking</a></li>
+  <li><a href="#part-9">Part 9 — Messaging &amp; integration</a></li>
+  <li><a href="#part-10">Part 10 — Data &amp; analytics (BigQuery &amp; friends)</a></li>
+  <li><a href="#part-11">Part 11 — AI &amp; machine learning (Vertex AI &amp; Gemini)</a></li>
+  <li><a href="#part-12">Part 12 — DevOps, IaC &amp; observability</a></li>
+  <li><a href="#part-13">Part 13 — Security &amp; cost management</a></li>
+  <li><a href="#part-14">Part 14 — Architecture patterns &amp; cheat sheet</a></li>
+</ol>
+</div>
+
+<h2 id="part-0">Part 0 — Mental model &amp; global infrastructure <span class="tag tag-core">CORE</span></h2>
+
+<p>Google Cloud Platform runs your workloads on the same global infrastructure that powers Google Search, Gmail, and YouTube. Its differentiators are a famously fast global network, data &amp; analytics (BigQuery), Kubernetes (which Google created), and cutting-edge AI (Gemini, Vertex AI, TPUs).</p>
+
+<h3>The geographic hierarchy</h3>
+<div class="ascii">  MULTI-REGION (e.g. "US", "EU" — for geo-redundant data)
+    +-- REGION (e.g. "us-central1" — independent geo area)
+    |     +-- ZONE us-central1-a  (isolated DC failure domain)
+    |     +-- ZONE us-central1-b
+    |     +-- ZONE us-central1-c
+    |
+    +-- (regions interconnected by Google's private
+         global fiber network — low latency between them)
+
+  Deploy across ZONES to survive a DC failure.
+  Deploy across REGIONS to survive a regional outage.</div>
+
+<table>
+  <tr><th>Concept</th><th>What it is</th></tr>
+  <tr><td>Zone</td><td>A single failure domain (≈ one datacenter) within a region</td></tr>
+  <tr><td>Region</td><td>A geographic area containing 3+ zones</td></tr>
+  <tr><td>Multi-region</td><td>Data replicated across regions (e.g. for Cloud Storage, BigQuery)</td></tr>
+</table>
+
+<div class="callout callout-tip">
+  <strong>GCP's global resources are a real differentiator</strong>
+  Unlike many clouds where most things are regional, several GCP resources are <em>global</em> or <em>multi-regional</em> by design — the VPC network, HTTP(S) load balancer (one anycast IP worldwide), and Cloud Storage multi-region buckets. Google's private backbone makes cross-region traffic fast and predictable.
+</div>
+
+<h3>How you interact with GCP</h3>
+<ul>
+  <li><strong>Cloud Console</strong> — the web GUI.</li>
+  <li><strong>gcloud CLI</strong> — the unified command-line tool (part of the Cloud SDK).</li>
+  <li><strong>Cloud Shell</strong> — a browser-based terminal with tools pre-installed.</li>
+  <li><strong>Terraform / Config Connector / Deployment Manager</strong> — IaC.</li>
+  <li><strong>Client libraries</strong> — for Python, Go, Java, Node.js, etc.</li>
+</ul>
+
+<pre><code># gcloud CLI basics
+gcloud auth login
+gcloud config set project my-project-id
+gcloud compute instances create my-vm \
+   --zone=us-central1-a --machine-type=e2-medium \
+   --image-family=debian-12 --image-project=debian-cloud</code></pre>
+
+<hr>
+
+<h2 id="part-1">Part 1 — Resource hierarchy &amp; projects <span class="tag tag-concept">CONCEPT</span></h2>
+
+<p>The <strong>Project</strong> is the fundamental organizing unit in GCP — every resource belongs to exactly one project, which is the boundary for billing, APIs, permissions, and quotas.</p>
+
+<div class="ascii">  ORGANIZATION   (your company's root node, tied to a domain)
+        |
+   FOLDERS       (optional: group by dept / team / env)
+        |
+   PROJECTS      (the core unit: billing, APIs, IAM, quota)
+        |
+   RESOURCES     (VMs, buckets, databases, etc.)
+
+  IAM policies set higher up are INHERITED downward.
+  Set a policy on a folder -> applies to all its projects.</div>
+
+<table>
+  <tr><th>Level</th><th>Purpose</th></tr>
+  <tr><td>Organization</td><td>Root of the hierarchy; org-wide policy</td></tr>
+  <tr><td>Folder</td><td>Group projects (by team, environment, dept)</td></tr>
+  <tr><td>Project</td><td>Billing + API + IAM + quota boundary; holds resources</td></tr>
+  <tr><td>Resource</td><td>An individual service instance</td></tr>
+</table>
+
+<div class="callout callout-tip">
+  <strong>Use separate projects for separate environments</strong>
+  A common pattern is one project per app per environment (e.g. <code>myapp-dev</code>, <code>myapp-prod</code>). Projects are free and give you clean isolation of billing, quotas, and access — far safer than mixing dev and prod in one project. Group them under folders for org-wide policy.
+</div>
+
+<h3>Enabling APIs</h3>
+<p>Unlike some clouds, in GCP you must explicitly <em>enable</em> each service's API in a project before using it. This is a frequent first stumbling block.</p>
+<pre><code>gcloud services enable compute.googleapis.com
+gcloud services enable run.googleapis.com</code></pre>
+
+<hr>
+
+<h2 id="part-2">Part 2 — Identity &amp; access (IAM) <span class="tag tag-core">CORE</span></h2>
+
+<p>Google Cloud IAM answers: <em>who</em> can do <em>what</em> on <em>which resource</em>. The model is consistent across all of GCP.</p>
+
+<div class="ascii">  WHO (member/principal)   WHAT (role)        ON (resource)
+  ----------------------   --------------     -------------
+  Google account (user)    a bundle of        organization
+  Google group             permissions:       folder
+  service account            roles/viewer     project
+  workload identity          roles/editor     specific resource
+  allUsers (public)          roles/owner
+                             custom roles
+
+  IAM policy = binding of (member -> role) at a resource
+  level, inherited down the hierarchy.</div>
+
+<h3>The three role types</h3>
+<table>
+  <tr><th>Type</th><th>Example</th><th>Note</th></tr>
+  <tr><td>Basic (primitive)</td><td>Owner, Editor, Viewer</td><td>Broad; avoid in production</td></tr>
+  <tr><td>Predefined</td><td>roles/storage.objectAdmin</td><td>Granular, Google-curated — prefer these</td></tr>
+  <tr><td>Custom</td><td>your own permission set</td><td>When predefined don't fit exactly</td></tr>
+</table>
+
+<h3>Service accounts (the identity for workloads)</h3>
+<p>A service account is a special identity for a resource or application (not a human). Code running on a VM, in Cloud Run, or in GKE uses a service account to authenticate to other GCP services — without embedding keys.</p>
+<div class="ascii">  WITHOUT (bad):  app holds a service-account KEY FILE
+                  -> long-lived secret, leak risk
+
+  WITH attached service account (good):
+     Cloud Run / GKE / VM runs AS a service account
+     -> gets short-lived tokens automatically, no key file
+
+  For workloads OUTSIDE GCP (e.g. on AWS, GitHub Actions):
+     use WORKLOAD IDENTITY FEDERATION -> exchange an
+     external token for GCP access, still no key files.</div>
+
+<div class="callout callout-warn">
+  <strong>Avoid service account key files</strong>
+  Downloaded JSON key files are long-lived credentials that frequently leak (committed to git, left in images). Prefer <em>attached</em> service accounts (the resource assumes the identity) and Workload Identity Federation for external systems. If you must use keys, rotate them and store in Secret Manager. Apply least privilege — grant predefined roles at the narrowest scope.
+</div>
+
+<div class="callout callout-tip">
+  <strong>Groups over individual grants</strong>
+  Assign roles to Google Groups, then manage membership in the group, rather than binding individual users to resources. This keeps IAM policies small and makes onboarding/offboarding a single membership change.
+</div>
+
+<hr>
+
+<h2 id="part-3">Part 3 — Compute <span class="tag tag-core">CORE</span></h2>
+
+<div class="ascii">  more control                          less ops burden
+  <-------------------------------------------------->
+  Compute     Managed       GKE        Cloud Run   Cloud
+  Engine      Instance      (K8s)      (container  Functions
+  (VMs)       Groups (MIG)             serverless) (FaaS)
+  you patch                                     Google runs
+  the OS                                        it all</div>
+
+<h3>Compute Engine (IaaS VMs)</h3>
+<p>Configurable virtual machines. GCP machine types are grouped by family:</p>
+<table>
+  <tr><th>Family</th><th>Optimized for</th></tr>
+  <tr><td>E2</td><td>Cost-optimized general purpose</td></tr>
+  <tr><td>N2 / N2D / N4</td><td>Balanced general purpose</td></tr>
+  <tr><td>C3 / C4</td><td>Compute-optimized (high CPU)</td></tr>
+  <tr><td>M3 / M4</td><td>Memory-optimized (large in-memory DBs)</td></tr>
+  <tr><td>A3 / G2</td><td>GPU (AI/ML, NVIDIA H100/L4)</td></tr>
+  <tr><td>TPU VMs</td><td>Tensor Processing Units for ML at scale</td></tr>
+</table>
+
+<h3>Notable Compute Engine features</h3>
+<ul>
+  <li><strong>Custom machine types</strong> — pick exact vCPU/RAM instead of fixed sizes.</li>
+  <li><strong>Live migration</strong> — VMs keep running during host maintenance (rare among clouds).</li>
+  <li><strong>Managed Instance Groups (MIGs)</strong> — autoscaling, autohealing, rolling updates for identical VMs behind a load balancer.</li>
+  <li><strong>Sustained-use discounts</strong> — automatic discounts the longer a VM runs in a month (no commitment needed).</li>
+</ul>
+
+<h3>Pricing models</h3>
+<table>
+  <tr><th>Model</th><th>Best for</th><th>Savings</th></tr>
+  <tr><td>On-demand</td><td>Variable workloads</td><td>—</td></tr>
+  <tr><td>Sustained-use discounts</td><td>VMs running most of the month (automatic)</td><td>up to ~30%</td></tr>
+  <tr><td>Committed-use discounts (1–3 yr)</td><td>Steady, predictable usage</td><td>up to ~57%</td></tr>
+  <tr><td>Spot VMs</td><td>Interruptible / fault-tolerant work</td><td>up to ~91%</td></tr>
+</table>
+
+<div class="callout callout-tip">
+  <strong>Sustained-use discounts are automatic</strong>
+  Unlike reserved instances elsewhere, GCP automatically discounts VMs that run for a large fraction of the month — no upfront commitment. Combine with committed-use discounts for steady baseline capacity and Spot for burst/batch.
+</div>
+
+<hr>
+
+<h2 id="part-4">Part 4 — Containers &amp; Kubernetes (GKE) <span class="tag tag-core">CORE</span></h2>
+
+<p>Google created Kubernetes, and <strong>Google Kubernetes Engine (GKE)</strong> is widely regarded as the most mature managed Kubernetes. Containers are central to GCP's story.</p>
+
+<table>
+  <tr><th>Service</th><th>What it is</th></tr>
+  <tr><td>Artifact Registry</td><td>Store container images &amp; packages (successor to Container Registry)</td></tr>
+  <tr><td>Cloud Run</td><td>Serverless containers — scale to zero, pay per use</td></tr>
+  <tr><td>GKE Autopilot</td><td>Managed K8s where Google runs the nodes for you</td></tr>
+  <tr><td>GKE Standard</td><td>Managed K8s with full node control</td></tr>
+</table>
+
+<h3>GKE Autopilot vs Standard</h3>
+<div class="ascii">  STANDARD: you manage node pools, sizing, upgrades.
+            full control, you optimize (and own) the nodes.
+
+  AUTOPILOT: Google manages nodes entirely. You deploy
+             pods; pay per pod resource request. Less ops,
+             hardened defaults. -> recommended default.
+
+  Both are real Kubernetes (kubectl, manifests, Helm).</div>
+
+<h3>Cloud Run — the GCP serverless container favorite</h3>
+<p>Deploy any container that listens on a port; Cloud Run handles scaling (including to zero), HTTPS, and revisions. It's the easiest path to production for stateless web services and APIs on GCP.</p>
+<div class="ascii">  push container -> Cloud Run -> public HTTPS URL
+                                  autoscale 0 -> N by traffic
+                                  pay only while handling requests
+  
+  great for: APIs, web apps, event handlers, microservices
+  without touching Kubernetes.</div>
+
+<div class="callout callout-tip">
+  <strong>Default to Cloud Run, escalate to GKE</strong>
+  For most stateless services, Cloud Run is simpler, cheaper at low/spiky traffic (scale to zero), and requires no cluster management. Choose GKE when you need full Kubernetes features: complex networking, stateful workloads, operators, fine-grained scheduling, or an existing K8s investment.
+</div>
+
+<hr>
+
+<h2 id="part-5">Part 5 — Serverless <span class="tag tag-core">CORE</span></h2>
+
+<table>
+  <tr><th>Service</th><th>What it is</th><th>Use for</th></tr>
+  <tr><td>Cloud Run</td><td>Serverless containers</td><td>APIs, web apps, any language/runtime</td></tr>
+  <tr><td>Cloud Run functions</td><td>Event-driven functions (formerly Cloud Functions)</td><td>Glue code, event handlers</td></tr>
+  <tr><td>Cloud Scheduler</td><td>Managed cron</td><td>Scheduled triggers</td></tr>
+  <tr><td>Workflows</td><td>Serverless orchestration of services/APIs</td><td>Chaining steps, pipelines</td></tr>
+  <tr><td>Eventarc</td><td>Event routing from 90+ sources to handlers</td><td>Event-driven architectures</td></tr>
+</table>
+
+<h3>Cloud Run functions (FaaS)</h3>
+<div class="ascii">  TRIGGER                      FUNCTION
+  -------                      --------
+  HTTP request        ---->  [ your code ]
+  Pub/Sub message     ---->  (Python, Node, Go,
+  Cloud Storage event ---->   Java, .NET, Ruby...)
+  Eventarc event      ---->  
+  Firestore change    ---->  scales per-event, pay per use
+
+  Now built on the Cloud Run platform -> consistent
+  scaling and container model under the hood.</div>
+
+<div class="callout callout-warn">
+  <strong>Cold starts &amp; statelessness</strong>
+  Scale-to-zero services cold-start on the first request after idle. Set a minimum number of instances for latency-sensitive APIs, keep containers lean for fast startup, and design every function to be stateless and idempotent (events may be delivered more than once).
+</div>
+
+<hr>
+
+<h2 id="part-6">Part 6 — Storage <span class="tag tag-core">CORE</span></h2>
+
+<table>
+  <tr><th>Service</th><th>Model</th><th>Use for</th></tr>
+  <tr><td>Cloud Storage (GCS)</td><td>Object storage (buckets → objects)</td><td>Files, media, backups, data lake, static sites</td></tr>
+  <tr><td>Persistent Disk / Hyperdisk</td><td>Block storage for VMs</td><td>VM disks, databases</td></tr>
+  <tr><td>Filestore</td><td>Managed NFS file shares</td><td>Shared filesystems, lift-and-shift</td></tr>
+</table>
+
+<h3>Cloud Storage classes (cost vs access frequency)</h3>
+<div class="ascii">  STANDARD   frequent access, hot data, no retrieval fee
+  NEARLINE   accessed <1x/month (30-day min)  -> backups
+  COLDLINE   accessed <1x/quarter (90-day min) -> archive
+  ARCHIVE    accessed <1x/year (365-day min)  -> cheapest
+
+  Object Lifecycle Management auto-transitions objects to
+  colder classes (or deletes them) as they age.
+  
+  Buckets can be regional, dual-region, or multi-region
+  (trade cost for geo-redundancy &amp; availability).</div>
+
+<h3>Key Cloud Storage features</h3>
+<ul>
+  <li><strong>Single global namespace</strong> — bucket names are globally unique; one API regardless of location.</li>
+  <li><strong>Strong consistency</strong> — reads after writes are immediately consistent.</li>
+  <li><strong>Signed URLs</strong> — grant time-limited access for direct uploads/downloads (don't proxy big files through your app).</li>
+  <li><strong>Uniform bucket-level access</strong> — manage permissions with IAM instead of per-object ACLs.</li>
+</ul>
+
+<div class="callout callout-tip">
+  <strong>Use signed URLs for uploads</strong>
+  Just like other clouds, don't stream large user uploads through your servers. Issue a signed URL so the client uploads directly to the bucket, then process via an event (Eventarc/Pub/Sub). This saves bandwidth and keeps app instances free.
+</div>
+
+<hr>
+
+<h2 id="part-7">Part 7 — Databases <span class="tag tag-core">CORE</span></h2>
+
+<h3>Relational</h3>
+<table>
+  <tr><th>Service</th><th>What it is</th></tr>
+  <tr><td>Cloud SQL</td><td>Managed MySQL, PostgreSQL, SQL Server (regional)</td></tr>
+  <tr><td>AlloyDB</td><td>Postgres-compatible, high-performance (analytics + transactional)</td></tr>
+  <tr><td>Cloud Spanner</td><td>Globally distributed, horizontally scalable, strongly consistent SQL</td></tr>
+</table>
+
+<h3>Cloud Spanner — the standout</h3>
+<p>Spanner is Google's globally-distributed relational database that offers <em>both</em> horizontal scale (like NoSQL) <em>and</em> strong consistency with SQL and ACID transactions — historically a "pick one" trade-off. It powers Google's own critical systems.</p>
+<div class="ascii">  Traditional SQL:  strong consistency, but scales UP
+                    (one big machine + replicas)
+  Traditional NoSQL: scales OUT, but eventual consistency
+
+  SPANNER:  scales OUT (many nodes, many regions)
+            AND strong consistency + SQL + ACID
+            (via TrueTime — synchronized atomic clocks)
+  
+  Use when you need global scale WITHOUT giving up
+  transactions/consistency. Premium cost.</div>
+
+<h3>NoSQL &amp; in-memory</h3>
+<table>
+  <tr><th>Service</th><th>Model</th><th>Use for</th></tr>
+  <tr><td>Firestore</td><td>Serverless document DB (real-time sync)</td><td>Mobile/web apps, real-time data</td></tr>
+  <tr><td>Bigtable</td><td>Wide-column, petabyte-scale, low latency</td><td>Time-series, IoT, analytics, high throughput</td></tr>
+  <tr><td>Memorystore</td><td>Managed Redis / Memcached</td><td>Caching, sessions</td></tr>
+</table>
+
+<div class="callout callout-tip">
+  <strong>Picking a GCP database</strong>
+  Relational + regional → Cloud SQL. Need Postgres but faster → AlloyDB. Global scale + strong consistency + SQL → Spanner. Document store with real-time sync → Firestore. Massive write throughput / time-series → Bigtable. Cache → Memorystore.
+</div>
+
+<hr>
+
+<h2 id="part-8">Part 8 — Networking <span class="tag tag-core">CORE</span></h2>
+
+<h3>VPC — a global private network</h3>
+<p>A GCP Virtual Private Cloud is <strong>global</strong>: a single VPC can span all regions, with subnets that are regional. This simplifies multi-region architectures compared to clouds where VPCs are regional.</p>
+<div class="ascii">  VPC "my-network"  (GLOBAL — spans all regions)
+    +-- Subnet  us-central1   10.0.1.0/24
+    +-- Subnet  europe-west1  10.0.2.0/24
+    +-- Subnet  asia-east1    10.0.3.0/24
+          all in ONE VPC, connected over Google's backbone
+
+  Firewall rules are defined at the VPC level (allow/deny
+  by tag, service account, IP range, port).</div>
+
+<h3>Core networking services</h3>
+<table>
+  <tr><th>Service</th><th>Role</th></tr>
+  <tr><td>VPC firewall rules</td><td>Allow/deny traffic (by tag, SA, IP, port)</td></tr>
+  <tr><td>Cloud Load Balancing</td><td>Global anycast LB (HTTP/S, TCP, UDP)</td></tr>
+  <tr><td>Cloud CDN</td><td>Edge caching of content close to users</td></tr>
+  <tr><td>Cloud DNS</td><td>Managed, global, low-latency DNS</td></tr>
+  <tr><td>Cloud NAT</td><td>Outbound internet for private instances</td></tr>
+  <tr><td>Cloud VPN / Interconnect</td><td>Connect on-prem (VPN over internet / dedicated link)</td></tr>
+  <tr><td>Cloud Armor</td><td>WAF + DDoS protection at the edge</td></tr>
+  <tr><td>Private Service Connect</td><td>Private access to Google/3rd-party services</td></tr>
+</table>
+
+<h3>The global HTTP(S) load balancer</h3>
+<div class="ascii">  ONE anycast IP, worldwide:
+  
+  user (Tokyo) --+
+  user (Paris) --+--> single global IP --> nearest healthy
+  user (NYC)   --+    (Cloud LB + CDN)      backend region
+  
+  Routes each user to the closest backend, integrates
+  Cloud CDN and Cloud Armor (WAF). No per-region IPs to
+  juggle. A signature GCP capability.</div>
+
+<div class="callout callout-warn">
+  <strong>Keep backends private; expose via the LB</strong>
+  Put application and data tiers on private subnets with no external IPs. Use Cloud NAT for outbound access, and front public traffic with the global load balancer + Cloud Armor. Use Private Service Connect / Private Google Access to reach Google APIs without traversing the internet.
+</div>
+
+<hr>
+
+<h2 id="part-9">Part 9 — Messaging &amp; integration <span class="tag tag-concept">CONCEPT</span></h2>
+
+<table>
+  <tr><th>Service</th><th>Pattern</th><th>Use for</th></tr>
+  <tr><td>Pub/Sub</td><td>Global pub/sub messaging + streaming</td><td>Decoupling, event ingestion, fan-out, streaming pipelines</td></tr>
+  <tr><td>Pub/Sub Lite</td><td>Lower-cost, zonal streaming</td><td>High-volume, cost-sensitive streaming</td></tr>
+  <tr><td>Eventarc</td><td>Event routing from many sources</td><td>Trigger Cloud Run/Functions from events</td></tr>
+  <tr><td>Cloud Tasks</td><td>Async task queue with rate control</td><td>Deferred work, throttled dispatch</td></tr>
+  <tr><td>Workflows</td><td>Orchestrate services in sequence</td><td>Multi-step processes</td></tr>
+</table>
+
+<h3>Pub/Sub: the GCP messaging backbone</h3>
+<div class="ascii">  Pub/Sub is GLOBAL and serverless — one service covers
+  both queue and streaming patterns:
+
+  publisher -> TOPIC -> SUBSCRIPTION(s) -> subscriber(s)
+                          |
+            +-------------+--------------+
+            v             v              v
+        analytics     data pipeline   notifier
+        (each subscription gets its own copy of messages)
+
+  - at-least-once delivery (make consumers idempotent)
+  - scales to millions of messages/sec automatically
+  - dead-letter topics + retry policies built in
+  - common ingestion front-end for Dataflow / BigQuery</div>
+
+<div class="callout callout-tip">
+  <strong>Pub/Sub is the glue of GCP architectures</strong>
+  It's the default way to decouple services and to ingest event/streaming data into the analytics stack (Pub/Sub → Dataflow → BigQuery is a canonical pipeline). Use push subscriptions to trigger Cloud Run, or pull subscriptions for worker fleets. Design idempotent consumers.
+</div>
+
+<hr>
+
+<h2 id="part-10">Part 10 — Data &amp; analytics (BigQuery &amp; friends) <span class="tag tag-core">CORE</span></h2>
+
+<p>Data analytics is arguably GCP's strongest domain, anchored by BigQuery.</p>
+
+<div class="ascii">  INGEST           STORE/QUERY        PROCESS         VISUALIZE
+  ------           -----------        -------         ---------
+  Pub/Sub      ->  BigQuery        <- Dataflow     -> Looker /
+  Dataflow         (serverless        (Apache Beam)    Looker Studio
+  Data Transfer    warehouse)         Dataproc
+  Storage          Cloud Storage      (managed Spark)
+                   (data lake)</div>
+
+<h3>BigQuery — the flagship</h3>
+<p>A serverless, petabyte-scale data warehouse. There are no servers to manage — you load data and run SQL; BigQuery handles all the infrastructure and scales compute automatically. Storage and compute are separated and billed independently.</p>
+<div class="ascii">  load data -> BigQuery (columnar, distributed storage)
+            -> run standard SQL across petabytes in seconds
+            -> pay for bytes scanned (on-demand) OR
+               reserved slots (flat-rate capacity)
+
+  Built-in extras:
+    - BigQuery ML: train ML models with SQL (CREATE MODEL)
+    - BI Engine: in-memory acceleration for dashboards
+    - federated queries: query GCS, Spanner, external data
+    - Gemini in BigQuery: AI-assisted analytics</div>
+
+<table>
+  <tr><th>Service</th><th>Role</th></tr>
+  <tr><td>BigQuery</td><td>Serverless SQL data warehouse + ML + BI</td></tr>
+  <tr><td>Dataflow</td><td>Serverless stream &amp; batch processing (Apache Beam)</td></tr>
+  <tr><td>Dataproc</td><td>Managed Spark &amp; Hadoop</td></tr>
+  <tr><td>Pub/Sub</td><td>Streaming ingestion</td></tr>
+  <tr><td>Cloud Composer</td><td>Managed Apache Airflow (orchestration)</td></tr>
+  <tr><td>Dataplex</td><td>Data governance &amp; catalog across the lake</td></tr>
+  <tr><td>Looker / Looker Studio</td><td>BI &amp; dashboards</td></tr>
+</table>
+
+<div class="callout callout-tip">
+  <strong>Control BigQuery cost</strong>
+  On-demand pricing charges by <em>bytes scanned</em>, so <code>SELECT *</code> on a huge table is expensive. Select only needed columns, partition tables by date, cluster on common filters, and preview with <code>LIMIT</code> cautiously (it still may scan). For steady heavy use, switch to capacity (slot) pricing.
+</div>
+
+<hr>
+
+<h2 id="part-11">Part 11 — AI &amp; machine learning (Vertex AI &amp; Gemini) <span class="tag tag-core">CORE</span></h2>
+
+<p>AI is core to Google's identity. GCP offers Gemini foundation models, the Vertex AI platform, pre-built APIs, and custom hardware (TPUs).</p>
+
+<h3>The layers of GCP AI</h3>
+<div class="ascii">  1. PRE-BUILT AI APIs (call and go)
+     Vision AI, Speech-to-Text, Text-to-Speech,
+     Natural Language, Translation, Document AI,
+     Video Intelligence
+
+  2. GENERATIVE AI (foundation models)
+     Vertex AI + Model Garden: Gemini (Google's flagship
+       multimodal models), plus Llama, Claude, Mistral,
+       and image/video models (Imagen, Veo)
+     Vertex AI Search & RAG Engine: managed retrieval
+     Vertex AI Agent Builder: build agents & assistants
+
+  3. CUSTOM ML (build &amp; operate your own)
+     Vertex AI: training, tuning, pipelines, feature store,
+       model registry, endpoints, monitoring (full MLOps)
+     Hardware: GPUs and TPUs (v5/v6) for large-scale training</div>
+
+<table>
+  <tr><th>Service</th><th>Use for</th></tr>
+  <tr><td>Vertex AI</td><td>Unified platform: train, tune, deploy, monitor models &amp; GenAI</td></tr>
+  <tr><td>Gemini API (on Vertex)</td><td>Google's multimodal LLMs (text, image, audio, video, code)</td></tr>
+  <tr><td>Model Garden</td><td>Catalog of Google, partner &amp; open models (Llama, Claude, etc.)</td></tr>
+  <tr><td>Vertex AI Search</td><td>Managed retrieval / RAG over your data</td></tr>
+  <tr><td>Vertex AI Agent Builder</td><td>Build, deploy &amp; orchestrate AI agents</td></tr>
+  <tr><td>Pre-built AI APIs</td><td>Vision, Speech, Language, Document AI, Translation</td></tr>
+  <tr><td>TPUs</td><td>Custom accelerators for large-scale ML training/inference</td></tr>
+</table>
+
+<h3>A typical RAG architecture on GCP</h3>
+<div class="ascii">  docs -> Document AI (parse) -> chunk
+        -> Vertex AI embeddings -> Vector Search index
+                                   (or Vertex AI Search managed)
+
+  user question
+     -> embed (Vertex AI)
+     -> Vector Search / Vertex AI Search (retrieve)
+     -> Gemini (generate grounded answer + citations)
+     -> safety filters in/out
+
+  Or use Vertex AI Search as a managed end-to-end RAG
+  engine (ingest + retrieve + ground) with less plumbing.</div>
+
+<div class="callout callout-tip">
+  <strong>Gemini + BigQuery + TPUs = GCP's AI edge</strong>
+  GCP's strengths: Gemini's strong multimodal/long-context models, native AI inside BigQuery (analyze data with SQL + LLMs), and TPUs for cost-effective large-scale training. If your workload is data-and-AI heavy, GCP's integration of analytics and ML is compelling.
+</div>
+
+<hr>
+
+<h2 id="part-12">Part 12 — DevOps, IaC &amp; observability <span class="tag tag-prod">PROD</span></h2>
+
+<h3>Infrastructure as Code</h3>
+<table>
+  <tr><th>Tool</th><th>Notes</th></tr>
+  <tr><td>Terraform</td><td>The de facto standard for GCP IaC; huge provider</td></tr>
+  <tr><td>Config Connector</td><td>Manage GCP resources as Kubernetes objects</td></tr>
+  <tr><td>Deployment Manager</td><td>Native (legacy); most use Terraform now</td></tr>
+</table>
+
+<pre><code># Terraform — a Cloud Storage bucket
+resource "google_storage_bucket" "data" {
+  name          = "my-unique-bucket-name"
+  location      = "US"
+  storage_class = "STANDARD"
+  uniform_bucket_level_access = true
+}</code></pre>
+
+<h3>CI/CD</h3>
+<ul>
+  <li><strong>Cloud Build</strong> — serverless build/test/deploy pipelines (triggers on git push).</li>
+  <li><strong>Artifact Registry</strong> — store built images &amp; packages.</li>
+  <li><strong>Cloud Deploy</strong> — managed continuous delivery to GKE / Cloud Run with promotion across environments.</li>
+</ul>
+
+<h3>Observability: the Cloud Operations suite</h3>
+<div class="ascii">  Google Cloud Observability (formerly Stackdriver)
+    +-- Cloud Monitoring   metrics, dashboards, alerts, SLOs
+    +-- Cloud Logging      centralized logs (query, export,
+    |                      log-based metrics)
+    +-- Cloud Trace        distributed request tracing
+    +-- Cloud Profiler     continuous CPU/memory profiling
+    +-- Error Reporting    aggregates &amp; alerts on errors
+
+  Most managed services emit metrics/logs automatically.</div>
+
+<div class="callout callout-tip">
+  <strong>Define SLOs in Cloud Monitoring</strong>
+  Cloud Monitoring has first-class support for SLOs and error budgets. Define what "good" means (e.g., 99.9% of requests under 300ms) and alert on budget burn rather than raw thresholds — this reduces noisy alerts and focuses on user-facing impact.
+</div>
+
+<hr>
+
+<h2 id="part-13">Part 13 — Security &amp; cost management <span class="tag tag-core">CORE</span> <span class="tag tag-prod">PROD</span></h2>
+
+<h3>Security services</h3>
+<table>
+  <tr><th>Service</th><th>Role</th></tr>
+  <tr><td>Security Command Center</td><td>Central security &amp; risk dashboard (CSPM, threat detection)</td></tr>
+  <tr><td>Secret Manager</td><td>Store API keys, passwords, certificates</td></tr>
+  <tr><td>Cloud KMS</td><td>Manage encryption keys</td></tr>
+  <tr><td>Cloud Armor</td><td>WAF + DDoS protection</td></tr>
+  <tr><td>VPC Service Controls</td><td>Perimeter around data to prevent exfiltration</td></tr>
+  <tr><td>Identity-Aware Proxy (IAP)</td><td>Zero-trust access to apps (auth at the edge)</td></tr>
+  <tr><td>Binary Authorization</td><td>Only allow trusted/signed container images</td></tr>
+</table>
+
+<h3>Security mantras</h3>
+<ul>
+  <li><strong>Least privilege IAM</strong> — predefined roles at the narrowest scope; groups over individuals.</li>
+  <li><strong>No service-account key files</strong> — use attached SAs &amp; Workload Identity Federation.</li>
+  <li><strong>Secrets in Secret Manager</strong>, keys in Cloud KMS.</li>
+  <li><strong>VPC Service Controls</strong> to build a data exfiltration perimeter for sensitive projects.</li>
+  <li><strong>Encryption</strong> at rest (default, Google-managed or CMEK) and in transit (default).</li>
+  <li><strong>IAP</strong> for zero-trust app access instead of VPNs.</li>
+</ul>
+
+<h3>Cost management</h3>
+<ul>
+  <li><strong>Sustained- &amp; committed-use discounts</strong> for steady compute.</li>
+  <li><strong>Spot VMs</strong> for batch / fault-tolerant work (up to ~91% off).</li>
+  <li><strong>Scale to zero</strong> with Cloud Run / Cloud Run functions.</li>
+  <li><strong>BigQuery</strong> — partition/cluster tables, query only needed columns; consider slot reservations.</li>
+  <li><strong>Storage lifecycle</strong> — auto-tier objects to Nearline/Coldline/Archive.</li>
+  <li><strong>Budgets &amp; alerts</strong> + labels for cost attribution; the Recommender suggests rightsizing.</li>
+</ul>
+
+<div class="callout callout-warn">
+  <strong>Shared responsibility model</strong>
+  Google secures the underlying infrastructure (hardware, network, hypervisor). You secure your data, IAM configuration, network rules, and (for IaaS) OS patching. With serverless/managed services Google handles more of the stack; with Compute Engine VMs you own the OS upward. Know the boundary per service.
+</div>
+
+<hr>
+
+<h2 id="part-14">Part 14 — Architecture patterns &amp; cheat sheet</h2>
+
+<h3>Reference: a typical web app on GCP</h3>
+<div class="ascii">          Global HTTP(S) Load Balancer
+            (+ Cloud CDN + Cloud Armor WAF)
+                        |
+         +--------------+--------------+
+         |     Cloud Run / GKE             |  (app tier,
+         |     (autoscaling, scale-to-zero)|   autoscale)
+         +--------------+--------------+
+                        |
+            Cloud SQL / Spanner / Firestore   (data tier,
+                        |                       private)
+            Memorystore (Redis cache)
+         
+  Cross-cutting: IAM + service accounts, Secret Manager,
+  Cloud Operations (monitoring/logging/trace),
+  Pub/Sub (async), Private Service Connect.</div>
+
+<h3>The Google Cloud Architecture Framework (pillars)</h3>
+<table>
+  <tr><th>Pillar</th><th>Focus</th></tr>
+  <tr><td>Operational excellence</td><td>Automate, monitor, IaC, SLOs</td></tr>
+  <tr><td>Security &amp; compliance</td><td>Identity, encryption, perimeter</td></tr>
+  <tr><td>Reliability</td><td>Multi-zone/region, graceful failure</td></tr>
+  <tr><td>Cost optimization</td><td>Right-size, discounts, scale-to-zero</td></tr>
+  <tr><td>Performance optimization</td><td>Scale to demand, use the right service</td></tr>
+</table>
+
+<h3>Service selection cheat sheet</h3>
+<table>
+  <tr><th>Need</th><th>Reach for</th></tr>
+  <tr><td>Serverless container / web app</td><td>Cloud Run</td></tr>
+  <tr><td>Event-driven function</td><td>Cloud Run functions</td></tr>
+  <tr><td>Full Kubernetes</td><td>GKE (Autopilot or Standard)</td></tr>
+  <tr><td>VMs</td><td>Compute Engine</td></tr>
+  <tr><td>Object/file storage</td><td>Cloud Storage</td></tr>
+  <tr><td>Relational DB</td><td>Cloud SQL / AlloyDB</td></tr>
+  <tr><td>Global SQL at scale</td><td>Cloud Spanner</td></tr>
+  <tr><td>Document DB / real-time</td><td>Firestore</td></tr>
+  <tr><td>Wide-column / time-series</td><td>Bigtable</td></tr>
+  <tr><td>Cache</td><td>Memorystore</td></tr>
+  <tr><td>Messaging / streaming</td><td>Pub/Sub</td></tr>
+  <tr><td>Secrets</td><td>Secret Manager</td></tr>
+  <tr><td>Data warehouse / analytics</td><td>BigQuery</td></tr>
+  <tr><td>Stream/batch processing</td><td>Dataflow</td></tr>
+  <tr><td>GenAI / LLMs</td><td>Vertex AI + Gemini</td></tr>
+  <tr><td>Monitoring</td><td>Cloud Operations suite</td></tr>
+</table>
+
+<div class="callout callout-tip">
+  <strong>Final advice</strong>
+  GCP shines for data-and-AI-heavy workloads, Kubernetes, and globally-distributed systems. Lead with the project hierarchy and IAM, default to serverless (Cloud Run) and managed services, use BigQuery as your analytics gravity well, and lean on the global network/LB. Codify everything with Terraform and define SLOs in Cloud Monitoring.
+</div>
+
+<hr>
+<div class="meta">End of GCP guide. Service names and limits change frequently — always confirm current details in the official Google Cloud documentation.</div>
+
+</body>
+</html>

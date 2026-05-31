@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Microsoft Azure Guide — Complete</title>
+<style>
+  :root {
+    --fg: #1a1a1a;
+    --muted: #555;
+    --bg: #fdfdfc;
+    --accent: #0078d4;
+    --accent-soft: #e3f0fb;
+    --border: #d4d4d0;
+    --code-bg: #f4f1ec;
+    --code-fg: #2a2a2a;
+    --warn-bg: #fff8e0;
+    --warn-bd: #e0c560;
+    --tip-bg: #e8f3eb;
+    --tip-bd: #6ba577;
+    --gap-bg: #fbe8e6;
+    --gap-bd: #b8453a;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: Charter, "Iowan Old Style", Georgia, serif;
+    color: var(--fg);
+    background: var(--bg);
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 30px 80px;
+    line-height: 1.65;
+    font-size: 17px;
+  }
+  h1, h2, h3, h4 {
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+    color: var(--fg);
+    line-height: 1.25;
+    margin-top: 1.8em;
+    margin-bottom: 0.5em;
+  }
+  h1 {
+    font-size: 2.2em;
+    border-bottom: 3px solid var(--accent);
+    padding-bottom: 12px;
+    margin-top: 0.5em;
+  }
+  h2 {
+    font-size: 1.6em;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 6px;
+    margin-top: 2.5em;
+  }
+  h3 { font-size: 1.25em; color: var(--accent); }
+  h4 { font-size: 1.05em; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600; }
+  p, ul, ol { margin: 0.6em 0; }
+  ul, ol { padding-left: 1.6em; }
+  li { margin: 0.3em 0; }
+  code {
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    background: var(--code-bg);
+    color: var(--code-fg);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 0.88em;
+  }
+  pre {
+    background: var(--code-bg);
+    color: var(--code-fg);
+    padding: 14px 18px;
+    border-radius: 6px;
+    border-left: 3px solid var(--accent);
+    overflow-x: auto;
+    font-size: 0.85em;
+    line-height: 1.5;
+  }
+  pre code { background: none; padding: 0; font-size: 1em; }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 1em 0;
+    font-size: 0.92em;
+  }
+  th, td {
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: left;
+    vertical-align: top;
+  }
+  th { background: var(--code-bg); font-weight: 600; }
+  blockquote {
+    border-left: 3px solid var(--muted);
+    margin: 1em 0;
+    padding: 0.4em 1em;
+    color: var(--muted);
+    font-style: italic;
+  }
+  .tag {
+    display: inline-block;
+    font-size: 0.7em;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 3px;
+    margin-left: 6px;
+    vertical-align: middle;
+    font-family: -apple-system, sans-serif;
+    letter-spacing: 0.04em;
+  }
+  .tag-core { background: #0078d4; color: white; }
+  .tag-concept { background: #4a7ba6; color: white; }
+  .tag-prod { background: #b8453a; color: white; }
+  .callout {
+    padding: 12px 18px;
+    margin: 1em 0;
+    border-radius: 6px;
+    border-left: 4px solid;
+  }
+  .callout-warn { background: var(--warn-bg); border-color: var(--warn-bd); }
+  .callout-tip { background: var(--tip-bg); border-color: var(--tip-bd); }
+  .callout-gap { background: var(--gap-bg); border-color: var(--gap-bd); }
+  .callout strong { display: block; margin-bottom: 4px; font-family: -apple-system, sans-serif; }
+  .toc {
+    background: var(--code-bg);
+    padding: 20px 28px;
+    border-radius: 8px;
+    margin: 2em 0;
+  }
+  .toc h2 { margin-top: 0; border: none; }
+  .toc ol { padding-left: 1.4em; }
+  .toc a { color: var(--accent); text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+  .ascii {
+    font-family: "SF Mono", Menlo, monospace;
+    white-space: pre;
+    background: var(--code-bg);
+    padding: 14px 18px;
+    border-radius: 6px;
+    border-left: 3px solid var(--accent);
+    overflow-x: auto;
+    font-size: 0.78em;
+    line-height: 1.4;
+  }
+  hr { border: none; border-top: 1px solid var(--border); margin: 2.5em 0; }
+  .meta { color: var(--muted); font-size: 0.9em; margin-bottom: 2em; }
+  @media print {
+    body { font-size: 11pt; max-width: 100%; padding: 0; }
+    h1, h2, h3 { page-break-after: avoid; }
+    pre, .ascii, .callout, table { page-break-inside: avoid; }
+    .toc { page-break-after: always; }
+  }
+</style>
+</head>
+<body>
+
+<h1>Microsoft Azure Guide — Complete</h1>
+<div class="meta">
+  Self-contained reference for Microsoft Azure. Open in browser, or print to PDF.<br>
+  Covers the global infrastructure, core services across every category, architecture best practices, and the AI stack.<br>
+  Service names current as of 2026; cloud moves fast, so verify specifics in docs.<br>
+  Legend:
+  <span class="tag tag-core">CORE</span> must know
+  <span class="tag tag-concept">CONCEPT</span> foundational idea
+  <span class="tag tag-prod">PROD</span> production concern
+</div>
+
+<div class="toc">
+<h2>Table of Contents</h2>
+<ol>
+  <li><a href="#part-0">Part 0 — Mental model &amp; global infrastructure</a></li>
+  <li><a href="#part-1">Part 1 — Accounts, subscriptions &amp; governance</a></li>
+  <li><a href="#part-2">Part 2 — Identity: Microsoft Entra ID &amp; RBAC</a></li>
+  <li><a href="#part-3">Part 3 — Compute</a></li>
+  <li><a href="#part-4">Part 4 — Containers &amp; Kubernetes</a></li>
+  <li><a href="#part-5">Part 5 — Serverless</a></li>
+  <li><a href="#part-6">Part 6 — Storage</a></li>
+  <li><a href="#part-7">Part 7 — Databases</a></li>
+  <li><a href="#part-8">Part 8 — Networking</a></li>
+  <li><a href="#part-9">Part 9 — Messaging &amp; integration</a></li>
+  <li><a href="#part-10">Part 10 — Data &amp; analytics</a></li>
+  <li><a href="#part-11">Part 11 — AI &amp; machine learning</a></li>
+  <li><a href="#part-12">Part 12 — DevOps, IaC &amp; monitoring</a></li>
+  <li><a href="#part-13">Part 13 — Security &amp; cost management</a></li>
+  <li><a href="#part-14">Part 14 — Architecture patterns &amp; cheat sheet</a></li>
+</ol>
+</div>
+
+<h2 id="part-0">Part 0 — Mental model &amp; global infrastructure <span class="tag tag-core">CORE</span></h2>
+
+<p>Azure is Microsoft's cloud platform: a global network of datacenters offering compute, storage, networking, databases, and higher-level managed services on demand. Its strength is deep enterprise and Microsoft-ecosystem integration (Windows, Active Directory, Office 365, .NET).</p>
+
+<h3>The geographic hierarchy</h3>
+<p>Understanding how Azure is physically organized explains availability, latency, and compliance choices.</p>
+<div class="ascii">  GEOGRAPHY (e.g. "United States" — for data residency)
+    +-- REGION (e.g. "East US" — a metro area of datacenters)
+    |     +-- AVAILABILITY ZONE 1  (independent DC: power,
+    |     |     cooling, network)
+    |     +-- AVAILABILITY ZONE 2
+    |     +-- AVAILABILITY ZONE 3
+    |
+    +-- REGION PAIR (each region paired with another in the
+          same geography for DR; e.g. East US <-> West US)
+
+  Deploy across ZONES to survive a datacenter failure.
+  Deploy across REGIONS to survive a regional disaster.</div>
+
+<table>
+  <tr><th>Concept</th><th>What it is</th><th>Protects against</th></tr>
+  <tr><td>Availability Zone</td><td>Physically separate DC within a region</td><td>DC-level failure</td></tr>
+  <tr><td>Region</td><td>A set of DCs in one geography</td><td>(deploy multi-region) regional outage</td></tr>
+  <tr><td>Region pair</td><td>Two regions linked for replication/DR</td><td>Disaster, sequential updates</td></tr>
+</table>
+
+<h3>How you interact with Azure</h3>
+<ul>
+  <li><strong>Azure Portal</strong> — the web GUI (good for learning &amp; exploration).</li>
+  <li><strong>Azure CLI</strong> (<code>az</code>) — cross-platform command line.</li>
+  <li><strong>Azure PowerShell</strong> — cmdlets for Windows-centric automation.</li>
+  <li><strong>ARM / Bicep / Terraform</strong> — infrastructure as code.</li>
+  <li><strong>SDKs</strong> — for .NET, Python, Java, JS, Go, etc.</li>
+</ul>
+
+<pre><code># Azure CLI basics
+az login
+az group create --name myRG --location eastus
+az vm create --resource-group myRG --name myVM \
+   --image Ubuntu2204 --admin-username azureuser \
+   --generate-ssh-keys</code></pre>
+
+<div class="callout callout-tip">
+  <strong>The Azure resource model</strong>
+  Everything you create is a <em>resource</em> (a VM, a database, an IP). Resources live in a <em>resource group</em> — a logical container for things that share a lifecycle. Resource groups live in a <em>subscription</em> (the billing + access boundary). This three-level grouping is fundamental to organizing and securing everything.
+</div>
+
+<hr>
+
+<h2 id="part-1">Part 1 — Accounts, subscriptions &amp; governance <span class="tag tag-concept">CONCEPT</span></h2>
+
+<h3>The management hierarchy</h3>
+<div class="ascii">  Microsoft Entra Tenant  (your organization's identity)
+        |
+   Management Groups   (group subscriptions, apply policy)
+        |
+   Subscriptions       (billing + access boundary)
+        |
+   Resource Groups     (lifecycle container)
+        |
+   Resources           (VMs, DBs, storage, etc.)
+
+  Policies and RBAC roles applied higher up are
+  INHERITED downward -> govern many resources at once.</div>
+
+<table>
+  <tr><th>Level</th><th>Purpose</th></tr>
+  <tr><td>Management group</td><td>Apply governance across many subscriptions</td></tr>
+  <tr><td>Subscription</td><td>Billing unit + quota + access boundary</td></tr>
+  <tr><td>Resource group</td><td>Group resources sharing a lifecycle/region</td></tr>
+  <tr><td>Resource</td><td>An individual service instance</td></tr>
+</table>
+
+<h3>Governance tools</h3>
+<ul>
+  <li><strong>Azure Policy</strong> — enforce rules (e.g., "only allow these regions", "require tags", "no public IPs").</li>
+  <li><strong>Blueprints / Landing Zones</strong> — repeatable, compliant environment setups.</li>
+  <li><strong>Resource locks</strong> — prevent accidental deletion/modification.</li>
+  <li><strong>Tags</strong> — key-value labels for cost allocation and organization.</li>
+  <li><strong>Cost Management + Budgets</strong> — track and alert on spend.</li>
+</ul>
+
+<div class="callout callout-warn">
+  <strong>Tag everything from day one</strong>
+  Without consistent tags (owner, environment, cost-center, project) you can't attribute cost or clean up safely. Enforce required tags with Azure Policy. Retrofitting tags across hundreds of resources later is painful.
+</div>
+
+<hr>
+
+<h2 id="part-2">Part 2 — Identity: Microsoft Entra ID &amp; RBAC <span class="tag tag-core">CORE</span></h2>
+
+<p>Identity is the foundation of cloud security. <strong>Microsoft Entra ID</strong> (formerly Azure Active Directory) is Azure's cloud identity and access management service — it controls who can sign in and what they can access.</p>
+
+<div class="callout callout-tip">
+  <strong>Entra ID is not on-prem Active Directory</strong>
+  Despite the old name, Entra ID is a cloud identity service for web/SaaS apps (OAuth, SAML, OIDC), not a drop-in replacement for on-prem AD (which uses LDAP/Kerberos for domain-joined machines). They're often synced together via Entra Connect in hybrid setups.
+</div>
+
+<h3>Authentication vs authorization</h3>
+<div class="ascii">  AUTHENTICATION (Entra ID): who are you?
+     sign-in, MFA, conditional access, SSO
+
+  AUTHORIZATION (Azure RBAC): what can you do?
+     role assignments on resources
+
+  identity --(authn)--> proven identity --(authz/RBAC)-->
+                                          allowed actions</div>
+
+<h3>Azure RBAC: the three pieces</h3>
+<p>A role assignment = <strong>who</strong> (security principal) + <strong>what</strong> (role definition) + <strong>where</strong> (scope).</p>
+<div class="ascii">  WHO              WHAT (role)            WHERE (scope)
+  ------------     -----------------      -----------------
+  user             Reader                 management group
+  group            Contributor            subscription
+  service          Owner                  resource group
+  principal        custom role            single resource
+  managed identity
+
+  assignment = principal + role + scope (inherited down)</div>
+
+<table>
+  <tr><th>Built-in role</th><th>Can do</th></tr>
+  <tr><td>Owner</td><td>Full access including granting access</td></tr>
+  <tr><td>Contributor</td><td>Manage resources, but not grant access</td></tr>
+  <tr><td>Reader</td><td>View only</td></tr>
+  <tr><td>User Access Administrator</td><td>Manage access only</td></tr>
+</table>
+
+<h3>Managed identities (use these, not passwords)</h3>
+<p>A managed identity gives an Azure resource (like a VM or Function) its own Entra identity, so it can authenticate to other services <em>without</em> storing credentials in code. Azure rotates the secret automatically.</p>
+<div class="ascii">  WITHOUT (bad):  app holds a secret/key in config
+                  -> leaks, rotation pain
+
+  WITH managed identity (good):
+     VM/Function --(its identity)--> Key Vault / Storage
+     no secret in code; Azure manages the credential
+
+  System-assigned: tied to one resource's lifecycle
+  User-assigned:   standalone, shareable across resources</div>
+
+<div class="callout callout-warn">
+  <strong>Principle of least privilege</strong>
+  Grant the narrowest role at the narrowest scope that works. Avoid Owner/Contributor at subscription scope for day-to-day identities. Use Privileged Identity Management (PIM) for just-in-time elevation of admin roles, and require MFA + Conditional Access for all human sign-ins.
+</div>
+
+<hr>
+
+<h2 id="part-3">Part 3 — Compute <span class="tag tag-core">CORE</span></h2>
+
+<p>Azure offers a spectrum of compute, from raw VMs (you manage everything) to serverless (you manage nothing but code). The trade-off is control vs operational burden.</p>
+
+<div class="ascii">  more control                         less ops burden
+  <-------------------------------------------------->
+  VMs        VM Scale Sets   App Service   Functions
+  (IaaS)     (auto-scale     Containers    (serverless)
+             VMs)            (AKS/ACA)      (FaaS)
+  you patch                                Azure runs it
+  the OS                                   all for you</div>
+
+<h3>Virtual Machines (IaaS)</h3>
+<p>Full control over a virtual server — choose OS, size, disks. You manage patching, scaling, and availability. VM families are optimized for different workloads:</p>
+<table>
+  <tr><th>Series</th><th>Optimized for</th></tr>
+  <tr><td>B / Av2</td><td>Burstable, general / entry-level</td></tr>
+  <tr><td>D / Dv5</td><td>General purpose, balanced CPU/RAM</td></tr>
+  <tr><td>E / Ev5</td><td>Memory-optimized (databases, caches)</td></tr>
+  <tr><td>F</td><td>Compute-optimized (high CPU)</td></tr>
+  <tr><td>N (NC/ND/NV)</td><td>GPU (AI training, rendering)</td></tr>
+  <tr><td>L</td><td>Storage-optimized (high disk throughput)</td></tr>
+</table>
+
+<h3>Scaling: VM Scale Sets</h3>
+<p>A VMSS manages a group of identical VMs that scale automatically based on demand, behind a load balancer. This is how you run resilient, elastic workloads on IaaS.</p>
+<div class="ascii">          Load Balancer
+         /     |      \
+      VM      VM      VM   <- VM Scale Set
+      (auto add/remove based on CPU, schedule, or queue)
+      
+  scale OUT (more VMs) under load, scale IN when idle.</div>
+
+<h3>App Service (PaaS)</h3>
+<p>A managed platform for hosting web apps and APIs — push code (or a container) and Azure handles the OS, patching, load balancing, and autoscale. Ideal when you want to deploy an app without managing servers.</p>
+
+<h3>Pricing models</h3>
+<table>
+  <tr><th>Model</th><th>Best for</th><th>Savings</th></tr>
+  <tr><td>Pay-as-you-go</td><td>Variable / short-term</td><td>—</td></tr>
+  <tr><td>Reserved Instances (1–3 yr)</td><td>Steady, predictable workloads</td><td>up to ~70%</td></tr>
+  <tr><td>Savings Plans</td><td>Flexible commitment to hourly spend</td><td>significant</td></tr>
+  <tr><td>Spot VMs</td><td>Interruptible batch/fault-tolerant work</td><td>up to ~90%</td></tr>
+</table>
+
+<hr>
+
+<h2 id="part-4">Part 4 — Containers &amp; Kubernetes <span class="tag tag-core">CORE</span></h2>
+
+<table>
+  <tr><th>Service</th><th>What it is</th><th>Use when</th></tr>
+  <tr><td>Azure Container Registry (ACR)</td><td>Private Docker image registry</td><td>Store/build images</td></tr>
+  <tr><td>Azure Container Instances (ACI)</td><td>Run a single container, no orchestration</td><td>Simple, short jobs</td></tr>
+  <tr><td>Azure Container Apps (ACA)</td><td>Serverless containers w/ scale-to-zero, on K8s+KEDA</td><td>Microservices without managing K8s</td></tr>
+  <tr><td>Azure Kubernetes Service (AKS)</td><td>Managed Kubernetes control plane</td><td>Full K8s control, complex orchestration</td></tr>
+</table>
+
+<h3>Choosing a container service</h3>
+<div class="ascii">  Need full Kubernetes control / existing K8s skills?
+     |
+     +-- YES --> AKS (managed K8s, you run the workloads)
+     |
+     +-- NO: want serverless containers, autoscale,
+             scale-to-zero, minimal ops?
+                |
+                +-- YES --> Azure Container Apps
+                |
+                +-- just one container, a quick task?
+                       --> Azure Container Instances</div>
+
+<div class="callout callout-tip">
+  <strong>Default to Container Apps for new microservices</strong>
+  AKS is powerful but you own upgrades, node pools, networking, and scaling config. Azure Container Apps gives you containers, autoscaling (including to zero), revisions, and Dapr integration without managing the cluster. Reach for AKS only when you need raw Kubernetes control.
+</div>
+
+<hr>
+
+<h2 id="part-5">Part 5 — Serverless <span class="tag tag-core">CORE</span></h2>
+
+<p>Serverless means you deploy code or workflows and pay only for execution — no servers to provision or scale. Azure scales it automatically, including to zero when idle.</p>
+
+<h3>Azure Functions (FaaS)</h3>
+<p>Event-driven functions triggered by HTTP, timers, queues, blobs, and many other events. Bindings connect inputs/outputs declaratively without boilerplate SDK code.</p>
+<div class="ascii">  TRIGGER (one)            FUNCTION         BINDINGS (in/out)
+  ------------             --------         ----------------
+  HTTP request    ---->  [ your code ] ---> write to Cosmos DB
+  timer schedule                            send to Queue
+  new blob/queue msg                        return HTTP response
+  Event Grid event
+
+  Scales out automatically per event volume; pay per
+  execution + execution time + memory.</div>
+
+<h3>Hosting plans</h3>
+<table>
+  <tr><th>Plan</th><th>Behavior</th></tr>
+  <tr><td>Consumption</td><td>True serverless, scale to zero, pay per use (cold starts)</td></tr>
+  <tr><td>Premium</td><td>Pre-warmed instances (no cold start), VNet, longer runs</td></tr>
+  <tr><td>Dedicated (App Service)</td><td>Runs on your App Service plan, predictable cost</td></tr>
+</table>
+
+<h3>Logic Apps &amp; Durable Functions</h3>
+<ul>
+  <li><strong>Logic Apps</strong> — low-code visual workflow orchestration across 1000+ connectors (great for integration).</li>
+  <li><strong>Durable Functions</strong> — write stateful, long-running orchestrations in code (fan-out/fan-in, human approval, chaining).</li>
+</ul>
+
+<div class="callout callout-warn">
+  <strong>Mind cold starts</strong>
+  On the Consumption plan, an idle function "cold starts" — the first request after inactivity is slow while the runtime spins up. For latency-sensitive APIs use the Premium plan (pre-warmed) or keep functions warm. Design functions to be stateless and idempotent.
+</div>
+
+<hr>
+
+<h2 id="part-6">Part 6 — Storage <span class="tag tag-core">CORE</span></h2>
+
+<p>The Azure Storage account is the umbrella for several data services. Pick the type that matches your access pattern.</p>
+
+<table>
+  <tr><th>Service</th><th>Model</th><th>Use for</th></tr>
+  <tr><td>Blob Storage</td><td>Object storage (key → blob)</td><td>Files, media, backups, data lakes, static sites</td></tr>
+  <tr><td>Azure Files</td><td>Managed SMB/NFS file shares</td><td>Lift-and-shift, shared filesystems</td></tr>
+  <tr><td>Queue Storage</td><td>Simple message queue</td><td>Basic async decoupling</td></tr>
+  <tr><td>Table Storage</td><td>NoSQL key-value</td><td>Cheap, simple structured data</td></tr>
+  <tr><td>Managed Disks</td><td>Block storage for VMs</td><td>VM OS &amp; data disks</td></tr>
+</table>
+
+<h3>Blob storage tiers (cost vs access speed)</h3>
+<div class="ascii">  HOT      frequent access, highest storage cost, lowest
+           access cost      -> active data
+  COOL     infrequent (>30 days), lower storage cost
+           -> backups, older data
+  COLD     rarely accessed (>90 days)
+  ARCHIVE  offline, cheapest storage, hours to rehydrate
+           -> compliance, long-term retention
+
+  Lifecycle policies auto-move blobs hot -> cool ->
+  archive as they age, cutting cost automatically.</div>
+
+<h3>Redundancy options</h3>
+<table>
+  <tr><th>Option</th><th>Copies</th><th>Survives</th></tr>
+  <tr><td>LRS (locally redundant)</td><td>3 copies in one DC</td><td>Disk/rack failure</td></tr>
+  <tr><td>ZRS (zone redundant)</td><td>3 copies across zones</td><td>Datacenter/zone failure</td></tr>
+  <tr><td>GRS (geo redundant)</td><td>LRS + copy to paired region</td><td>Regional disaster</td></tr>
+  <tr><td>GZRS (geo-zone redundant)</td><td>ZRS + geo copy</td><td>Zone + regional failure</td></tr>
+</table>
+
+<div class="callout callout-tip">
+  <strong>Data Lake Storage Gen2 = Blob + hierarchy</strong>
+  For big-data analytics, enable the hierarchical namespace on a storage account to get Azure Data Lake Storage Gen2 — it adds real directories and file-level security on top of Blob, optimized for analytics engines (Spark, Synapse, Databricks).
+</div>
+
+<hr>
+
+<h2 id="part-7">Part 7 — Databases <span class="tag tag-core">CORE</span></h2>
+
+<h3>Relational (SQL)</h3>
+<table>
+  <tr><th>Service</th><th>What it is</th></tr>
+  <tr><td>Azure SQL Database</td><td>Fully managed SQL Server (PaaS); auto patch/backup/scale</td></tr>
+  <tr><td>SQL Managed Instance</td><td>Near-100% SQL Server compatibility for lift-and-shift</td></tr>
+  <tr><td>Azure Database for PostgreSQL</td><td>Managed Postgres (Flexible Server)</td></tr>
+  <tr><td>Azure Database for MySQL</td><td>Managed MySQL</td></tr>
+</table>
+
+<h3>Azure SQL deployment options</h3>
+<div class="ascii">  Single Database   one isolated DB, simplest
+  Elastic Pool      many DBs share a budget of resources
+                    (good for SaaS multi-tenant)
+  Managed Instance  full SQL Server feature set + VNet
+  
+  Purchasing: vCore (flexible) or DTU (bundled) model.
+  Serverless tier: auto-pause when idle, pay per second.</div>
+
+<h3>NoSQL: Azure Cosmos DB</h3>
+<p>A globally distributed, multi-model database with single-digit-millisecond latency and turnkey global replication. It supports multiple APIs so you can use familiar interfaces.</p>
+<div class="ascii">  Cosmos DB APIs (pick one per account):
+    - NoSQL (core, document/JSON)
+    - MongoDB (wire-compatible)
+    - Cassandra (wide-column)
+    - Gremlin (graph)
+    - Table (key-value)
+
+  Global distribution: replicate to any region with a
+  click; choose from 5 consistency levels:
+  Strong -> Bounded Staleness -> Session -> Consistent
+  Prefix -> Eventual   (stronger = more latency/cost)</div>
+
+<h3>Caching &amp; in-memory</h3>
+<ul>
+  <li><strong>Azure Cache for Redis</strong> — managed Redis for caching, sessions, leaderboards, pub/sub.</li>
+</ul>
+
+<div class="callout callout-tip">
+  <strong>Cosmos DB's 5 consistency levels are a key differentiator</strong>
+  Most databases offer "strong" or "eventual." Cosmos lets you tune the exact trade-off per workload. <strong>Session</strong> consistency (the default) is usually the sweet spot — read-your-own-writes guarantees with low latency. Reach for Strong only when correctness demands it, since it costs more and adds latency.
+</div>
+
+<hr>
+
+<h2 id="part-8">Part 8 — Networking <span class="tag tag-core">CORE</span></h2>
+
+<h3>Virtual Network (VNet) — your private network</h3>
+<p>A VNet is your isolated network in Azure. You divide it into subnets, control traffic with security rules, and connect it to other networks or on-prem.</p>
+<div class="ascii">  Virtual Network  10.0.0.0/16
+    +-- Subnet "web"   10.0.1.0/24  [ VMs / App ]
+    |       guarded by Network Security Group (NSG)
+    +-- Subnet "app"   10.0.2.0/24  [ services ]
+    +-- Subnet "data"  10.0.3.0/24  [ databases ]
+            (private, no inbound from internet)
+
+  NSG = firewall rules (allow/deny by IP, port, protocol)
+        applied to subnets or NICs.</div>
+
+<h3>Core networking services</h3>
+<table>
+  <tr><th>Service</th><th>Role</th></tr>
+  <tr><td>Network Security Group (NSG)</td><td>Allow/deny traffic rules (stateful firewall)</td></tr>
+  <tr><td>Azure Load Balancer</td><td>L4 (TCP/UDP) load balancing</td></tr>
+  <tr><td>Application Gateway</td><td>L7 (HTTP) LB + WAF + routing</td></tr>
+  <tr><td>Azure Front Door</td><td>Global L7 LB + CDN + WAF at the edge</td></tr>
+  <tr><td>Azure DNS</td><td>Managed DNS hosting</td></tr>
+  <tr><td>VPN Gateway</td><td>Encrypted tunnel to on-prem over internet</td></tr>
+  <tr><td>ExpressRoute</td><td>Private dedicated link to Azure (no internet)</td></tr>
+  <tr><td>Private Link / Endpoint</td><td>Reach PaaS services over private IP</td></tr>
+</table>
+
+<h3>Connecting to on-premises</h3>
+<div class="ascii">  VPN Gateway:   on-prem ==(encrypted over internet)== Azure
+                 cheaper, variable latency
+
+  ExpressRoute:  on-prem ==(private dedicated circuit)== Azure
+                 expensive, predictable, higher bandwidth,
+                 bypasses the public internet</div>
+
+<div class="callout callout-warn">
+  <strong>Keep data tiers private</strong>
+  Databases and internal services should sit in subnets with no inbound internet access. Use Private Endpoints so traffic to PaaS services (SQL, Storage, Cosmos) stays on the Azure backbone, not the public internet. Expose only what must be public, behind a WAF (Application Gateway or Front Door).
+</div>
+
+<hr>
+
+<h2 id="part-9">Part 9 — Messaging &amp; integration <span class="tag tag-concept">CONCEPT</span></h2>
+
+<p>Messaging decouples components so they can scale and fail independently. Azure has distinct services for different patterns — choosing the right one is a common design question.</p>
+
+<table>
+  <tr><th>Service</th><th>Pattern</th><th>Use for</th></tr>
+  <tr><td>Service Bus</td><td>Enterprise message broker (queues + topics)</td><td>Ordered, transactional, pub/sub messaging</td></tr>
+  <tr><td>Event Grid</td><td>Event routing (pub/sub, reactive)</td><td>React to discrete events (blob created, etc.)</td></tr>
+  <tr><td>Event Hubs</td><td>High-throughput event streaming</td><td>Telemetry, logs, IoT, big data pipelines (Kafka-like)</td></tr>
+  <tr><td>Queue Storage</td><td>Simple, cheap queue</td><td>Basic background job decoupling</td></tr>
+</table>
+
+<h3>Service Bus vs Event Grid vs Event Hubs</h3>
+<div class="ascii">  SERVICE BUS (messages, commands):
+    "process this order" -> queue -> one worker handles it
+    rich features: ordering (FIFO), sessions, dead-letter,
+    transactions, topics+subscriptions (pub/sub)
+
+  EVENT GRID (events, reactions):
+    "a blob was created!" -> fan out to many subscribers
+    lightweight, reactive, near-real-time event routing
+
+  EVENT HUBS (event streams, telemetry):
+    millions of events/sec -> [ stream ] -> consumers read
+    at their own pace, replayable. Kafka-compatible.
+    
+  Rule: command/work -> Service Bus. Reaction to a fact
+  -> Event Grid. Massive stream -> Event Hubs.</div>
+
+<div class="callout callout-tip">
+  <strong>Design consumers to be idempotent</strong>
+  Messaging delivers at-least-once, so a message may arrive twice. Processing it twice must be safe (dedupe on a message ID). Use dead-letter queues to isolate "poison" messages that repeatedly fail, so they don't block the pipeline.
+</div>
+
+<hr>
+
+<h2 id="part-10">Part 10 — Data &amp; analytics <span class="tag tag-concept">CONCEPT</span></h2>
+
+<p>Azure's analytics stack moves data from many sources into a lake/warehouse, transforms it, and serves insights.</p>
+<div class="ascii">  INGEST          STORE            PROCESS          SERVE
+  ------          -----            -------          -----
+  Data Factory -> Data Lake     -> Synapse /      -> Power BI
+  Event Hubs      (ADLS Gen2)      Databricks        (dashboards)
+  (streaming)                      (Spark, SQL)
+  
+  Data Factory = managed ETL/ELT orchestration (pipelines)
+  Synapse = unified analytics (SQL pools + Spark + pipelines)
+  Databricks = premier Spark platform (lakehouse, ML)
+  Microsoft Fabric = newer all-in-one SaaS analytics
+  Power BI = BI / visualization</div>
+
+<table>
+  <tr><th>Service</th><th>Role</th></tr>
+  <tr><td>Data Factory</td><td>ETL/ELT pipeline orchestration (150+ connectors)</td></tr>
+  <tr><td>Synapse Analytics</td><td>Enterprise data warehouse + big-data analytics</td></tr>
+  <tr><td>Azure Databricks</td><td>Spark-based lakehouse, ETL, ML at scale</td></tr>
+  <tr><td>Microsoft Fabric</td><td>Unified SaaS analytics (OneLake, all-in-one)</td></tr>
+  <tr><td>Stream Analytics</td><td>Real-time stream processing (SQL over streams)</td></tr>
+  <tr><td>Power BI</td><td>Business intelligence &amp; dashboards</td></tr>
+</table>
+
+<div class="callout callout-tip">
+  <strong>Fabric is Microsoft's strategic bet</strong>
+  Microsoft Fabric unifies Data Factory, Synapse, and Power BI into one SaaS experience over a shared lake (OneLake). For greenfield analytics, evaluate Fabric. For existing estates, Synapse + Databricks + Data Factory remain widely used.
+</div>
+
+<hr>
+
+<h2 id="part-11">Part 11 — AI &amp; machine learning <span class="tag tag-core">CORE</span></h2>
+
+<p>Azure's AI portfolio spans pre-built APIs, the OpenAI partnership, and a full ML platform. This is a key strength given the Microsoft-OpenAI relationship.</p>
+
+<h3>The three layers of Azure AI</h3>
+<div class="ascii">  1. PRE-BUILT AI (call an API, no ML needed)
+     Azure AI Services (formerly Cognitive Services):
+       Vision, Speech, Language, Translator,
+       Document Intelligence, Content Safety
+
+  2. GENERATIVE AI (foundation models)
+     Azure OpenAI Service: GPT-4o, GPT-4, o-series,
+       embeddings, DALL-E -- enterprise-grade, in your tenant
+     Azure AI Foundry: build/deploy/govern AI apps & agents
+     Azure AI Search: vector + keyword search for RAG
+
+  3. CUSTOM ML (build your own models)
+     Azure Machine Learning: full MLOps platform
+       (train, tune, deploy, monitor, pipelines)</div>
+
+<table>
+  <tr><th>Service</th><th>Use for</th></tr>
+  <tr><td>Azure OpenAI Service</td><td>GPT / o-series / DALL-E / embeddings in your tenant with enterprise controls</td></tr>
+  <tr><td>Azure AI Foundry</td><td>Build, evaluate, deploy &amp; govern GenAI apps and agents (model catalog, prompt flow)</td></tr>
+  <tr><td>Azure AI Search</td><td>Hybrid (vector + keyword) retrieval — the backbone of RAG on Azure</td></tr>
+  <tr><td>Azure AI Services</td><td>Pre-built APIs: vision, speech, language, doc intelligence</td></tr>
+  <tr><td>Azure Machine Learning</td><td>Custom model training &amp; full MLOps lifecycle</td></tr>
+  <tr><td>Azure AI Content Safety</td><td>Moderate text/image for harmful content; prompt-shield</td></tr>
+</table>
+
+<h3>A typical RAG architecture on Azure</h3>
+<div class="ascii">  docs -> Document Intelligence (extract) -> chunk
+        -> Azure OpenAI (embeddings) -> Azure AI Search
+                                          (vector index)
+  
+  user question
+     -> embed (Azure OpenAI)
+     -> Azure AI Search (hybrid retrieve + semantic rank)
+     -> Azure OpenAI (GPT-4o) with retrieved context
+     -> grounded answer + citations
+     -> Content Safety checks in/out</div>
+
+<div class="callout callout-tip">
+  <strong>Azure OpenAI vs OpenAI direct</strong>
+  Azure OpenAI runs the same models inside your Azure tenant with enterprise features: VNet/Private Link, Entra ID auth, regional data residency, content filtering, and SLAs. Enterprises choose it for governance and compliance. The API is largely compatible with OpenAI's, so porting is straightforward.
+</div>
+
+<hr>
+
+<h2 id="part-12">Part 12 — DevOps, IaC &amp; monitoring <span class="tag tag-prod">PROD</span></h2>
+
+<h3>Infrastructure as Code (IaC)</h3>
+<table>
+  <tr><th>Tool</th><th>Notes</th></tr>
+  <tr><td>ARM templates</td><td>Native JSON; verbose, foundational</td></tr>
+  <tr><td>Bicep</td><td>Cleaner DSL that compiles to ARM; Azure-native, recommended</td></tr>
+  <tr><td>Terraform</td><td>Multi-cloud, huge ecosystem; popular for Azure too</td></tr>
+</table>
+
+<pre><code>// Bicep — declare a storage account
+resource sa 'Microsoft.Storage/storageAccounts@2023-01-01' = {
+  name: 'mystorage${uniqueString(resourceGroup().id)}'
+  location: resourceGroup().location
+  sku: { name: 'Standard_LRS' }
+  kind: 'StorageV2'
+}</code></pre>
+
+<h3>CI/CD</h3>
+<ul>
+  <li><strong>Azure DevOps</strong> — Repos, Pipelines, Boards, Artifacts (full ALM suite).</li>
+  <li><strong>GitHub Actions</strong> — Microsoft-owned; deeply integrated with Azure deploy actions.</li>
+</ul>
+
+<h3>Monitoring: Azure Monitor</h3>
+<div class="ascii">  Azure Monitor (the umbrella)
+    +-- Metrics       numeric time-series (CPU, latency)
+    +-- Logs          -> Log Analytics (query with KQL)
+    +-- App Insights  app-level traces, requests, deps,
+    |                 distributed tracing
+    +-- Alerts        thresholds -> notify / auto-action
+    +-- Dashboards / Workbooks   visualize
+
+  KQL (Kusto Query Language) is how you query logs:
+    requests | where resultCode == 500
+             | summarize count() by bin(timestamp, 5m)</div>
+
+<div class="callout callout-tip">
+  <strong>Application Insights early</strong>
+  Instrument apps with Application Insights from the start — it gives request rates, failures, dependency timings, and end-to-end distributed traces with minimal code. Combined with Log Analytics (KQL), it's how you debug production on Azure.
+</div>
+
+<hr>
+
+<h2 id="part-13">Part 13 — Security &amp; cost management <span class="tag tag-core">CORE</span> <span class="tag tag-prod">PROD</span></h2>
+
+<h3>Security services</h3>
+<table>
+  <tr><th>Service</th><th>Role</th></tr>
+  <tr><td>Microsoft Defender for Cloud</td><td>Posture management + workload threat protection (CSPM/CWPP)</td></tr>
+  <tr><td>Microsoft Sentinel</td><td>Cloud-native SIEM/SOAR (security analytics)</td></tr>
+  <tr><td>Azure Key Vault</td><td>Store secrets, keys, certificates securely</td></tr>
+  <tr><td>Entra ID Protection / PIM</td><td>Risk-based access, just-in-time privileged roles</td></tr>
+  <tr><td>Azure Policy</td><td>Enforce governance &amp; compliance rules</td></tr>
+  <tr><td>DDoS Protection / WAF</td><td>Network + application layer attack defense</td></tr>
+</table>
+
+<h3>The security mantras</h3>
+<ul>
+  <li><strong>Identity is the perimeter</strong> — secure with MFA, Conditional Access, least privilege.</li>
+  <li><strong>Secrets in Key Vault</strong>, never in code; use managed identities to access them.</li>
+  <li><strong>Encrypt</strong> in transit (TLS) and at rest (default on most services).</li>
+  <li><strong>Defense in depth</strong> — layer network, identity, app, and data controls.</li>
+  <li><strong>Defender + Sentinel</strong> for continuous monitoring and response.</li>
+</ul>
+
+<h3>Cost management</h3>
+<ul>
+  <li><strong>Right-size</strong> — match VM/DB SKUs to actual usage; downscale idle resources.</li>
+  <li><strong>Commit</strong> — Reserved Instances / Savings Plans for steady workloads (up to ~70%).</li>
+  <li><strong>Spot</strong> — for interruptible batch (up to ~90% off).</li>
+  <li><strong>Auto-scale &amp; scale-to-zero</strong> — Functions, Container Apps, serverless DB tiers.</li>
+  <li><strong>Lifecycle policies</strong> — tier blobs to cool/archive automatically.</li>
+  <li><strong>Budgets &amp; alerts</strong> — Cost Management + tags for chargeback.</li>
+</ul>
+
+<div class="callout callout-warn">
+  <strong>The shared responsibility model</strong>
+  Azure secures the cloud (physical DCs, hypervisor, backbone). You secure what's <em>in</em> the cloud — your identities, data, network config, OS patching (for IaaS), and access policies. The line shifts: with SaaS/PaaS Azure handles more; with IaaS VMs you handle the OS and up. Know which side you own for each service.
+</div>
+
+<hr>
+
+<h2 id="part-14">Part 14 — Architecture patterns &amp; cheat sheet</h2>
+
+<h3>Reference: a typical 3-tier web app on Azure</h3>
+<div class="ascii">          Azure Front Door (global LB + CDN + WAF)
+                        |
+              Application Gateway (regional L7 + WAF)
+                        |
+         +--------------+--------------+
+         |   App Service / Container Apps   |  (web/app tier,
+         |   (autoscaling)                  |   autoscale)
+         +--------------+--------------+
+                        |
+              Azure SQL DB / Cosmos DB     (data tier, private)
+                        |
+              Azure Cache for Redis        (caching)
+         
+  Cross-cutting: Entra ID (auth), Key Vault (secrets),
+  Azure Monitor + App Insights (observability),
+  Private Endpoints (private connectivity).</div>
+
+<h3>The Well-Architected Framework (5 pillars)</h3>
+<table>
+  <tr><th>Pillar</th><th>Question it answers</th></tr>
+  <tr><td>Reliability</td><td>Does it recover from failure? (zones, regions, retries)</td></tr>
+  <tr><td>Security</td><td>Is it protected? (identity, encryption, network)</td></tr>
+  <tr><td>Cost Optimization</td><td>Are we spending efficiently?</td></tr>
+  <tr><td>Operational Excellence</td><td>Can we operate &amp; monitor it well? (IaC, DevOps)</td></tr>
+  <tr><td>Performance Efficiency</td><td>Does it scale to demand?</td></tr>
+</table>
+
+<h3>Service selection cheat sheet</h3>
+<table>
+  <tr><th>Need</th><th>Reach for</th></tr>
+  <tr><td>Run a web app without servers</td><td>App Service / Container Apps</td></tr>
+  <tr><td>Event-driven function</td><td>Azure Functions</td></tr>
+  <tr><td>Full Kubernetes</td><td>AKS</td></tr>
+  <tr><td>Object/file storage</td><td>Blob Storage</td></tr>
+  <tr><td>Relational DB</td><td>Azure SQL / PostgreSQL</td></tr>
+  <tr><td>Global NoSQL</td><td>Cosmos DB</td></tr>
+  <tr><td>Cache</td><td>Azure Cache for Redis</td></tr>
+  <tr><td>Enterprise messaging</td><td>Service Bus</td></tr>
+  <tr><td>Event streaming</td><td>Event Hubs</td></tr>
+  <tr><td>Secrets/keys</td><td>Key Vault</td></tr>
+  <tr><td>GenAI / LLMs</td><td>Azure OpenAI + AI Search + AI Foundry</td></tr>
+  <tr><td>ETL pipelines</td><td>Data Factory</td></tr>
+  <tr><td>Big-data analytics</td><td>Synapse / Databricks / Fabric</td></tr>
+  <tr><td>Monitoring</td><td>Azure Monitor + App Insights</td></tr>
+</table>
+
+<div class="callout callout-tip">
+  <strong>Final advice</strong>
+  Azure's edge is enterprise integration: if you run Microsoft 365, Active Directory, Windows Server, or .NET, Azure reduces friction enormously. Lead with identity (Entra ID + managed identities), default to managed/PaaS services over IaaS, codify everything with Bicep/Terraform, and instrument with Azure Monitor from day one.
+</div>
+
+<hr>
+<div class="meta">End of Azure guide. Service names and limits change frequently — always confirm current details in the official Azure documentation.</div>
+
+</body>
+</html>

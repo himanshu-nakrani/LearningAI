@@ -191,6 +191,76 @@
   }
   /* /booknav */
   
+  /* booknav shadow */
+  .booknav { box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+  
+  /* inline theme toggle (in booknav) */
+  .theme-toggle-inline {
+    margin-left: auto;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1rem;
+    line-height: 1;
+    color: var(--fg);
+    padding: 0;
+    flex-shrink: 0;
+    transition: background 0.15s ease, transform 0.15s ease;
+  }
+  .theme-toggle-inline:hover { background: var(--accent-soft); transform: scale(1.08); }
+  
+  /* reading progress bar */
+  .reading-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 3px;
+    background: var(--accent);
+    z-index: 1001;
+    width: 0%;
+    pointer-events: none;
+    transition: width 0.1s ease;
+  }
+  
+  /* scroll to top button */
+  .scroll-top {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1.3rem;
+    line-height: 1;
+    padding: 0;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 999;
+    transition: opacity 0.3s ease, transform 0.15s ease;
+  }
+  .scroll-top.visible { opacity: 1; pointer-events: auto; }
+  .scroll-top:hover { transform: translateY(-2px); }
+  
+  /* focus states for accessibility */
+  a:focus-visible, button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  
   html.dark {
     --fg: #e8e8e8;
     --muted: #a8a8a8;
@@ -239,7 +309,7 @@
 </head>
 <body>
 
-<button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">🌙</button>
+<div class="reading-progress" id="reading-progress"></div>
 
 <nav class="booknav">
   <a class="home" href="index.html">← Index</a>
@@ -253,6 +323,7 @@
   <a href="python-guide.html">Python</a>
   <a href="dsa-guide.html">DSA</a>
   <a href="system-design-guide.html">System Design</a>
+  <button class="theme-toggle-inline" id="theme-toggle" aria-label="Toggle dark mode">🌙</button>
 </nav>
 
 <h1>Google Cloud Platform Guide — Complete</h1>
@@ -954,7 +1025,34 @@ resource "google_storage_bucket" "data" {
     setTheme(isDark ? 'light' : 'dark');
   });
 })();
+
+(function() {
+  const progress = document.getElementById('reading-progress');
+  const scrollTopBtn = document.getElementById('scroll-top');
+
+  function update() {
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const pct = scrollHeight > 0 ? (scrollTop / scrollHeight) * 100 : 0;
+    if (progress) progress.style.width = pct + '%';
+    if (scrollTopBtn) {
+      if (scrollTop > 300) scrollTopBtn.classList.add('visible');
+      else scrollTopBtn.classList.remove('visible');
+    }
+  }
+
+  window.addEventListener('scroll', update, { passive: true });
+  update();
+
+  if (scrollTopBtn) {
+    scrollTopBtn.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+})();
 </script>
+
+<button class="scroll-top" id="scroll-top" aria-label="Scroll to top">↑</button>
 
 </body>
 </html>

@@ -131,9 +131,58 @@
   body, a.card, .theme-toggle {
     transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
   }
+  
+  /* reading progress bar */
+  .reading-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 3px;
+    background: var(--accent);
+    z-index: 1001;
+    width: 0%;
+    pointer-events: none;
+    transition: width 0.1s ease;
+  }
+  
+  /* scroll to top button */
+  .scroll-top {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1.3rem;
+    line-height: 1;
+    padding: 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 999;
+    transition: opacity 0.3s ease, transform 0.15s ease, background 0.3s ease, box-shadow 0.3s ease;
+  }
+  html.dark .scroll-top { box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
+  .scroll-top.visible { opacity: 1; pointer-events: auto; }
+  .scroll-top:hover { transform: translateY(-2px); }
+  
+  /* focus states for accessibility */
+  a:focus-visible, button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
 </style>
 </head>
 <body>
+
+<div class="reading-progress" id="reading-progress"></div>
 
 <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">🌙</button>
 
@@ -232,7 +281,34 @@
     setTheme(isDark ? 'light' : 'dark');
   });
 })();
+
+(function() {
+  const progress = document.getElementById('reading-progress');
+  const scrollTopBtn = document.getElementById('scroll-top');
+
+  function update() {
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const pct = scrollHeight > 0 ? (scrollTop / scrollHeight) * 100 : 0;
+    if (progress) progress.style.width = pct + '%';
+    if (scrollTopBtn) {
+      if (scrollTop > 300) scrollTopBtn.classList.add('visible');
+      else scrollTopBtn.classList.remove('visible');
+    }
+  }
+
+  window.addEventListener('scroll', update, { passive: true });
+  update();
+
+  if (scrollTopBtn) {
+    scrollTopBtn.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+})();
 </script>
+
+<button class="scroll-top" id="scroll-top" aria-label="Scroll to top">↑</button>
 
 </body>
 </html>

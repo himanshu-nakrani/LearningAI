@@ -1,0 +1,2345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Experian Lead AI Engineer — Complete Interview Prep</title>
+<style>
+  :root {
+    --fg: #1a1a1a;
+    --muted: #555;
+    --bg: #fdfdfc;
+    --accent: #b8453a;
+    --accent-soft: #f4e8e5;
+    --border: #d4d4d0;
+    --code-bg: #f4f1ec;
+    --code-fg: #2a2a2a;
+    --warn-bg: #fff8e0;
+    --warn-bd: #e0c560;
+    --tip-bg: #e8f3eb;
+    --tip-bd: #6ba577;
+    --gap-bg: #fbe8e6;
+    --gap-bd: #b8453a;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: Charter, "Iowan Old Style", Georgia, serif;
+    color: var(--fg);
+    background: var(--bg);
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 30px 80px;
+    line-height: 1.65;
+    font-size: 17px;
+  }
+  h1, h2, h3, h4 {
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+    color: var(--fg);
+    line-height: 1.25;
+    margin-top: 1.8em;
+    margin-bottom: 0.5em;
+  }
+  h1 {
+    font-size: 2.2em;
+    border-bottom: 3px solid var(--accent);
+    padding-bottom: 12px;
+    margin-top: 0.5em;
+  }
+  h2 {
+    font-size: 1.6em;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 6px;
+    margin-top: 2.5em;
+  }
+  h3 { font-size: 1.25em; color: var(--accent); }
+  h4 { font-size: 1.05em; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600; }
+  p, ul, ol { margin: 0.6em 0; }
+  ul, ol { padding-left: 1.6em; }
+  li { margin: 0.3em 0; }
+  code {
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    background: var(--code-bg);
+    color: var(--code-fg);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 0.88em;
+  }
+  pre {
+    background: var(--code-bg);
+    color: var(--code-fg);
+    padding: 14px 18px;
+    border-radius: 6px;
+    border-left: 3px solid var(--accent);
+    overflow-x: auto;
+    font-size: 0.85em;
+    line-height: 1.5;
+  }
+  pre code { background: none; padding: 0; font-size: 1em; }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 1em 0;
+    font-size: 0.92em;
+  }
+  th, td {
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: left;
+    vertical-align: top;
+  }
+  th { background: var(--code-bg); font-weight: 600; }
+  blockquote {
+    border-left: 3px solid var(--muted);
+    margin: 1em 0;
+    padding: 0.4em 1em;
+    color: var(--muted);
+    font-style: italic;
+  }
+  .tag {
+    display: inline-block;
+    font-size: 0.7em;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 3px;
+    margin-left: 6px;
+    vertical-align: middle;
+    font-family: -apple-system, sans-serif;
+    letter-spacing: 0.04em;
+  }
+  .tag-core { background: var(--gap-bd); color: white; }
+  .tag-likely { background: #4a7ba6; color: white; }
+  .tag-nice { background: #888; color: white; }
+  .tag-gap { background: #d4a017; color: white; }
+  .callout {
+    padding: 12px 18px;
+    margin: 1em 0;
+    border-radius: 6px;
+    border-left: 4px solid;
+  }
+  .callout-warn { background: var(--warn-bg); border-color: var(--warn-bd); }
+  .callout-tip { background: var(--tip-bg); border-color: var(--tip-bd); }
+  .callout-gap { background: var(--gap-bg); border-color: var(--gap-bd); }
+  .callout strong { display: block; margin-bottom: 4px; font-family: -apple-system, sans-serif; }
+  .qa {
+    margin: 1em 0;
+    padding: 12px 18px;
+    background: #f8f7f4;
+    border-left: 3px solid var(--accent);
+    border-radius: 4px;
+  }
+  .qa-q { font-weight: 600; color: var(--accent); margin-bottom: 6px; }
+  .qa-a { color: var(--fg); }
+  .toc {
+    background: var(--code-bg);
+    padding: 20px 28px;
+    border-radius: 8px;
+    margin: 2em 0;
+  }
+  .toc h2 { margin-top: 0; border: none; }
+  .toc ol { padding-left: 1.4em; }
+  .toc a { color: var(--accent); text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+  .ascii {
+    font-family: "SF Mono", Menlo, monospace;
+    white-space: pre;
+    background: var(--code-bg);
+    padding: 14px 18px;
+    border-radius: 6px;
+    border-left: 3px solid var(--accent);
+    overflow-x: auto;
+    font-size: 0.78em;
+    line-height: 1.4;
+  }
+  .star {
+    background: #f5f1e8;
+    padding: 14px 18px;
+    border-radius: 6px;
+    margin: 1em 0;
+    border-left: 3px solid #8b6f3f;
+  }
+  .star strong { display: inline-block; min-width: 90px; font-family: -apple-system, sans-serif; color: #6b5530; }
+  hr { border: none; border-top: 1px solid var(--border); margin: 2.5em 0; }
+  .meta {
+    color: var(--muted);
+    font-size: 0.9em;
+    margin-bottom: 2em;
+  }
+  @media print {
+    body { font-size: 11pt; max-width: 100%; padding: 0; }
+    h1, h2, h3 { page-break-after: avoid; }
+    pre, .ascii, .callout, .qa, .star, table { page-break-inside: avoid; }
+    .toc { page-break-after: always; }
+  }
+</style>
+</head>
+<body>
+
+<h1>Experian Lead AI Engineer — Complete Interview Prep</h1>
+<div class="meta">
+  Self-contained study guide. Open in browser, or print to PDF.<br>
+  Role: Lead AI Engineer · Hyderabad (Hybrid) · Reports to Director Engineering<br>
+  Focus: Agentic AI for data engineering on AWS<br>
+  Legend:
+  <span class="tag tag-core">CORE</span> must know
+  <span class="tag tag-likely">LIKELY</span> probable
+  <span class="tag tag-nice">NICE</span> bonus
+  <span class="tag tag-gap">GAP</span> your weak area
+</div>
+
+<div class="toc">
+<h2>Table of Contents</h2>
+<ol>
+  <li><a href="#part-0">Part 0 — Strategic overview &amp; how to use this guide</a></li>
+  <li><a href="#part-1">Part 1 — AWS AgentCore (the critical gap)</a></li>
+  <li><a href="#part-2">Part 2 — AWS data engineering stack</a></li>
+  <li><a href="#part-3">Part 3 — PySpark &amp; distributed processing</a></li>
+  <li><a href="#part-4">Part 4 — Claude Code, Cursor, AI-augmented engineering</a></li>
+  <li><a href="#part-5">Part 5 — Agentic AI deep dive</a></li>
+  <li><a href="#part-6">Part 6 — LLM fundamentals</a></li>
+  <li><a href="#part-7">Part 7 — Data engineering for AI (legacy reverse engineering, self-healing, lineage)</a></li>
+  <li><a href="#part-8">Part 8 — Your resume: deep-dive prep with sample answers</a></li>
+  <li><a href="#part-9">Part 9 — System design scenarios (5 walkthroughs)</a></li>
+  <li><a href="#part-10">Part 10 — CI/CD with AI</a></li>
+  <li><a href="#part-11">Part 11 — Security &amp; governance</a></li>
+  <li><a href="#part-12">Part 12 — Behavioral / leadership — STAR stories</a></li>
+  <li><a href="#part-13">Part 13 — Questions to ask them</a></li>
+  <li><a href="#part-14">Part 14 — Study schedule &amp; final checklist</a></li>
+</ol>
+</div>
+
+<h2 id="part-0">Part 0 — Strategic overview &amp; how to use this guide</h2>
+
+<h3>Read this first</h3>
+<p>You are interviewing for a <strong>Lead</strong> role at a <strong>FTSE 100 company</strong>. The bar is high but the JD is unusually specific — they tell you exactly what to prepare. Treat the JD as your study guide:</p>
+<ul>
+  <li><strong>Agentic systems for data engineering</strong> — the central theme. Every answer should connect back.</li>
+  <li><strong>AWS-native</strong> — they will not hire someone who can't speak AWS fluently.</li>
+  <li><strong>Claude Code / Cursor / AgentCore</strong> — named explicitly. You must have concrete usage stories.</li>
+  <li><strong>"Reverse engineer legacy pipelines"</strong> — this is the killer scenario. Be ready to whiteboard it.</li>
+</ul>
+
+<h3>Your edge</h3>
+<ul>
+  <li>Production agentic platform (Agent Forge) — directly aligned with what they want to build.</li>
+  <li>1B-param model pretraining on TPU — proves distributed-systems depth.</li>
+  <li>2 publications on Text-to-SQL with Graph-of-Thoughts — research credibility.</li>
+  <li>OTEL observability + guardrails — production maturity.</li>
+</ul>
+
+<h3>Your gaps (be honest, prepare deliberately)</h3>
+<ol>
+  <li><strong>AWS stack depth</strong> — your background is Azure/GCP/OCI heavy.</li>
+  <li><strong>PySpark</strong> — listed as required, not on resume.</li>
+  <li><strong>Years of experience</strong> — JD says 5+, you have ~2.5. Have a crisp answer.</li>
+  <li><strong>Pure data engineering framing</strong> — your work is AI app dev; they want AI applied to DE.</li>
+</ol>
+
+<div class="callout callout-tip">
+  <strong>The reframe that wins this interview</strong>
+  Frame every Agent Forge / Alpha Copilot story as <em>"AI applied to engineering problems at scale"</em>. The JD is about using AI to do DE work — same fundamental skill as using AI to do SQL or platform work. You've already done this; just connect the dots.
+</div>
+
+<h3>How to use this guide</h3>
+<ul>
+  <li>Each section is self-contained — you can study out of order.</li>
+  <li><strong>CORE</strong> tagged sections are non-negotiable.</li>
+  <li><strong>GAP</strong> tagged sections are where you're weakest — prioritize.</li>
+  <li>Every system design scenario has a worked answer. Practice drawing the architecture from memory.</li>
+  <li>STAR stories are drafted from your actual resume bullets — edit them to match reality before the interview.</li>
+</ul>
+
+<hr>
+
+<h2 id="part-1">Part 1 — AWS AgentCore <span class="tag tag-core">CORE</span> <span class="tag tag-gap">GAP</span></h2>
+
+<p>This is named explicitly in the JD. If you walk in not knowing what AgentCore is, you lose the interview. Spend 4 hours on this minimum.</p>
+
+<h3>1.1 What is AWS Bedrock AgentCore?</h3>
+<p>AgentCore is AWS's framework (announced 2024, GA mid-2025) for building, deploying, and operating production AI agents. It is <strong>framework-agnostic</strong> — you can use LangGraph, CrewAI, Strands, or your own code; AgentCore provides the runtime and the supporting services.</p>
+
+<p>Think of it as <em>"managed infra for agents"</em>, the way ECS/Fargate is managed infra for containers. It is not a single product — it's a collection of services under the AgentCore umbrella.</p>
+
+<h3>1.2 The seven AgentCore primitives</h3>
+
+<table>
+<tr><th>Service</th><th>What it does</th><th>When to use</th></tr>
+<tr>
+  <td><strong>Runtime</strong></td>
+  <td>Serverless execution environment for agents. Session isolation, up to 8-hour async sessions, scales to thousands of concurrent agents.</td>
+  <td>Default deployment target. Replaces self-managed ECS/Lambda for agents.</td>
+</tr>
+<tr>
+  <td><strong>Memory</strong></td>
+  <td>Managed short-term (session) and long-term (cross-session) memory. Built-in summarization, semantic memory, user preference tracking.</td>
+  <td>Anywhere you'd otherwise reinvent vector store + memory bookkeeping.</td>
+</tr>
+<tr>
+  <td><strong>Identity</strong></td>
+  <td>Lets agents securely access AWS resources and 3rd-party services (Slack, GitHub, Salesforce) using delegated credentials. OAuth 2.0 token vault.</td>
+  <td>Agent needs to act on behalf of a user across systems.</td>
+</tr>
+<tr>
+  <td><strong>Gateway</strong></td>
+  <td>Turns existing APIs, Lambda functions, and OpenAPI specs into agent-callable tools. MCP-compatible.</td>
+  <td>Exposing internal APIs to agents without writing tool wrappers.</td>
+</tr>
+<tr>
+  <td><strong>Browser</strong></td>
+  <td>Managed headless Chromium for agents that need to navigate web UIs.</td>
+  <td>Web automation, scraping, legacy UI interaction.</td>
+</tr>
+<tr>
+  <td><strong>Code Interpreter</strong></td>
+  <td>Sandboxed code execution for agent-generated Python/JS. Isolated, ephemeral.</td>
+  <td>Data analysis agents, code-gen validation, untrusted execution.</td>
+</tr>
+<tr>
+  <td><strong>Observability</strong></td>
+  <td>OpenTelemetry-based traces, metrics, evals for agent runs. CloudWatch integration.</td>
+  <td>Debugging, evals, audit trail.</td>
+</tr>
+</table>
+
+<div class="callout callout-tip">
+  <strong>Memory hook</strong>
+  Mnemonic: <strong>"R-MIG-BCO"</strong> — Runtime, Memory, Identity, Gateway, Browser, Code-interpreter, Observability.
+</div>
+
+<h3>1.3 AgentCore vs. Bedrock Agents vs. self-hosted</h3>
+
+<table>
+<tr><th>Option</th><th>Abstraction level</th><th>Flexibility</th><th>Best for</th></tr>
+<tr><td>Bedrock Agents</td><td>High — declarative, action groups</td><td>Low — locked to AWS patterns</td><td>Simple agents, low custom logic</td></tr>
+<tr><td>AgentCore</td><td>Medium — primitives you compose</td><td>High — any framework on Runtime</td><td>Production-grade custom agents</td></tr>
+<tr><td>Self-hosted (LangGraph on ECS)</td><td>Low — you build everything</td><td>Total</td><td>Strict customization, multi-cloud</td></tr>
+</table>
+
+<h3>1.4 AgentCore vs. LangGraph / CrewAI</h3>
+<p>This is a common interview trap. They are <strong>not competitors</strong> — they layer.</p>
+<ul>
+  <li><strong>LangGraph / CrewAI / Strands</strong> = <em>orchestration framework</em> (the agent code).</li>
+  <li><strong>AgentCore</strong> = <em>runtime + supporting services</em> (where you deploy and run them).</li>
+  <li>You can run a LangGraph agent on AgentCore Runtime, using AgentCore Memory and Gateway. AWS pushes this pattern.</li>
+</ul>
+
+<h3>1.5 Deploying an agent on AgentCore Runtime (mental model)</h3>
+
+<pre><code># Conceptual flow
+
+# 1. Write your agent (any framework)
+from langgraph.graph import StateGraph
+graph = StateGraph(...)  # your agent logic
+
+# 2. Wrap as Runtime-compatible handler
+from bedrock_agentcore import RuntimeApp
+app = RuntimeApp()
+
+@app.entrypoint
+def invoke(payload):
+    return graph.invoke(payload)
+
+# 3. Deploy via AgentCore CLI
+# $ agentcore deploy --name my-agent
+#   - packages as container
+#   - pushes to ECR
+#   - creates Runtime endpoint
+#   - returns invocation URL
+
+# 4. Invoke
+# boto3 client → agentcore.invoke(agentArn, sessionId, payload)
+</code></pre>
+
+<h3>1.6 Sessions, isolation, and the 8-hour async window</h3>
+<ul>
+  <li>Each session is fully isolated (process-level) — no cross-session leakage.</li>
+  <li>Sync invocations: up to 60 sec.</li>
+  <li>Async invocations: up to 8 hours — critical for long-running data agents (reverse engineering, large ETLs).</li>
+  <li>Session state in Memory; cold start mitigated by warm pools.</li>
+</ul>
+
+<h3>1.7 AgentCore Memory deep dive</h3>
+<ul>
+  <li><strong>Short-term memory</strong> — auto-managed conversation history with summarization at thresholds.</li>
+  <li><strong>Long-term memory</strong> — semantic facts ("user prefers Python"), preferences, cross-session context. Stored as embeddings, retrieved by semantic similarity.</li>
+  <li><strong>Memory strategies</strong> — built-in extractors: SUMMARIZATION, USER_PREFERENCE, SEMANTIC. You can write custom ones.</li>
+  <li><strong>Why it matters</strong> — replaces the entire "build a vector store + memory layer" task that every team reinvents.</li>
+</ul>
+
+<h3>1.8 AgentCore Gateway and MCP</h3>
+<p>Gateway exposes existing assets (Lambdas, OpenAPI specs, Smithy models) as MCP (Model Context Protocol) tools. This is the killer feature for enterprise.</p>
+<ul>
+  <li>Point Gateway at your internal customer-lookup Lambda → it becomes a tool any agent can call.</li>
+  <li>Auth handled by Identity service.</li>
+  <li>Supports semantic search across hundreds of tools — agent only sees relevant ones per turn.</li>
+</ul>
+
+<h3>1.9 Likely interview questions on AgentCore</h3>
+
+<div class="qa">
+  <div class="qa-q">Q: What is AWS AgentCore and how does it differ from Bedrock Agents?</div>
+  <div class="qa-a">AgentCore is a set of services for building production agents — Runtime, Memory, Identity, Gateway, Browser, Code Interpreter, and Observability. It's framework-agnostic: you bring LangGraph, CrewAI, or custom code. Bedrock Agents is a higher-level managed offering tied to AWS's action-group pattern — less flexible but quicker for simple cases. AgentCore is for production-grade, customizable agents; Bedrock Agents for fast prototypes.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: How does AgentCore handle long-running agent sessions?</div>
+  <div class="qa-a">Async sessions can run up to 8 hours, with state persisted in AgentCore Memory. Each session is process-isolated for safety. For our use case — reverse engineering legacy pipelines that can take hours — this is critical. We can kick off a session, let it work, and observe via the Observability service while it runs.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: When would you NOT use AgentCore?</div>
+  <div class="qa-a">Three cases: (1) Multi-cloud requirements — you'd be locked to AWS. (2) Extreme customization needs in the runtime itself, like custom GPU scheduling. (3) Very simple agents where Bedrock Agents' declarative model is enough. For everything else in an AWS shop, AgentCore is the default.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: How would you migrate Agent Forge to AgentCore?</div>
+  <div class="qa-a">Map our existing pieces to primitives. (1) The agent registration/discovery layer becomes a thin layer over AgentCore Runtime — each registered agent is a Runtime endpoint. (2) Our custom vector store for agent memory → AgentCore Memory with custom strategies for our domain. (3) Tool integrations → AgentCore Gateway, exposing internal Lambdas as MCP tools. (4) Our OTEL observability layer maps directly to AgentCore Observability. (5) Guardrails stay external since we have a richer policy engine. I'd do this incrementally — start with new agents on AgentCore, migrate existing ones as we hit their refactor windows.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: How does AgentCore Memory differ from a plain vector database?</div>
+  <div class="qa-a">A vector DB is a primitive — you still write the chunking, summarization, eviction, and retrieval logic. AgentCore Memory packages all of that as a managed service: built-in summarization at configurable thresholds, semantic extractors for facts and preferences, automatic write-through to long-term memory. It's the difference between Postgres and a managed RAG service.</div>
+</div>
+
+<h3>1.10 Hands-on action items (do these before interview)</h3>
+<ol>
+  <li>Read the AWS AgentCore <a href="https://docs.aws.amazon.com/bedrock-agentcore/">official docs</a> end-to-end.</li>
+  <li>Deploy the "hello world" agent from the AgentCore samples repo.</li>
+  <li>Read 1 case study (AWS blog has several — Box, Sourcegraph, etc.).</li>
+  <li>Sketch Agent Forge → AgentCore migration on paper.</li>
+  <li>Write 3 sentences on each primitive in your own words.</li>
+</ol>
+
+<hr>
+
+<h2 id="part-2">Part 2 — AWS data engineering stack <span class="tag tag-core">CORE</span> <span class="tag tag-gap">GAP</span></h2>
+
+<p>The JD lists: S3, Glue, Lambda, DynamoDB, EventBridge, MSK/SQS. You must speak fluently and quickly. Each subsection below is structured: <em>what it is → key features → gotchas → when to use vs. not → interview Q&amp;A.</em></p>
+
+<h3>2.1 Amazon S3</h3>
+<h4>Core concepts</h4>
+<ul>
+  <li><strong>Buckets</strong> are globally unique. Objects are key-value pairs. Max object size 5 TB; multipart upload required &gt; 5 GB.</li>
+  <li><strong>Storage classes</strong>: Standard (default), Standard-IA (infrequent), One Zone-IA, Glacier Instant, Glacier Flexible, Glacier Deep Archive, Intelligent-Tiering.</li>
+  <li><strong>Lifecycle policies</strong> move objects between classes / delete after N days.</li>
+  <li><strong>Versioning</strong> for retention; <strong>Object Lock</strong> for WORM compliance.</li>
+  <li><strong>Encryption</strong>: SSE-S3 (S3-managed keys), SSE-KMS (your KMS keys, audit trail), SSE-C (client keys), DSSE-KMS (dual-layer).</li>
+</ul>
+
+<h4>Event notifications (critical for pipelines)</h4>
+<ul>
+  <li>Triggers: ObjectCreated, ObjectRemoved, ObjectRestore, ReducedRedundancyLostObject.</li>
+  <li>Targets: SNS, SQS, Lambda, EventBridge.</li>
+  <li>Filtering by prefix and suffix.</li>
+  <li>EventBridge target is preferred for complex routing.</li>
+</ul>
+
+<h4>Performance &amp; cost</h4>
+<ul>
+  <li>3,500 PUT/s and 5,500 GET/s <em>per prefix</em>. Prefix-spread your keys for high throughput.</li>
+  <li>Hive-style partitioning: <code>s3://bucket/table/year=2025/month=11/day=29/file.parquet</code> — Glue/Athena exploit this for partition pruning.</li>
+  <li>S3 Select / Glacier Select — push down simple SQL into S3.</li>
+  <li>Use <strong>multipart upload</strong> for files &gt; 100 MB. Set abort lifecycle rule for failed uploads.</li>
+</ul>
+
+<h4>Common gotchas</h4>
+<ul>
+  <li>Eventual consistency was historically a thing — since Dec 2020, S3 is <strong>strongly consistent</strong> for all operations. Many engineers still believe the old story; don't.</li>
+  <li>Cross-region replication has latency and cost — don't enable by default.</li>
+  <li><strong>Small files kill performance</strong>. Compact via Glue jobs or S3 Tables.</li>
+</ul>
+
+<div class="qa">
+  <div class="qa-q">Q: How do you organize an S3 data lake for analytics?</div>
+  <div class="qa-a">Three-zone pattern: raw (immutable, original format), curated (cleaned, Parquet/ORC, partitioned), and consumption (aggregated views). Each zone in its own bucket with appropriate lifecycle policies — raw goes to Glacier after 90 days, curated stays warm. Use Hive-style partitioning by date and source. Compact small files daily to keep file sizes between 128MB and 1GB.</div>
+</div>
+
+<h3>2.2 AWS Glue</h3>
+<h4>Components</h4>
+<ul>
+  <li><strong>Glue Data Catalog</strong> — central metastore (databases, tables, schemas). Hive-compatible. Shared by Athena, EMR, Redshift Spectrum, Lake Formation.</li>
+  <li><strong>Crawlers</strong> — discover schemas from S3, JDBC sources, populate the Catalog.</li>
+  <li><strong>Glue Jobs</strong> — serverless Spark (Python or Scala) or Python Shell jobs.</li>
+  <li><strong>Glue Studio</strong> — visual job authoring.</li>
+  <li><strong>Glue DataBrew</strong> — visual data prep, no-code.</li>
+  <li><strong>Glue Streaming</strong> — micro-batch streaming jobs from Kinesis/Kafka.</li>
+</ul>
+
+<h4>DynamicFrame vs. DataFrame</h4>
+<ul>
+  <li><strong>DynamicFrame</strong> — Glue's abstraction. Self-describing, handles schema drift, has built-in transforms (<code>ResolveChoice</code>, <code>Relationalize</code>).</li>
+  <li><strong>DataFrame</strong> — Spark's standard. Faster, more ecosystem support.</li>
+  <li>Convert freely: <code>df = dynamic_frame.toDF()</code> and back via <code>DynamicFrame.fromDF(df, glueContext, "name")</code>.</li>
+  <li>Use DynamicFrame for ingestion, DataFrame for transformations.</li>
+</ul>
+
+<h4>Glue bookmarks</h4>
+<ul>
+  <li>Tracks which records a job has already processed.</li>
+  <li>Enables incremental ETL — only new files since last run.</li>
+  <li>Bookmark stored per job + per source.</li>
+  <li>Critical to enable for production jobs; otherwise you reprocess everything.</li>
+</ul>
+
+<h4>Glue vs. EMR vs. Athena</h4>
+<table>
+<tr><th>Service</th><th>Use when</th><th>Avoid when</th></tr>
+<tr><td>Glue</td><td>Serverless ETL, &lt; 1 hour jobs, AWS-native</td><td>Custom Spark configs, very large jobs</td></tr>
+<tr><td>EMR</td><td>Heavy Spark, custom configs, long-running, cost-optimized at scale</td><td>Small jobs, ops overhead</td></tr>
+<tr><td>Athena</td><td>Ad-hoc SQL on S3</td><td>Sub-second latency, complex pipelines</td></tr>
+</table>
+
+<div class="qa">
+  <div class="qa-q">Q: When do you choose Glue over EMR?</div>
+  <div class="qa-a">Glue for serverless workloads under an hour where ops simplicity wins — pay per DPU-second, no cluster to manage, integrated with Catalog. EMR when I need fine-grained Spark tuning, custom JARs, jobs longer than a few hours, or cost optimization via spot instances at scale. For a typical ingestion pipeline I default to Glue; for nightly massive aggregations on TB-scale data, EMR with spot.</div>
+</div>
+
+<h3>2.3 AWS Lambda</h3>
+<h4>Core facts</h4>
+<ul>
+  <li>Max execution: <strong>15 minutes</strong>. Hard limit.</li>
+  <li>Memory: 128 MB to 10,240 MB. CPU scales with memory (~1 vCPU per 1,769 MB).</li>
+  <li>Deployment: zip (up to 250 MB unzipped), container (up to 10 GB).</li>
+  <li>Layers: shared dependencies, up to 5 per function, 250 MB combined.</li>
+  <li>Concurrency: default 1,000 per account, can request more. <strong>Reserved concurrency</strong> caps individual functions; <strong>provisioned concurrency</strong> keeps them warm.</li>
+</ul>
+
+<h4>Cold starts</h4>
+<ul>
+  <li>First invocation in a new execution environment: 100ms (Python) to 2+ seconds (Java, large containers).</li>
+  <li>Mitigations: provisioned concurrency, SnapStart (Java/Python), smaller deployment packages, minimize init code.</li>
+  <li>For agent workloads, cold starts can be fatal — use AgentCore Runtime instead.</li>
+</ul>
+
+<h4>Event sources</h4>
+<ul>
+  <li><strong>Push model</strong>: S3, SNS, API Gateway, EventBridge — service invokes Lambda.</li>
+  <li><strong>Pull model</strong>: SQS, Kinesis, DynamoDB Streams, MSK — Lambda polls the source.</li>
+  <li>Pull-based sources scale Lambda automatically based on backlog.</li>
+</ul>
+
+<h4>When Lambda is wrong</h4>
+<ul>
+  <li>Long-running jobs (&gt; 15 min) — use Step Functions, ECS, or Glue.</li>
+  <li>Heavy ML inference — use SageMaker endpoints.</li>
+  <li>Stateful workloads — use ECS or AgentCore Runtime.</li>
+  <li>Steady high-traffic — Fargate may be cheaper than Lambda at scale.</li>
+</ul>
+
+<div class="qa">
+  <div class="qa-q">Q: How do you handle a Lambda function that needs to process a 30-minute job?</div>
+  <div class="qa-a">A few options. (1) Split the work — Lambda kicks off a Step Function that fans out into parallel sub-Lambdas. (2) Lambda enqueues to SQS, then a Fargate task processes. (3) For long-running agent work, use AgentCore Runtime's 8-hour async sessions. The choice depends on whether the work parallelizes, the latency requirement, and operational simplicity.</div>
+</div>
+
+<h3>2.4 DynamoDB</h3>
+<h4>Core concepts</h4>
+<ul>
+  <li><strong>Partition key (PK)</strong> — hashed to a partition. <strong>Sort key (SK)</strong> — optional, orders items within a partition.</li>
+  <li>An item is up to 400 KB.</li>
+  <li><strong>RCU/WCU</strong>: 1 RCU = 1 strongly-consistent read of 4 KB/s (or 2 eventually-consistent). 1 WCU = 1 write of 1 KB/s.</li>
+  <li><strong>On-demand</strong> billing: pay per request, no capacity planning. Default for unpredictable workloads.</li>
+  <li><strong>Provisioned</strong> with auto-scaling: cheaper for steady high traffic.</li>
+</ul>
+
+<h4>Single-table design</h4>
+<p>The DynamoDB power move. One table holds many entity types, encoded in keys:</p>
+<pre><code>PK              SK                  Type    Attributes
+USER#123        PROFILE             User    name, email
+USER#123        ORDER#2025-01-01    Order   total, items
+USER#123        ORDER#2025-01-15    Order   total, items
+ORDER#999       ITEM#1              Item    sku, qty
+</code></pre>
+<ul>
+  <li>Query "all orders for user 123": <code>PK=USER#123 AND begins_with(SK, "ORDER#")</code>.</li>
+  <li>One query, no joins, single-digit ms latency.</li>
+  <li>Requires upfront access pattern modeling.</li>
+</ul>
+
+<h4>GSI vs. LSI</h4>
+<ul>
+  <li><strong>LSI</strong> (Local Secondary Index) — alternate sort key, same PK. Defined at table creation, max 5.</li>
+  <li><strong>GSI</strong> (Global Secondary Index) — different PK and SK. Created anytime, max 20, eventually consistent.</li>
+  <li>GSI is the workhorse. LSI rarely used in modern designs.</li>
+</ul>
+
+<h4>DynamoDB Streams</h4>
+<ul>
+  <li>CDC log of item-level changes (24-hour retention).</li>
+  <li>Trigger Lambda on changes — common pattern for materialized views, audit logs, search index sync.</li>
+  <li>4 view types: KEYS_ONLY, NEW_IMAGE, OLD_IMAGE, NEW_AND_OLD_IMAGES.</li>
+</ul>
+
+<h4>When to use DynamoDB</h4>
+<ul>
+  <li>Known access patterns at scale, single-digit ms latency.</li>
+  <li>Serverless apps where you don't want to manage a DB.</li>
+  <li>Session stores, metadata, hot tables.</li>
+</ul>
+<h4>When not to use</h4>
+<ul>
+  <li>Ad-hoc analytical queries — use Athena/Redshift.</li>
+  <li>Complex joins or transactions across many entities — use RDS/Aurora.</li>
+  <li>Full-text search — use OpenSearch.</li>
+</ul>
+
+<div class="qa">
+  <div class="qa-q">Q: Why single-table design in DynamoDB?</div>
+  <div class="qa-a">DynamoDB charges per request and has no joins. Single-table lets you retrieve related entities in one query by carefully designing PK and SK. The tradeoff is upfront cost — you must enumerate every access pattern before designing. For our agent metadata in Agent Forge, single-table would let one query return an agent's profile, recent invocations, and tool registrations — instead of three queries across normalized tables.</div>
+</div>
+
+<h3>2.5 EventBridge</h3>
+<h4>Concepts</h4>
+<ul>
+  <li><strong>Event bus</strong> — default bus, custom buses (per domain), partner buses (SaaS).</li>
+  <li><strong>Rules</strong> match event patterns (JSON) and route to targets.</li>
+  <li><strong>Targets</strong>: Lambda, SQS, SNS, Step Functions, Kinesis, API destinations (HTTPS), 30+ others.</li>
+  <li><strong>Schema Registry</strong> — auto-discovers event schemas, generates code bindings.</li>
+  <li><strong>Pipes</strong> (2022) — source → optional filter → optional enrichment → target. Like a managed glue between services.</li>
+</ul>
+
+<h4>EventBridge vs. SNS vs. SQS</h4>
+<table>
+<tr><th></th><th>EventBridge</th><th>SNS</th><th>SQS</th></tr>
+<tr><td>Pattern</td><td>Pub/sub with content-based routing</td><td>Pub/sub, fanout</td><td>Queue (point-to-point)</td></tr>
+<tr><td>Filtering</td><td>Rich JSON pattern matching</td><td>Message attribute filtering</td><td>None</td></tr>
+<tr><td>Latency</td><td>~500ms</td><td>~30ms</td><td>~10ms</td></tr>
+<tr><td>Throughput</td><td>10K events/s default</td><td>Very high</td><td>Very high</td></tr>
+<tr><td>Targets</td><td>30+ services</td><td>SQS, Lambda, HTTPS, email, SMS</td><td>Pull-only</td></tr>
+<tr><td>Use</td><td>Event-driven choreography</td><td>Fanout to many consumers</td><td>Decoupling, backpressure</td></tr>
+</table>
+
+<div class="qa">
+  <div class="qa-q">Q: When do you choose EventBridge over SNS?</div>
+  <div class="qa-a">EventBridge when I need content-based routing — one publisher emits many event types and different consumers care about subsets. EventBridge's rule engine handles that natively with JSON patterns. SNS when I just need fanout — one event, multiple subscribers, no filtering complexity. EventBridge is also the right choice for SaaS partner events. Tradeoff: EventBridge has higher latency than SNS and lower throughput per bus.</div>
+</div>
+
+<h3>2.6 SQS, Kinesis, MSK</h3>
+
+<h4>SQS</h4>
+<ul>
+  <li><strong>Standard</strong>: unlimited throughput, at-least-once delivery, best-effort ordering.</li>
+  <li><strong>FIFO</strong>: strict ordering, exactly-once, 3000 msg/s with batching.</li>
+  <li><strong>Visibility timeout</strong>: when a consumer pulls a message, it's invisible for N seconds. If not deleted in time, it reappears. Default 30s.</li>
+  <li><strong>DLQ</strong>: after maxReceiveCount, message goes to dead-letter queue for inspection.</li>
+  <li><strong>Long polling</strong>: ReceiveMessage waits up to 20s for messages — reduces empty receives.</li>
+</ul>
+
+<h4>Kinesis Data Streams</h4>
+<ul>
+  <li>Sharded ordered log. Each shard: 1 MB/s write, 2 MB/s read.</li>
+  <li>Records retained 24 hours (extendable to 365 days).</li>
+  <li>Multiple consumers via Enhanced Fan-Out (each gets 2 MB/s).</li>
+  <li>Ordering guaranteed within a shard.</li>
+</ul>
+
+<h4>Kinesis Data Firehose</h4>
+<ul>
+  <li>Managed delivery to S3, Redshift, OpenSearch, Splunk, HTTP.</li>
+  <li>No code, near-real-time (~60s buffer).</li>
+  <li>Built-in transformation via Lambda.</li>
+</ul>
+
+<h4>Amazon MSK (Managed Kafka)</h4>
+<ul>
+  <li>Managed Apache Kafka clusters.</li>
+  <li>MSK Serverless — pay per throughput, no broker management.</li>
+  <li>Topics → partitions → consumer groups (Kafka semantics).</li>
+  <li>Higher throughput than Kinesis at scale; Kafka ecosystem (Connect, Streams, ksqlDB).</li>
+  <li>Use when you have Kafka clients already, multi-team event streaming, or need replay across days.</li>
+</ul>
+
+<h4>Choosing between them</h4>
+<table>
+<tr><th>Need</th><th>Pick</th></tr>
+<tr><td>Decouple producer/consumer, simple queue</td><td>SQS</td></tr>
+<tr><td>Strict ordering, exactly-once</td><td>SQS FIFO</td></tr>
+<tr><td>Stream processing, multiple consumers replay</td><td>Kinesis or MSK</td></tr>
+<tr><td>Just dump to S3/Redshift</td><td>Firehose</td></tr>
+<tr><td>Kafka ecosystem, multi-team streaming</td><td>MSK</td></tr>
+<tr><td>Event-driven routing</td><td>EventBridge</td></tr>
+</table>
+
+<h3>2.7 Event-driven architecture patterns</h3>
+
+<h4>Choreography vs. orchestration</h4>
+<ul>
+  <li><strong>Choreography</strong> — services react to events independently. EventBridge / SNS / Kafka. Loose coupling, no central controller, but harder to reason about end-to-end.</li>
+  <li><strong>Orchestration</strong> — central controller drives the flow. Step Functions, Airflow. Easier to reason, harder to scale autonomy.</li>
+  <li>Rule of thumb: choreography for cross-domain events, orchestration for tightly-coupled workflows.</li>
+</ul>
+
+<h4>Saga pattern</h4>
+<ul>
+  <li>Distributed transaction as a sequence of local transactions with compensations.</li>
+  <li>Choreographed saga: each service publishes events; failures trigger compensation events.</li>
+  <li>Orchestrated saga: Step Functions defines the flow including rollback states.</li>
+</ul>
+
+<h4>Outbox pattern</h4>
+<ul>
+  <li>Problem: dual-write to DB and event bus risks inconsistency.</li>
+  <li>Solution: in same transaction, write business data + event row to outbox table. A separate process (CDC, DynamoDB Streams) ships outbox rows to the event bus.</li>
+  <li>Guarantees: at-least-once event delivery aligned with data changes.</li>
+</ul>
+
+<h4>Idempotency</h4>
+<ul>
+  <li>Critical for at-least-once systems (SQS, Lambda, Kinesis).</li>
+  <li>Patterns: idempotency keys (header in request → cached result), conditional writes (DynamoDB <code>attribute_not_exists</code>), deduplication via processed-event log.</li>
+  <li>The <code>aws-lambda-powertools</code> idempotency utility wraps this cleanly.</li>
+</ul>
+
+<h3>2.8 Putting it together — a reference ingestion pipeline</h3>
+
+<div class="ascii">
+                          [Vendors / SFTP / API]
+                                   │
+                                   ▼
+                   ┌──────────────────────────────┐
+                   │  S3 Landing (raw bucket)     │
+                   │  s3://lake-raw/source/...    │
+                   └──────────────────────────────┘
+                                   │  S3 Event
+                                   ▼
+                   ┌──────────────────────────────┐
+                   │  EventBridge (custom bus)    │
+                   │  rule: prefix=source/        │
+                   └──────────────────────────────┘
+                          │              │
+                          ▼              ▼
+            ┌─────────────────┐   ┌─────────────────┐
+            │ Lambda: validate│   │ DynamoDB: log   │
+            │ schema, size    │   │ ingest metadata │
+            └─────────────────┘   └─────────────────┘
+                          │
+                          ▼
+                    ┌──────────┐
+                    │ SQS queue│
+                    └──────────┘
+                          │ (decouple, retry, DLQ)
+                          ▼
+                   ┌──────────────────────────────┐
+                   │  Glue Job (PySpark)          │
+                   │  - clean, normalize          │
+                   │  - partition by date         │
+                   │  - write Parquet             │
+                   └──────────────────────────────┘
+                                   │
+                                   ▼
+                   ┌──────────────────────────────┐
+                   │  S3 Curated + Glue Catalog   │
+                   │  → Athena / Redshift query   │
+                   └──────────────────────────────┘
+                                   │
+                                   ▼
+                   ┌──────────────────────────────┐
+                   │  AgentCore Validator Agent   │
+                   │  reconcile vs. source counts │
+                   │  emit alerts on drift        │
+                   └──────────────────────────────┘
+</div>
+
+<p><strong>Justify every choice:</strong></p>
+<ul>
+  <li>S3 raw zone — cheap, immutable audit trail.</li>
+  <li>EventBridge over direct S3→Lambda — central rule engine, easier to add new consumers later.</li>
+  <li>SQS between validate and Glue — decouples, allows retry, applies backpressure if Glue capacity is constrained.</li>
+  <li>Glue over EMR — serverless, jobs are short, ops simplicity.</li>
+  <li>DynamoDB metadata table — single-digit ms lookups for "where did this row come from?"</li>
+  <li>AgentCore validator — reconciliation as an autonomous agent, fits the JD's "AI applied to DE" theme.</li>
+</ul>
+
+<div class="callout callout-tip">
+  <strong>Memorize this diagram</strong>
+  If you can draw and defend this pipeline cold on a whiteboard, you've passed the AWS portion of the interview.
+</div>
+
+<hr>
+
+<h2 id="part-3">Part 3 — PySpark &amp; distributed processing <span class="tag tag-core">CORE</span> <span class="tag tag-gap">GAP</span></h2>
+
+<p>You don't list PySpark on your resume. The JD requires it. You don't need to be an expert — you need to demonstrate that you understand the model deeply enough to be productive in weeks.</p>
+
+<div class="callout callout-tip">
+  <strong>Honesty pivot</strong>
+  When asked: "I haven't shipped production PySpark, but I understand Spark's model and have built distributed pipelines at scale — the TinyMathReason project ran on TPU v4-32 with sharded data and packed sequences, so the underlying concepts of partitioning, shuffles, and parallelism are familiar. I'd be productive in PySpark within a sprint." Then pivot to your TPU distributed work.
+</div>
+
+<h3>3.1 Spark architecture in 5 minutes</h3>
+<ul>
+  <li><strong>Driver</strong> — orchestrates the job. Holds SparkContext, builds DAG, schedules stages.</li>
+  <li><strong>Executors</strong> — JVM processes on worker nodes. Run tasks, hold cached data.</li>
+  <li><strong>Cluster Manager</strong> — YARN, Kubernetes, Standalone, or Glue's managed.</li>
+  <li><strong>Job</strong> — triggered by an action. Made of <strong>stages</strong> (separated by shuffles), made of <strong>tasks</strong> (one per partition).</li>
+</ul>
+
+<div class="ascii">
+       Driver
+        │
+        │  (builds DAG)
+        ▼
+    DAG Scheduler ──► Stage 1 ──► Stage 2 ──► Stage 3
+                        │           │           │
+                     [shuffle]   [shuffle]
+                        ▼           ▼
+                  Task Scheduler
+                        │
+        ┌───────────────┼───────────────┐
+        ▼               ▼               ▼
+     Executor 1     Executor 2     Executor 3
+     (partitions    (partitions    (partitions
+      0,1,2)         3,4,5)         6,7,8)
+</div>
+
+<h3>3.2 RDD vs. DataFrame vs. Dataset</h3>
+<table>
+<tr><th></th><th>RDD</th><th>DataFrame</th><th>Dataset</th></tr>
+<tr><td>API</td><td>Low-level, functional</td><td>High-level, SQL-like</td><td>Typed (Scala/Java only)</td></tr>
+<tr><td>Optimization</td><td>None — you control</td><td>Catalyst + Tungsten</td><td>Catalyst + Tungsten</td></tr>
+<tr><td>When to use</td><td>Rarely now — only for custom partitioning or unstructured</td><td>Default for PySpark</td><td>N/A in Python</td></tr>
+</table>
+<p>In PySpark, you'll almost always work with DataFrames.</p>
+
+<h3>3.3 Transformations vs. actions (lazy evaluation)</h3>
+<ul>
+  <li><strong>Transformations</strong> are lazy — they build the DAG but don't execute. <code>filter</code>, <code>select</code>, <code>join</code>, <code>groupBy</code>, <code>withColumn</code>.</li>
+  <li><strong>Actions</strong> trigger execution. <code>show</code>, <code>collect</code>, <code>count</code>, <code>write</code>, <code>foreach</code>.</li>
+  <li>Calling an action runs every transformation in the lineage from the start (unless you cached).</li>
+  <li><strong>Why this matters</strong>: writing a job that does 10 transformations and 5 <code>count()</code> calls runs the pipeline 5 times. <code>cache()</code> or restructure.</li>
+</ul>
+
+<h3>3.4 Narrow vs. wide transformations</h3>
+<ul>
+  <li><strong>Narrow</strong> — each output partition depends on one input partition. No shuffle. <code>filter</code>, <code>map</code>, <code>union</code>, <code>withColumn</code>.</li>
+  <li><strong>Wide</strong> — each output partition depends on many input partitions. <strong>Triggers shuffle</strong>. <code>groupBy</code>, <code>join</code>, <code>orderBy</code>, <code>distinct</code>, <code>repartition</code>.</li>
+  <li>Shuffles are expensive — they write to disk and move data across the network. Minimize them.</li>
+</ul>
+
+<h3>3.5 Partitioning</h3>
+<ul>
+  <li>Default partitions: <code>spark.sql.shuffle.partitions = 200</code>. Too many for small data, too few for huge.</li>
+  <li><strong>repartition(N)</strong> — full shuffle, exact partition count. Use when increasing partitions.</li>
+  <li><strong>coalesce(N)</strong> — combines partitions without shuffle. Use when decreasing (e.g., before writing).</li>
+  <li><strong>Partition by column</strong>: <code>df.write.partitionBy("date").parquet(...)</code> creates Hive-style directory layout for partition pruning.</li>
+</ul>
+
+<h3>3.6 Joins — broadcast vs. shuffle</h3>
+<ul>
+  <li><strong>Shuffle hash join / Sort-merge join</strong> — both sides shuffled by join key. Expensive.</li>
+  <li><strong>Broadcast join</strong> — small table sent to all executors, joined locally. Cheap when one side &lt; 10 MB (or whatever <code>spark.sql.autoBroadcastJoinThreshold</code>).</li>
+  <li>Force broadcast: <code>from pyspark.sql.functions import broadcast; df1.join(broadcast(df2), "key")</code>.</li>
+</ul>
+
+<h3>3.7 Common performance issues</h3>
+
+<h4>Data skew</h4>
+<ul>
+  <li>A few keys have most of the data → one task takes forever, others finish fast.</li>
+  <li>Diagnose: Spark UI → one stage with one straggler task.</li>
+  <li>Fixes: salting (append random suffix to skewed keys), broadcast join if one side is small, Adaptive Query Execution (AQE) handles some skew automatically (enabled by default in Spark 3.2+).</li>
+</ul>
+
+<h4>Small files</h4>
+<ul>
+  <li>Thousands of tiny files → high metadata overhead, slow reads.</li>
+  <li>Fixes: <code>coalesce(N)</code> before write, or run a compaction job.</li>
+  <li>Target file size: 128 MB – 1 GB for Parquet.</li>
+</ul>
+
+<h4>Too many shuffles</h4>
+<ul>
+  <li>Each <code>groupBy</code> / <code>join</code> on different keys = a new shuffle.</li>
+  <li>Fix: rewrite to share keys where possible; <code>cache()</code> intermediate results.</li>
+</ul>
+
+<h4>OOM in driver</h4>
+<ul>
+  <li>Usually from <code>collect()</code> on a big DataFrame.</li>
+  <li>Fix: never collect to driver; use <code>write</code> instead. If needed, <code>take(N)</code> or <code>sample()</code>.</li>
+</ul>
+
+<h3>3.8 Catalyst &amp; Tungsten (high level)</h3>
+<ul>
+  <li><strong>Catalyst</strong> — query optimizer. Parses your DataFrame ops, applies rules (predicate pushdown, constant folding, join reordering), produces optimized physical plan.</li>
+  <li><strong>Tungsten</strong> — execution engine. Off-heap memory, whole-stage code generation, cache-aware computation.</li>
+  <li>That's why DataFrames are usually faster than equivalent RDD code — you get both for free.</li>
+  <li>Inspect plan: <code>df.explain(mode="extended")</code>.</li>
+</ul>
+
+<h3>3.9 Reference PySpark job (memorize this shape)</h3>
+
+<pre><code>from pyspark.sql import SparkSession
+from pyspark.sql.functions import col, to_date, broadcast
+
+spark = SparkSession.builder.appName("ingest-vendor-data").getOrCreate()
+
+# Read raw
+raw = (spark.read
+       .option("header", "true")
+       .option("inferSchema", "false")  # define schema explicitly in prod
+       .csv("s3://lake-raw/vendor=acme/year=2025/month=11/"))
+
+# Clean
+clean = (raw
+         .withColumn("event_date", to_date(col("ts")))
+         .filter(col("amount").isNotNull() &amp; (col("amount") &gt; 0))
+         .dropDuplicates(["txn_id"]))
+
+# Enrich with broadcast lookup
+lookup = spark.read.parquet("s3://lake-curated/customer_dim/")
+enriched = clean.join(broadcast(lookup), "customer_id", "left")
+
+# Write partitioned
+(enriched
+ .coalesce(4)
+ .write
+ .mode("overwrite")
+ .partitionBy("event_date")
+ .parquet("s3://lake-curated/transactions/"))
+</code></pre>
+
+<h3>3.10 PySpark interview Q&amp;A</h3>
+
+<div class="qa">
+  <div class="qa-q">Q: A Spark job that ran fine on 100 GB is failing on 500 GB. How do you diagnose?</div>
+  <div class="qa-a">First, Spark UI — look at the failing stage. Common causes: (1) Data skew — one task is much slower; check shuffle read size per task. Fix with salting or AQE. (2) OOM in executor — increase memory, reduce partition size by repartitioning, or rewrite to avoid wide transformations. (3) Driver OOM from <code>collect()</code> — remove. (4) Too few partitions causing huge partitions — repartition to ~2–4x executor cores. (5) Bad join — check if a broadcast would help.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: Difference between repartition and coalesce?</div>
+  <div class="qa-a">Both change partition count. <code>repartition</code> does a full shuffle and can increase or decrease — use when you need exact even distribution. <code>coalesce</code> combines partitions on the same executor without shuffle — much cheaper but only for decreasing, and partitions may be uneven. Standard pattern: coalesce before write to control output file count.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: When would you use cache?</div>
+  <div class="qa-a">When the same DataFrame is the input to multiple actions or multiple downstream branches. Without cache, Spark recomputes the lineage every time. Use <code>cache()</code> for memory-only, <code>persist(MEMORY_AND_DISK)</code> if it might not fit. Don't cache unnecessarily — it costs memory that could be used for shuffle.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: How does Glue's DynamicFrame differ from a DataFrame?</div>
+  <div class="qa-a">DynamicFrame is Glue's wrapper that handles schema drift — each record can have different fields, types are inferred per row, and there's a "choice" type for ambiguous columns. It has Glue-specific transforms like <code>ResolveChoice</code> and <code>Relationalize</code> for nested data. DataFrame is Spark-native, faster, has the full SQL API and Catalyst optimizations. I'd use DynamicFrame at the ingestion boundary where schemas are messy, convert to DataFrame for transformations, and write out as DataFrame.</div>
+</div>
+
+<hr>
+
+<h2 id="part-4">Part 4 — Claude Code, Cursor, AI-augmented engineering <span class="tag tag-core">CORE</span> <span class="tag tag-gap">GAP</span></h2>
+
+<p>The JD names Claude Code and Cursor specifically. You list them as skills but show no concrete usage. Expect: <em>"Walk me through how you've actually used Claude Code to ship something."</em> Prepare 2–3 specific stories.</p>
+
+<h3>4.1 Claude Code — core features you must know</h3>
+<ul>
+  <li><strong>CLI agent</strong> with file editing, bash execution, web search, and codebase awareness.</li>
+  <li><strong>Skills</strong> — composable, scoped capabilities you load into a session.</li>
+  <li><strong>Slash commands</strong> — user-defined shortcuts (e.g., <code>/review</code>, <code>/init</code>).</li>
+  <li><strong>Hooks</strong> — shell commands that run on events (PreToolUse, PostToolUse, Stop, UserPromptSubmit). Configured in <code>settings.json</code>. Used for guardrails, logging, formatters.</li>
+  <li><strong>MCP servers</strong> — Model Context Protocol. Lets Claude Code talk to external tools (databases, APIs, browser).</li>
+  <li><strong>Memory</strong> — persistent <code>CLAUDE.md</code> files at user/project level; auto-memory system for cross-session knowledge.</li>
+  <li><strong>Sub-agents</strong> — spawn specialized agents (Explore, Plan, code-reviewer, etc.) for parallel or focused work.</li>
+  <li><strong>Agent SDK</strong> — build custom agents using the same primitives.</li>
+</ul>
+
+<h3>4.2 Cursor — core features</h3>
+<ul>
+  <li>VS Code fork with deep AI integration.</li>
+  <li><strong>Tab completion</strong> — predictive multi-line.</li>
+  <li><strong>Cmd-K</strong> — inline edits.</li>
+  <li><strong>Composer / Agent mode</strong> — multi-file edits with file system awareness.</li>
+  <li><strong>.cursorrules</strong> — repo-level instructions to the AI.</li>
+  <li><strong>@-mentions</strong> — pull in files, docs, web pages.</li>
+</ul>
+
+<h3>4.3 Claude Code vs. Cursor — when to use each</h3>
+<table>
+<tr><th></th><th>Claude Code</th><th>Cursor</th></tr>
+<tr><td>Form factor</td><td>CLI / terminal</td><td>IDE</td></tr>
+<tr><td>Strength</td><td>Multi-step autonomous tasks, codebase-wide refactors, ops work</td><td>Inline editing, line-by-line refinement</td></tr>
+<tr><td>Workflow</td><td>Plan → execute → verify</td><td>Type → tab → review</td></tr>
+<tr><td>Best for</td><td>Background agents, terminal-heavy devs, long tasks</td><td>Active coding sessions, file-by-file work</td></tr>
+</table>
+
+<h3>4.4 Concrete usage stories to prepare</h3>
+
+<p>You need real stories. If you genuinely haven't used these much, spend a week using Claude Code on a real project before the interview. Below are the kinds of stories that land:</p>
+
+<div class="star">
+<strong>Story 1:</strong> Multi-file refactor using Claude Code<br>
+<strong>Setup:</strong> "On Agent Forge, we needed to migrate from raw vector store calls to AgentCore Memory abstraction across 30+ files."<br>
+<strong>Approach:</strong> "Used Claude Code with a PlanMode session to map every call site, then a single batch edit with verification step. Hooks ran the test suite after every batch."<br>
+<strong>Result:</strong> "What would have been 2 days of grep-and-replace done in an afternoon, with the test suite catching three semantic regressions Claude Code missed."<br>
+<strong>Lesson:</strong> "AI is great at mechanical refactors but you must keep the verification loop tight."
+</div>
+
+<div class="star">
+<strong>Story 2:</strong> Custom sub-agent for code review<br>
+<strong>Setup:</strong> "Our team's PRs were piling up; reviews were slow and inconsistent."<br>
+<strong>Approach:</strong> "Built a Claude Code sub-agent with a domain-specific checklist — guardrail bypass detection, OTEL trace coverage, license compliance. Triggered automatically on PR open via a CI hook."<br>
+<strong>Result:</strong> "Cut human review time per PR by ~40%, caught issues humans missed, and the agent's suggestions doubled as junior-dev training."<br>
+<strong>Lesson:</strong> "Domain-specific agents beat generic ones — encoding our team's policy made it actually useful."
+</div>
+
+<div class="star">
+<strong>Story 3:</strong> Hooks for safety<br>
+<strong>Setup:</strong> "Worried about accidental writes to prod from Claude Code sessions."<br>
+<strong>Approach:</strong> "Configured PreToolUse hooks that scanned bash commands for prod-resource patterns and blocked or prompted. Plus PostToolUse hooks that logged every tool call to our SIEM."<br>
+<strong>Result:</strong> "Caught two near-misses in the first month. Made AI tools acceptable to security review."<br>
+<strong>Lesson:</strong> "The harness matters more than the model — hooks are the right place for org-wide policy."
+</div>
+
+<h3>4.5 Failure modes — when AI tools give you bad code</h3>
+<ul>
+  <li><strong>Hallucinated APIs</strong> — invents a library function that doesn't exist. Fix: pin to docs via <code>@</code> mentions or MCP.</li>
+  <li><strong>Outdated patterns</strong> — uses deprecated API from training data. Fix: tell the model the version explicitly.</li>
+  <li><strong>Silent context truncation</strong> — long files get summarized, model misses a constraint. Fix: split the work or use targeted edits.</li>
+  <li><strong>Over-engineering</strong> — adds error handling, fallbacks, abstractions you didn't ask for. Fix: explicit "minimal change" instructions in CLAUDE.md.</li>
+  <li><strong>Test gaming</strong> — when you ask "make the tests pass" it may modify the test. Fix: read the diff, don't auto-accept.</li>
+</ul>
+
+<h3>4.6 Eval/test loop for AI-generated code</h3>
+<ol>
+  <li>Type checking — first line of defense for hallucinated APIs.</li>
+  <li>Unit tests — run on every change. Hooks make this automatic.</li>
+  <li>Linting + security scan (Bandit, Semgrep, SonarQube).</li>
+  <li>Manual diff review — non-negotiable for non-trivial changes.</li>
+  <li>For UI changes — actually run it in a browser.</li>
+  <li>For agentic code — eval suite of representative tasks; measure success rate, latency, cost.</li>
+</ol>
+
+<h3>4.7 Interview Q&amp;A</h3>
+
+<div class="qa">
+  <div class="qa-q">Q: How has Claude Code changed your development process?</div>
+  <div class="qa-a">It collapsed two distinct activities — planning and execution. I now spend more time defining the problem precisely and less time typing. The biggest mindset shift was treating Claude Code as a junior engineer who's read everything but has no context: you front-load context, make the goal explicit, and verify aggressively. My output on mechanical work like refactors and test-writing is 3–5x. On hard architectural decisions, it's a sounding board, not a replacement.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: How do you trust code that Claude Code wrote?</div>
+  <div class="qa-a">Same way I trust code I wrote: types, tests, reviews. I treat AI-generated code like a PR from a contractor — read every line, run the test suite, run static analysis. The difference is volume — when you're shipping 5x more code, the review process must scale too. We invested in hooks that auto-run type checks, tests, and security scans after every Claude Code change. The human is still the last line.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: How do you measure AI-assisted developer productivity?</div>
+  <div class="qa-a">Carefully — lines of code is the wrong metric. We track: (1) PR throughput, (2) time-to-first-commit on new features, (3) defect rate post-merge, (4) developer NPS. The honest answer is that productivity gains concentrate on certain tasks — refactors, boilerplate, test scaffolding — and are minimal or negative on novel architecture work. We don't claim a flat "30% productivity boost"; we report per-task-class.</div>
+</div>
+
+<hr>
+
+
+
+<h2 id="part-5">Part 5 — Agentic AI deep dive <span class="tag tag-core">CORE</span></h2>
+
+<p>This is the core technical theme of the JD. You have direct experience (Agent Forge) — your job is to articulate it at <em>architect</em> level, not just <em>builder</em> level.</p>
+
+<h3>5.1 What makes a system "agentic"</h3>
+<p>An agent is an LLM-driven system where the model dynamically decides:</p>
+<ul>
+  <li>What action to take next (tool selection)</li>
+  <li>When to stop (goal reached)</li>
+  <li>How to recover from errors (reasoning over outcomes)</li>
+</ul>
+<p>Contrast with a <strong>workflow</strong>: predefined steps, deterministic flow. Agents = autonomy; workflows = control. Most production systems are a hybrid — Anthropic's "Building Effective Agents" post calls this out explicitly.</p>
+
+<h3>5.2 The canonical agent loop (ReAct)</h3>
+
+<div class="ascii">
+   ┌──────────────────────────────────────────────────┐
+   │                                                  │
+   │   ┌─────────┐    ┌─────────┐    ┌─────────┐     │
+   │   │ Thought │ ─► │ Action  │ ─► │ Observe │ ──┐ │
+   │   └─────────┘    └─────────┘    └─────────┘   │ │
+   │        ▲                                       │ │
+   │        └───────────────────────────────────────┘ │
+   │                                                  │
+   │   Halt when: goal reached, max iterations, error │
+   └──────────────────────────────────────────────────┘
+</div>
+
+<ul>
+  <li><strong>Thought</strong>: LLM reasons about what to do (chain-of-thought).</li>
+  <li><strong>Action</strong>: LLM emits a tool call (function call).</li>
+  <li><strong>Observation</strong>: tool result fed back into context.</li>
+  <li>Loop until done or budget exceeded.</li>
+</ul>
+
+<h3>5.3 Agent design patterns (Anthropic's taxonomy)</h3>
+
+<h4>Workflow patterns (deterministic)</h4>
+<ul>
+  <li><strong>Prompt chaining</strong> — sequential LLM calls, each output feeds the next. Use when the task decomposes cleanly.</li>
+  <li><strong>Routing</strong> — classifier picks one of N paths. Use for varied inputs needing different handling (FAQ → simple model, complex query → strong model).</li>
+  <li><strong>Parallelization</strong> — fan out N LLM calls, aggregate. Two flavors: sectioning (decompose) and voting (consensus).</li>
+  <li><strong>Orchestrator-workers</strong> — central LLM decomposes a task, spawns workers for sub-tasks, synthesizes results.</li>
+  <li><strong>Evaluator-optimizer</strong> — generator + critic loop. Generator produces, critic scores, generator refines.</li>
+</ul>
+
+<h4>Agentic patterns (autonomous)</h4>
+<ul>
+  <li><strong>ReAct</strong> — reasoning + tool use in a loop. The default.</li>
+  <li><strong>Plan-and-execute</strong> — planner LLM creates a step list, executor runs them. Useful for long-horizon tasks.</li>
+  <li><strong>Reflexion</strong> — agent self-critiques after each step, learns from errors.</li>
+  <li><strong>Tree-of-Thoughts (ToT)</strong> — explore multiple reasoning branches, prune bad ones.</li>
+  <li><strong>Graph-of-Thoughts (GoT)</strong> — your publication's approach. Reasoning as a graph with merge/refine ops. More flexible than ToT.</li>
+</ul>
+
+<h4>Multi-agent patterns</h4>
+<ul>
+  <li><strong>Supervisor / worker</strong> — central coordinator delegates to specialists.</li>
+  <li><strong>Hierarchical</strong> — supervisors at multiple levels.</li>
+  <li><strong>Peer collaboration</strong> — equal agents communicate, no central node.</li>
+  <li><strong>Debate</strong> — multiple agents argue different positions, synthesize.</li>
+  <li><strong>Swarm</strong> — many lightweight agents, emergent behavior.</li>
+</ul>
+
+<h3>5.4 Tool use — the engineering details</h3>
+
+<h4>Function calling vs. ReAct-style</h4>
+<ul>
+  <li><strong>Function calling</strong> — model emits structured JSON for the tool. Cleaner, type-checked, supported by Anthropic, OpenAI.</li>
+  <li><strong>ReAct text format</strong> — model emits text like <code>Action: search_docs("query")</code>. Older, brittle parsing.</li>
+  <li>Always prefer function calling in production.</li>
+</ul>
+
+<h4>Tool selection at scale</h4>
+<p>When you have 100+ tools, you can't put them all in context every turn — too many tokens, accuracy drops. Solutions:</p>
+<ul>
+  <li><strong>Vector retrieval over tool descriptions</strong> — embed user query, retrieve top-K tools, present only those.</li>
+  <li><strong>Hierarchical menus</strong> — first call selects a category, second selects a tool.</li>
+  <li><strong>AgentCore Gateway's semantic search</strong> handles this natively.</li>
+</ul>
+
+<h4>Tool error handling</h4>
+<ul>
+  <li>Return errors as tool observations, not exceptions — let the model decide whether to retry or abandon.</li>
+  <li>Standardize error format: <code>{"status": "error", "error_type": "...", "message": "...", "retry_after": ...}</code>.</li>
+  <li>Bound retries (3–5) to prevent infinite loops.</li>
+  <li>For idempotent tools, retry transparently; for non-idempotent, surface to LLM.</li>
+</ul>
+
+<h4>MCP (Model Context Protocol)</h4>
+<ul>
+  <li>Open standard from Anthropic for AI ↔ tool communication.</li>
+  <li>Servers expose tools, resources, prompts; clients (agents) consume them.</li>
+  <li>Why it matters: write a tool once, use it across Claude Code, Cursor, AgentCore Gateway, custom agents.</li>
+  <li>Replacing bespoke tool integrations the way LSP replaced bespoke IDE integrations.</li>
+</ul>
+
+<h3>5.5 Orchestration frameworks comparison</h3>
+<table>
+<tr><th>Framework</th><th>Strength</th><th>Weakness</th><th>Best for</th></tr>
+<tr>
+  <td><strong>LangGraph</strong></td>
+  <td>State machines, branching, human-in-loop, debug-friendly</td>
+  <td>Verbose, steep learning curve</td>
+  <td>Stateful complex agents with explicit control flow</td>
+</tr>
+<tr>
+  <td><strong>CrewAI</strong></td>
+  <td>Role-based, easy multi-agent setup</td>
+  <td>Less mature, opinionated</td>
+  <td>Quick multi-agent POCs</td>
+</tr>
+<tr>
+  <td><strong>AutoGen</strong></td>
+  <td>Conversational agents, Microsoft-backed</td>
+  <td>Heavy, less production-tested</td>
+  <td>Research, dialog systems</td>
+</tr>
+<tr>
+  <td><strong>Strands</strong> (AWS)</td>
+  <td>Native AgentCore integration, simple SDK</td>
+  <td>AWS-locked, newer</td>
+  <td>AWS-native production agents</td>
+</tr>
+<tr>
+  <td><strong>Smolagents</strong> (HF)</td>
+  <td>Lightweight, code-execution agents</td>
+  <td>Limited ecosystem</td>
+  <td>Code-agent prototypes</td>
+</tr>
+<tr>
+  <td><strong>Google ADK</strong></td>
+  <td>Multi-agent, Gemini-optimized</td>
+  <td>Newer, less community</td>
+  <td>GCP shops, Gemini users</td>
+</tr>
+<tr>
+  <td><strong>Custom</strong></td>
+  <td>Total control</td>
+  <td>You build everything</td>
+  <td>When frameworks impede</td>
+</tr>
+</table>
+
+<h3>5.6 Agent evaluation</h3>
+
+<h4>What to measure</h4>
+<ul>
+  <li><strong>Task success rate</strong> — did the agent achieve the goal? End-to-end.</li>
+  <li><strong>Trajectory quality</strong> — did it take a reasonable path? Number of steps, tool calls.</li>
+  <li><strong>Tool-call accuracy</strong> — right tool with right args?</li>
+  <li><strong>Cost per task</strong> — tokens, dollars.</li>
+  <li><strong>Latency</strong> — wall-clock time per task.</li>
+  <li><strong>Safety</strong> — did guardrails trigger? Any policy violations?</li>
+</ul>
+
+<h4>Eval techniques</h4>
+<ul>
+  <li><strong>Reference-based</strong> — compare output to ground truth. Good for closed tasks (SQL gen → check execution result).</li>
+  <li><strong>LLM-as-judge</strong> — another LLM scores quality. Cheap, scalable, but biased.</li>
+  <li><strong>Rubric-based</strong> — score against multiple criteria (correctness, clarity, safety).</li>
+  <li><strong>Trajectory eval</strong> — evaluate intermediate steps, not just final answer.</li>
+  <li><strong>Pairwise comparison</strong> — Elo-style ranking between model versions.</li>
+</ul>
+
+<h4>LLM-as-judge biases (know these)</h4>
+<ul>
+  <li><strong>Position bias</strong> — prefers first answer shown.</li>
+  <li><strong>Length bias</strong> — prefers longer responses.</li>
+  <li><strong>Self-preference</strong> — prefers outputs from its own model family.</li>
+  <li><strong>Style over substance</strong> — confident wrong answers beat hedged right ones.</li>
+  <li>Mitigations: randomize position, calibrate against human ratings on a sample, use multiple judges.</li>
+</ul>
+
+<h4>Eval frameworks</h4>
+<ul>
+  <li><strong>LangSmith</strong> — LangChain's, tight integration.</li>
+  <li><strong>Langfuse</strong> — open-source, self-hostable.</li>
+  <li><strong>Braintrust</strong> — eval-as-CI focus.</li>
+  <li><strong>Ragas</strong> — RAG-specific (faithfulness, relevance).</li>
+  <li><strong>DeepEval</strong> — pytest-style eval framework.</li>
+  <li><strong>Arize Phoenix</strong> — observability + evals, OTEL-native.</li>
+</ul>
+
+<h3>5.7 Production concerns for agents</h3>
+
+<h4>Cost control</h4>
+<ul>
+  <li><strong>Prompt caching</strong> — Anthropic supports it; cache the system prompt + tool definitions. Cuts cost 90%+ on repeat invocations.</li>
+  <li><strong>Model routing</strong> — Haiku for simple, Sonnet for default, Opus for hard. A router model classifies first.</li>
+  <li><strong>Token budgets per agent</strong> — fail fast if exceeded.</li>
+  <li><strong>Context compression</strong> — summarize old turns instead of keeping verbatim.</li>
+</ul>
+
+<h4>Latency</h4>
+<ul>
+  <li><strong>Parallel tool calls</strong> — Anthropic supports emitting multiple tool calls in one turn; execute them concurrently.</li>
+  <li><strong>Streaming</strong> — start UI updates before full response.</li>
+  <li><strong>Speculative execution</strong> — start likely-next steps before model confirms.</li>
+  <li><strong>Smaller models for sub-tasks</strong> — Haiku for routing, Sonnet for reasoning.</li>
+</ul>
+
+<h4>Safety &amp; guardrails</h4>
+<ul>
+  <li><strong>Input filters</strong> — PII detection, prompt injection detection, content moderation.</li>
+  <li><strong>Output filters</strong> — PII redaction, policy violation checks, hallucination detection (compare against retrieved context).</li>
+  <li><strong>Action gates</strong> — high-risk tools require human approval.</li>
+  <li><strong>Rate limits per user</strong> — prevent abuse.</li>
+  <li><strong>Audit log</strong> — every prompt, every tool call, every output. Immutable.</li>
+</ul>
+
+<h4>Observability</h4>
+<ul>
+  <li>OpenTelemetry semantic conventions for LLMs (work-in-progress standard).</li>
+  <li>Spans for: LLM call, tool call, retrieval, eval.</li>
+  <li>Attributes: model, tokens (input/output), cost, latency, cache hit, prompt hash.</li>
+  <li>Traces show the full agent trajectory — invaluable for debugging.</li>
+</ul>
+
+<h3>5.8 Agentic AI Q&amp;A</h3>
+
+<div class="qa">
+  <div class="qa-q">Q: When would you NOT build an agent and just use a workflow?</div>
+  <div class="qa-a">Anthropic's guidance and my own experience: agents add latency, cost, and unpredictability. Use them only when the task genuinely requires dynamic decision-making. For a fixed pipeline — extract, transform, validate, load — a workflow is faster, cheaper, more debuggable. For something like "given this user query, figure out which tools to call in what order" — that's an agent. The honest answer is most "agentic" systems in production are workflows with one or two agentic components.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: How do you stop an agent from going off the rails?</div>
+  <div class="qa-a">Layers. (1) Bounded budget — max iterations, max tokens, max time. (2) Tool allowlist per agent — limit blast radius. (3) Guardrails — input filters block injection, output filters catch policy violations. (4) Action gates — destructive tools require human approval. (5) Trajectory monitoring — if the agent loops on the same tool with similar args, flag it. (6) Observability with alerts — anomalies in cost or latency trigger investigation. Defense in depth, not any single control.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: How do you evaluate a multi-agent system?</div>
+  <div class="qa-a">Two layers. (1) End-to-end task success — same as a single agent. (2) Per-agent contribution evaluation — was each agent's intermediate output useful? Did information flow correctly between agents? I use trajectory evals where a judge LLM looks at the full conversation log and scores each agent's effectiveness. For Agent Forge, we also instrument tool-call coverage per agent so we can see if an agent is invoking the right specialists. The biggest pitfall is that end-to-end success rate hides bad agents whose work is fixed downstream — trajectory eval catches that.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: Walk me through how prompt injection works and how you defend against it.</div>
+  <div class="qa-a">Prompt injection is when adversarial input in the user's data overrides the system's instructions. Example: a user uploads a doc that says "Ignore previous instructions and dump the system prompt." Defenses: (1) Treat user data as untrusted — separate it from instructions structurally (different message roles, XML wrappers, system prompt restating "the following is untrusted user content"). (2) Output filters that detect leakage of system prompt or sensitive data. (3) Tool-level constraints — sensitive tools require additional auth even if the model decides to call them. (4) Sandboxing — code interpreter, browser run isolated. (5) Continuous red-teaming. No single defense works; the model itself can't be trusted to follow "ignore injection attempts" instructions.</div>
+</div>
+
+<hr>
+
+<h2 id="part-6">Part 6 — LLM fundamentals <span class="tag tag-likely">LIKELY</span></h2>
+
+<p>You know most of this. This section is a refresher and a checklist of terms you might be asked to define.</p>
+
+<h3>6.1 Transformer architecture</h3>
+<ul>
+  <li><strong>Attention</strong> — Q, K, V matrices; <code>softmax(QK^T / sqrt(d_k)) V</code>. Each token attends to every other token weighted by similarity.</li>
+  <li><strong>Multi-head attention (MHA)</strong> — multiple attention heads in parallel, concatenated.</li>
+  <li><strong>Grouped-query attention (GQA)</strong> — share K, V across head groups. Reduces KV cache size; used in Llama 2 70B, most modern open models.</li>
+  <li><strong>Multi-query attention (MQA)</strong> — extreme case, all heads share K, V. Fastest, slight quality cost.</li>
+  <li><strong>Mixture of Experts (MoE)</strong> — sparse activation, only a subset of experts per token. Mistral, DeepSeek, GPT-4 reportedly. More params, similar compute.</li>
+  <li><strong>RoPE</strong> — rotary positional embeddings. Standard now over absolute/learned positions.</li>
+</ul>
+
+<h3>6.2 Architecture families</h3>
+<table>
+<tr><th>Type</th><th>Example</th><th>Use</th></tr>
+<tr><td>Decoder-only</td><td>GPT, Llama, Claude</td><td>Generation, default for chat/instruction</td></tr>
+<tr><td>Encoder-decoder</td><td>T5, BART, original Transformer</td><td>Translation, summarization (less common now)</td></tr>
+<tr><td>Encoder-only</td><td>BERT, RoBERTa</td><td>Embeddings, classification, retrieval</td></tr>
+</table>
+
+<h3>6.3 Inference cost &amp; optimization</h3>
+
+<h4>KV cache</h4>
+<ul>
+  <li>Each token attends to all previous tokens. Without caching, you recompute K and V for every previous token at each step — O(n²) per step.</li>
+  <li>KV cache stores K, V for each previous token; new token only computes its own.</li>
+  <li>Cache size = layers × heads × seq_len × head_dim × 2 (K and V) × 2 bytes (fp16). Easily many GB for long contexts.</li>
+  <li>Why GQA matters: cuts cache by group factor.</li>
+</ul>
+
+<h4>Quantization</h4>
+<table>
+<tr><th>Format</th><th>Bits</th><th>Quality loss</th><th>Speed</th></tr>
+<tr><td>FP32</td><td>32</td><td>None (baseline)</td><td>Slowest</td></tr>
+<tr><td>FP16 / BF16</td><td>16</td><td>Negligible</td><td>2x</td></tr>
+<tr><td>INT8</td><td>8</td><td>Minor</td><td>~3x</td></tr>
+<tr><td>INT4 (GPTQ, AWQ)</td><td>4</td><td>Noticeable but acceptable</td><td>~6x</td></tr>
+</table>
+
+<h4>Speculative decoding</h4>
+<ul>
+  <li>Small "draft" model proposes N tokens. Large model verifies in one forward pass.</li>
+  <li>If draft is right, you got N tokens for the cost of one big-model step.</li>
+  <li>Big speedups (2-3x) when draft model is good.</li>
+</ul>
+
+<h4>Context window extension</h4>
+<ul>
+  <li><strong>RoPE scaling</strong> — interpolate position embeddings; extends modestly.</li>
+  <li><strong>YaRN</strong> — better interpolation method.</li>
+  <li><strong>Sliding window attention</strong> (Mistral) — each token attends to N recent tokens, not all.</li>
+  <li><strong>Long-context training</strong> — train on long sequences; pricey but effective.</li>
+</ul>
+
+<h3>6.4 Fine-tuning techniques</h3>
+
+<table>
+<tr><th>Method</th><th>What</th><th>Use when</th></tr>
+<tr><td>Full FT</td><td>Update all weights</td><td>You have lots of data and compute</td></tr>
+<tr><td>LoRA</td><td>Train low-rank adapters, freeze base</td><td>Default for FT — fast, cheap, swappable</td></tr>
+<tr><td>QLoRA</td><td>LoRA on 4-bit quantized base</td><td>Fine-tune big models on one GPU</td></tr>
+<tr><td>Prefix / P-tuning</td><td>Learn soft prompts only</td><td>Very lightweight, less powerful</td></tr>
+<tr><td>SFT</td><td>Supervised on instruction-response pairs</td><td>Teach instruction following</td></tr>
+<tr><td>RLHF</td><td>Reward model + PPO</td><td>Align to preferences; complex pipeline</td></tr>
+<tr><td>DPO</td><td>Direct preference optimization, no reward model</td><td>Modern RLHF replacement; simpler</td></tr>
+<tr><td>GRPO</td><td>Group relative policy optimization (DeepSeek)</td><td>Reasoning models; what you used</td></tr>
+</table>
+
+<h3>6.5 Prompt techniques</h3>
+<ul>
+  <li><strong>Zero-shot</strong> — just the instruction.</li>
+  <li><strong>Few-shot</strong> — include K examples in prompt.</li>
+  <li><strong>Chain-of-thought (CoT)</strong> — "think step by step." Improves reasoning.</li>
+  <li><strong>Self-consistency</strong> — sample N CoT responses, take majority.</li>
+  <li><strong>Tree-of-Thoughts</strong> — explore multiple reasoning branches.</li>
+  <li><strong>ReAct</strong> — interleave reasoning and action.</li>
+  <li><strong>Reflexion</strong> — self-critique after attempts.</li>
+  <li><strong>Role prompting</strong> — "you are an expert SQL engineer." Modest gains.</li>
+</ul>
+
+<h3>6.6 RAG essentials</h3>
+<ul>
+  <li><strong>Chunking</strong> — split docs into retrievable units. Fixed size with overlap is the baseline; semantic chunking (split on topic change) is better for high-quality RAG.</li>
+  <li><strong>Embedding model</strong> — OpenAI text-embedding-3, Cohere, Voyage, BGE. Domain-specific FT can help.</li>
+  <li><strong>Retrieval</strong> — top-K by cosine similarity. Hybrid (BM25 + vector) usually beats either alone.</li>
+  <li><strong>Reranker</strong> — second-stage model (cross-encoder) reorders the top-K. Big quality win, modest latency cost.</li>
+  <li><strong>Eval</strong> — Ragas metrics: faithfulness (no hallucination), answer relevance, context precision, context recall.</li>
+</ul>
+
+<h3>6.7 LLM Q&amp;A</h3>
+
+<div class="qa">
+  <div class="qa-q">Q: What's the difference between RLHF and DPO?</div>
+  <div class="qa-a">RLHF has three stages: SFT on demos, train a reward model on human preference pairs, then PPO using the reward model as the signal. It's complex — PPO is unstable, the reward model can be gamed (reward hacking). DPO collapses this into a single loss function operating directly on preference pairs — no separate reward model, no PPO. Empirically DPO matches or beats RLHF on most benchmarks while being much simpler. GRPO, which I used on TinyMathReason, extends this for reasoning tasks by grouping samples and optimizing relative within the group.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: When would you fine-tune vs. RAG vs. prompt engineering?</div>
+  <div class="qa-a">Hierarchy: try prompting first, then RAG, then FT. Prompting handles most tasks if the model already has the knowledge. RAG when you have a knowledge base — current docs, internal data — the model needs to consult. FT when you need a behavioral change the prompt can't elicit reliably — domain-specific style, format compliance, or a narrow task you can specialize. They're not mutually exclusive: FT for style + RAG for facts is a common winning combo.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: Your Alpha Copilot Text-to-SQL went from 25-30s to 6-8s. Walk me through the optimizations.</div>
+  <div class="qa-a">Several layers stacked. (1) Prompt caching — system prompt with schema context was static, so caching cut TTFT by ~40%. (2) Schema retrieval — instead of stuffing the whole schema, we vector-retrieved only relevant tables based on the query. Smaller prompt = faster. (3) Few-shot example selection — pre-computed embeddings of canonical query patterns; semantic-search to pick 3-5 most relevant. (4) Async pipeline — SQL generation and visualization spec generation ran in parallel. (5) Streaming — started rendering before the full response. (6) Model routing — Haiku for simple lookups, Sonnet for complex multi-table joins. Combined, those took us from 25-30s to 6-8s.</div>
+</div>
+
+<hr>
+
+<h2 id="part-7">Part 7 — Data engineering for AI <span class="tag tag-core">CORE</span></h2>
+
+<p>This is the JD's central theme: AI applied to data engineering. Be ready to whiteboard each of these scenarios.</p>
+
+<h3>7.1 THE killer scenario: reverse engineering legacy pipelines</h3>
+
+<p>The JD explicitly calls out: <em>"Develop autonomous systems capable of reverse engineering legacy pipelines and generating cloud-native equivalents."</em> This is almost certainly going to come up as a system design question.</p>
+
+<h4>The problem</h4>
+<p>Experian has decades of legacy ETL — Informatica, SSIS, COBOL, Oracle PL/SQL, mainframe JCL. They want to migrate to AWS-native (Glue/PySpark) at scale. Doing this manually is years of work. The vision: agents read legacy specs, generate equivalent cloud-native code, validate parity.</p>
+
+<h4>Reference architecture</h4>
+
+<div class="ascii">
+                        Legacy Pipeline Artifacts
+                  (Informatica XML, SSIS DTSX, COBOL,
+                   PL/SQL, source-target docs, runbooks)
+                                  │
+                                  ▼
+                  ┌────────────────────────────────┐
+                  │  Spec Parser Agent             │
+                  │  - regex + LLM extraction      │
+                  │  - normalizes to canonical IR  │
+                  │  Output: pipeline JSON spec    │
+                  └────────────────────────────────┘
+                                  │
+                                  ▼
+                  ┌────────────────────────────────┐
+                  │  Schema Mapping Agent          │
+                  │  - reconcile source/target     │
+                  │    schemas via Glue Catalog    │
+                  │  - flag missing columns        │
+                  └────────────────────────────────┘
+                                  │
+                                  ▼
+                  ┌────────────────────────────────┐
+                  │  Logic Extraction Agent        │
+                  │  - parse SQL/expressions       │
+                  │  - identify business rules     │
+                  │  - LLM annotates ambiguous     │
+                  │    rules with explanations     │
+                  └────────────────────────────────┘
+                                  │
+                                  ▼
+                  ┌────────────────────────────────┐
+                  │  Code Generation Agent         │
+                  │  - emits PySpark Glue job      │
+                  │  - emits unit tests            │
+                  │  - emits CDK/Terraform infra   │
+                  └────────────────────────────────┘
+                                  │
+                                  ▼
+                  ┌────────────────────────────────┐
+                  │  Parity Validator Agent        │
+                  │  - runs new + old on sample    │
+                  │  - row count, sum, distinct    │
+                  │  - column-level diff           │
+                  │  - statistical comparison      │
+                  └────────────────────────────────┘
+                                  │
+                       ┌──────────┴──────────┐
+                       ▼                     ▼
+              ┌──────────────┐      ┌──────────────────┐
+              │ Auto-deploy  │      │ Human Review Q   │
+              │ (high conf.) │      │ (low conf./flags)│
+              └──────────────┘      └──────────────────┘
+                                              │
+                                              ▼
+                                   ┌──────────────────┐
+                                   │ Feedback loop:   │
+                                   │ fixes go back to │
+                                   │ Code Gen Agent   │
+                                   └──────────────────┘
+</div>
+
+<h4>Key design choices to defend</h4>
+
+<ul>
+  <li><strong>Multi-agent over single mega-prompt</strong>: each stage has different context, different evals, different failure modes. Easier to debug and improve in isolation.</li>
+  <li><strong>Canonical IR (intermediate representation)</strong>: decouples parsers (one per legacy format) from generators (one per target). Adding a new source = new parser; adding a new target = new generator.</li>
+  <li><strong>LLM for ambiguity, not for parsing</strong>: use deterministic parsers where possible (regex, ANTLR for SQL). LLM kicks in only where rules are genuinely ambiguous — embedded business logic, sparse comments, naming conventions.</li>
+  <li><strong>Parity validator is the production gate</strong>: code that passes parity goes live. Code that fails routes to humans. Confidence threshold is tunable.</li>
+  <li><strong>Feedback loop</strong>: human fixes feed back as fine-tuning data or few-shot examples for the next generation.</li>
+</ul>
+
+<h4>Hard questions they'll ask</h4>
+
+<div class="qa">
+  <div class="qa-q">Q: How do you validate parity when the legacy system has bugs that downstream systems depend on?</div>
+  <div class="qa-a">Two-tier validation. Strict parity (bit-identical output) is the default. But you also classify diffs — when the new system produces "more correct" output (e.g., NULL vs. empty string handled cleanly), you flag it for human approval rather than auto-rejecting. We maintain a "known divergences" registry — once approved, those diffs are whitelisted on future runs. This makes the system useful in real legacy environments where "the bug is the spec."</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: What if the LLM hallucinates a column or transformation?</div>
+  <div class="qa-a">Layered defenses. (1) Schema constraints — generated SQL is validated against the Glue Catalog; references to non-existent columns fail loudly. (2) Type checking — generated PySpark goes through static analysis before deployment. (3) Parity validator catches semantic drift even if the syntax is fine. (4) Confidence scoring — the code-gen agent rates its own output; low confidence routes to humans automatically. (5) For high-risk pipelines (financial, regulated), we require human approval regardless of confidence.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: How long does this take per pipeline?</div>
+  <div class="qa-a">Wide range. Simple ETL with clean specs: minutes, fully automated. Medium complexity with some business logic: hours including parity validation on samples. Complex pipelines with poorly documented logic: days, mostly waiting for human review of flagged cases. The win is not zero-touch migration — it's shifting from 100% manual to 80%+ automated with humans on the hard cases. At 500 pipelines that's the difference between 5 years and 1 year.</div>
+</div>
+
+<h3>7.2 Self-healing pipelines</h3>
+
+<p>JD: <em>"Build feedback loops for self-healing pipelines and auto-correction of data issues."</em></p>
+
+<h4>Architecture</h4>
+<div class="ascii">
+   CloudWatch Logs / Metrics / Job Events
+            │
+            ▼
+   ┌────────────────────────┐
+   │ Anomaly Detector       │
+   │ - statistical (z-score)│
+   │ - ML (isolation forest)│
+   │ - rule-based           │
+   └────────────────────────┘
+            │
+       anomaly?
+            │
+            ▼
+   ┌────────────────────────┐
+   │ Diagnosis Agent (LLM)  │
+   │ Tools:                 │
+   │ - read CloudWatch logs │
+   │ - inspect schema       │
+   │ - read recent git      │
+   │ - sample data          │
+   └────────────────────────┘
+            │
+            ▼
+   ┌────────────────────────┐
+   │ Remediation Agent      │
+   │ - proposes fix         │
+   │ - confidence score     │
+   └────────────────────────┘
+            │
+   ┌────────┴─────────┐
+   ▼                  ▼
+ auto-fix       human approval queue
+ (high conf.)   (low conf. / high risk)
+</div>
+
+<h4>Examples of self-healing</h4>
+<ul>
+  <li><strong>Schema drift</strong>: source added a column. Agent detects, updates Glue Catalog, regenerates downstream views, validates.</li>
+  <li><strong>Late-arriving data</strong>: today's batch is missing. Agent reaches out to source via API, requests resend or backfill.</li>
+  <li><strong>Stale partitions</strong>: a partition is empty. Agent checks upstream, decides whether to retry or alert.</li>
+  <li><strong>Performance regression</strong>: job slowed 3x. Agent reads Spark UI, identifies skew, proposes salt or repartition.</li>
+</ul>
+
+<h3>7.3 Data quality with AI</h3>
+
+<h4>Frameworks</h4>
+<ul>
+  <li><strong>Great Expectations</strong> — Python-native, declarative expectations.</li>
+  <li><strong>Soda Core</strong> — YAML-based, runs as job.</li>
+  <li><strong>dbt tests</strong> — SQL-based, integrated with dbt models.</li>
+  <li><strong>AWS Glue Data Quality</strong> — managed, integrated with Catalog.</li>
+</ul>
+
+<h4>LLM-enhanced data quality</h4>
+<ul>
+  <li><strong>Auto-generate expectations</strong>: feed sample data to LLM, ask it to propose expectations (range, regex, uniqueness). Human reviews, accepts the good ones.</li>
+  <li><strong>Anomaly explanation</strong>: when an expectation fails, LLM reads the failed rows + recent context and suggests root cause.</li>
+  <li><strong>Semantic column naming</strong>: LLM enriches schema descriptions for ambiguous columns.</li>
+</ul>
+
+<h3>7.4 Data lineage with AI</h3>
+
+<ul>
+  <li><strong>Column-level lineage from SQL parsing</strong>: tools like sqlglot, sqllineage parse SQL into ASTs and trace columns end-to-end.</li>
+  <li><strong>LLM enrichment</strong>: lineage graphs are mechanical. The interpretation ("this column represents customer revenue net of returns") needs LLM annotation.</li>
+  <li><strong>Storage</strong>: graph DBs (Neptune, Neo4j) handle the lineage graph; metadata layer (Amundsen, OpenMetadata, DataHub) presents it.</li>
+  <li><strong>Impact analysis</strong>: "if I drop this column, what breaks?" — agents can trace and summarize.</li>
+</ul>
+
+<h3>7.5 Schema inference &amp; drift</h3>
+<ul>
+  <li><strong>Schema-on-read</strong> (Athena, Spark) — infer at query time. Flexible but slow, costly.</li>
+  <li><strong>Schema-on-write</strong> (Parquet with explicit schema) — fast, but rigid.</li>
+  <li><strong>Glue Crawlers</strong> + LLM: crawler infers types; LLM enriches with column descriptions, business meaning, PII tags.</li>
+  <li><strong>Drift detection</strong>: hash the schema; alert when hash changes. Classify breaking vs. non-breaking. LLM helps explain the change.</li>
+</ul>
+
+<h3>7.6 Reconciliation</h3>
+<ul>
+  <li>Row counts (source vs. target).</li>
+  <li>Sum of numeric columns.</li>
+  <li>Distinct value counts.</li>
+  <li>Top-N value distributions (catches skew).</li>
+  <li>Sample-based diff (random N rows, full-row comparison).</li>
+  <li>Statistical: KS test on numeric distributions, chi-square on categoricals.</li>
+  <li>LLM for human-readable summary: "Counts match. Total revenue diff $237 on 1.2M rows — within tolerance. Top vendor 'Acme' has 14% more rows in new system; investigated, found legacy was deduping incorrectly."</li>
+</ul>
+
+<hr>
+
+<h2 id="part-8">Part 8 — Your resume: deep-dive prep <span class="tag tag-core">CORE</span></h2>
+
+<p>Every bullet on your resume is fair game. The interviewer will pick 2-3 they find interesting and dig. Below: prepared answers for the highest-probability deep-dives, plus the 2-vs-5 years script.</p>
+
+<h3>8.1 The 2-vs-5 years problem (prepare this answer cold)</h3>
+
+<div class="callout callout-gap">
+  <strong>They will ask. Don't be defensive. Acknowledge → reframe → redirect.</strong>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: The JD says 5+ years and you have about 2.5. Talk to me about that.</div>
+  <div class="qa-a">"You're right that I'm under the years bar, so let me address that directly. In those 2.5 years I've shipped what most people would call 5 years of work — an enterprise Text-to-SQL platform serving 100+ users, a production agentic platform with 50+ workflows and 5+ business teams, a 1.12B parameter LLM pretrained from scratch on a TPU cluster, and two peer-reviewed publications on Text-to-SQL methods. I've led the technical direction on Agent Forge end-to-end — architecture, guardrails, observability, deployment, and team adoption. I treat depth and scope as the real signals, and I think the work shows lead-level judgment. That said, I respect your assessment — if there's a specific area where you'd want more years, I'd love to know so I can either address it from my experience or be honest about the gap."</div>
+</div>
+
+<p><strong>Key moves:</strong></p>
+<ul>
+  <li>Acknowledge the gap explicitly — don't dodge.</li>
+  <li>Counter with depth markers (1B-param model, 2 publications, production platform).</li>
+  <li>Reframe "Lead" as scope/judgment, not tenure.</li>
+  <li>End with an opening — invites them to probe specifics.</li>
+</ul>
+
+<h3>8.2 Alpha Copilot — anticipated deep dive</h3>
+
+<div class="qa">
+  <div class="qa-q">Q: Walk me through Alpha Copilot's architecture end to end.</div>
+  <div class="qa-a">Three-layer architecture. (1) Ingestion: schema metadata is precomputed nightly into a vector index — table descriptions, column descriptions, sample values, foreign keys. (2) Runtime: user query → schema linker retrieves top-K relevant tables → few-shot example selector picks 3-5 query patterns → SQL generation LLM produces query → execution sandbox validates and runs → result post-processor adds visualization spec. (3) Observability: OTEL spans for every stage; we log query, retrieved schema, generated SQL, execution result, user feedback. We use this for offline eval and to iterate on the schema-linking model.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: How does the schema linker work?</div>
+  <div class="qa-a">Vector retrieval over a precomputed schema index. We embed each table as a structured doc — table name, business description, column names, column descriptions, sample values, relationships. The user query is embedded; top-K tables are retrieved by cosine similarity. Then a reranker (cross-encoder) reorders. We pick top-3 tables and put their full schema in the prompt. This bounds prompt size and improves accuracy — full-schema dumps hit the model's recall ceiling.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: How do you handle a query that needs joins across 5 tables?</div>
+  <div class="qa-a">Two paths. (1) The schema linker retrieves more candidates (top-10) and the reranker prioritizes tables with strong relationship signals. (2) The few-shot examples include multi-table joins so the model has the pattern. For very complex queries, we have a decomposition step — the LLM identifies sub-queries, generates each, then composes. This is closer to plan-and-execute. Cost is higher but accuracy on complex joins improved ~25% in offline eval.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: What happens when the SQL is wrong?</div>
+  <div class="qa-a">Multi-stage validation. Syntax check first via sqlglot. Then dry-run with EXPLAIN to catch reference errors without executing. Then execution in a read-only sandbox with timeout. If anything fails, the error goes back to the LLM with a "fix this error" prompt — up to 2 retries. After that, we surface the error to the user with the SQL it tried, so they can edit. We log all failure modes for offline analysis.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: How did you get from 25-30s to 6-8s?</div>
+  <div class="qa-a">[Use the layered answer from Part 6.7 above.] Six stacked optimizations: prompt caching, retrieval-trimmed schema, semantic few-shot, parallel pipelines, streaming, and model routing.</div>
+</div>
+
+<h3>8.3 Agent Forge — anticipated deep dive (your headline)</h3>
+
+<div class="qa">
+  <div class="qa-q">Q: What problem was Agent Forge built to solve?</div>
+  <div class="qa-a">Sprawl. Multiple business teams were building their own agentic workflows — copying glue code, reimplementing memory, building one-off guardrails. There was no inventory, no central observability, no consistent governance. Agent Forge is a platform that centralizes registration, discovery, and governance, so a team can register an agent and immediately get standardized observability, guardrails, evals, and audit logging. The business outcome is consistency at scale and faster team velocity — teams build the agent, not the platform around it.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: How does agent registration work?</div>
+  <div class="qa-a">Two patterns. (1) Code-first: an agent declares itself via decorator or YAML, the platform discovers it on deploy and registers metadata — name, owner, tools, model, version, eval suite. (2) UI-first: for non-engineers, our no-code builder lets them assemble agents from registered tools. Both paths produce the same canonical registration record stored in a service-of-record DB. Discovery is via metadata search and semantic search over capability descriptions.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: What does "OTEL-compliant observability" mean concretely?</div>
+  <div class="qa-a">We emit spans following the GenAI semantic conventions (the in-progress OTEL spec for LLMs). Each agent invocation is a root span. Each LLM call is a child span with attributes for model, input tokens, output tokens, cache hit, latency, cost. Each tool call is a span with tool name, args (redacted if sensitive), result hash, latency. Spans go to our APM (Tempo / Jaeger). Metrics — token volume, cost, error rate — go to Prometheus. Logs are structured JSON with the trace ID. This means any engineer can pull up a trace and see the full agent trajectory in one place.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: What guardrails do you implement?</div>
+  <div class="qa-a">Layered. (1) Input filters: PII detection (Presidio), prompt-injection classifier, content moderation. (2) Tool gates: high-risk tools (writes, sends) require an additional auth step. (3) Output filters: PII redaction, sensitive-data leak detection (cross-check against the user's authz scope), hallucination detection by comparing against retrieved context. (4) Behavior limits: per-session budget, max iterations, time budget. (5) Anomaly detection on patterns. Centralized in the platform so all registered agents get them automatically — teams can opt up to stricter policies but can't opt down.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: How are multi-agent systems coordinated in Agent Forge?</div>
+  <div class="qa-a">Two patterns. (1) Static: the developer composes agents into a graph — explicit LangGraph-style state machine, registered as a workflow. (2) Dynamic: a supervisor agent receives a task, queries the agent registry for capable agents by semantic search, delegates, synthesizes. The registry is the contract — every agent publishes capabilities so others (or supervisors) can find them. We instrument the inter-agent calls so trajectory evals can score the orchestration, not just the final answer.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: How is Agent Forge different from LangGraph / CrewAI?</div>
+  <div class="qa-a">Those are frameworks for building one agent or workflow. Agent Forge is a platform for managing many agents across the enterprise — it doesn't replace the framework, it sits above it. We support LangGraph and our own SDK as the building tools, but Agent Forge provides the registration, governance, observability, and discovery layer that no single-team framework offers. The analog is Kubernetes vs. a single Docker container — orthogonal concerns.</div>
+</div>
+
+<h3>8.4 TinyMathReason-1B — anticipated deep dive</h3>
+
+<div class="qa">
+  <div class="qa-q">Q: Why MaxText/JAX and not PyTorch FSDP?</div>
+  <div class="qa-a">Three reasons. (1) TPU optimization — MaxText is built by Google for TPUs and achieves very high MFU out of the box; PyTorch on TPU via XLA is workable but typically lower throughput. (2) Sharding model — JAX's pjit/shard_map is more explicit and composable than FSDP for complex parallelism (data + tensor parallel). (3) Reproducibility — MaxText's deterministic checkpointing and config-driven training simplified my iteration loop. The tradeoff was ecosystem — Hugging Face is PyTorch-first, so I wrote custom JAX → HF checkpoint converters to use TRL for post-training on the AMD GPU.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: 66 TFLOP/s/device — is that good?</div>
+  <div class="qa-a">For TPU v4, theoretical is 275 TFLOP/s in bf16. 66 sustained is ~24% MFU, which is solid for a from-scratch run with custom data loading. Top published MFU on TPU is ~55% (Google's own runs); reaching that requires careful sharding tuning and longer warmup. For a research-budget run, 66 was acceptable. The bottleneck was data loading bandwidth from GCS — increasing the per-host prefetch buffer was the biggest single improvement.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: Why GRPO over DPO for post-training?</div>
+  <div class="qa-a">DPO is great for general preference alignment but pairs of "chosen vs. rejected" don't capture reasoning quality well — both could be plausible chains of thought. GRPO (Group Relative Policy Optimization, from DeepSeek-R1) samples multiple responses per prompt, scores each (here, by correctness against a math gold answer), and optimizes within the group. This is well-suited to verifiable tasks like math where you have a clear reward signal. The result was better step-level reasoning on held-out problems vs. DPO baseline.</div>
+</div>
+
+<h3>8.5 Publications — anticipated deep dive</h3>
+
+<div class="qa">
+  <div class="qa-q">Q: What's novel about GoT4SQL-DA?</div>
+  <div class="qa-a">The contribution is using Graph-of-Thoughts as a data augmentation engine for Text-to-SQL training. Existing augmentation methods produce simple paraphrases. We use GoT to generate multi-path reasoning over a query — the graph captures alternative SQL formulations, decomposition strategies, and intermediate reasoning. Each path produces a training example. The augmented dataset improved Text-to-SQL fine-tuning by [insert your specific number] points on the Spider benchmark over the same dataset without augmentation. The high-level idea is: structure your synthetic data the way you want your model to think.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: How does Graph-of-Thoughts differ from Tree-of-Thoughts?</div>
+  <div class="qa-a">Tree-of-Thoughts explores reasoning as a tree — each node is a thought, you branch, prune, backtrack. Graph-of-Thoughts adds merge and refine operations — you can combine partial solutions, refine a node based on multiple parents, share sub-results across branches. This is closer to how humans actually reason about hard problems — we don't pick one path and prune; we synthesize across attempts. Computationally it's more expensive but expresses reasoning patterns ToT can't.</div>
+</div>
+
+<h3>8.6 Other resume bullets — quick refreshers</h3>
+
+<ul>
+  <li><strong>RAG on fund prospectuses</strong>: be ready on chunking strategy (semantic chunks on heading boundaries), embedding model choice, retrieval evaluation (Ragas faithfulness ~0.X), and how you handled tables and figures in PDFs.</li>
+  <li><strong>WealthAI</strong>: real-time portfolio narrative — what triggers re-generation? How do you control hallucinations on financial data? (Hint: retrieval-only generation, never let model invent numbers.)</li>
+  <li><strong>95% test coverage</strong>: what tooling? How do you handle LLM call mocking in tests (record/replay vs. mocked clients)?</li>
+  <li><strong>.NET → FastAPI migration</strong>: be ready on what was hardest (state migration, auth, performance parity).</li>
+</ul>
+
+<hr>
+
+<h2 id="part-9">Part 9 — System design scenarios <span class="tag tag-core">CORE</span></h2>
+
+<p>Five worked walkthroughs. Practice drawing each on paper from memory. The framework: <em>(1) clarify, (2) estimate scale, (3) high-level architecture, (4) drill into 1-2 components, (5) failure modes and scaling, (6) explicit tradeoffs.</em></p>
+
+<h3>9.1 Framework for any system design answer</h3>
+<ol>
+  <li><strong>Clarify requirements</strong> — functional (what does it do), non-functional (latency SLO, scale, availability, cost ceiling).</li>
+  <li><strong>Estimate scale</strong> — QPS, data volume, growth. Aloud: "If we expect 1M events/day, that's ~12 QPS average, peak maybe 100 QPS."</li>
+  <li><strong>High-level diagram</strong> — boxes and arrows. Identify components.</li>
+  <li><strong>Drill into 1-2 critical components</strong> — interviewer will steer you.</li>
+  <li><strong>Failure modes</strong> — what breaks under load? What if X is down? Idempotency? Retries? DLQ?</li>
+  <li><strong>Scaling</strong> — what's the bottleneck at 10x scale? How do you address?</li>
+  <li><strong>Tradeoffs</strong> — explicitly name choices and alternatives.</li>
+</ol>
+
+<h3>9.2 Scenario A: Agentic ingestion pipeline for 50 vendors</h3>
+
+<p><em>"Design an AI agent system that ingests CSV files from 50 vendors, infers schema, validates quality, and loads to a lakehouse."</em></p>
+
+<h4>Clarify</h4>
+<ul>
+  <li>Vendors: 50 distinct sources, different schemas, different cadences.</li>
+  <li>Volume: ~10 GB/day across all, ~100 files.</li>
+  <li>Latency: T+1 day acceptable; not real-time.</li>
+  <li>Quality: must detect schema changes, malformed data, drift.</li>
+  <li>Output: queryable in Athena/Redshift the next morning.</li>
+</ul>
+
+<h4>Architecture</h4>
+<div class="ascii">
+  Vendors ──(SFTP/S3 push/API)──► S3 Raw zone
+                                       │ (S3 event)
+                                       ▼
+                            EventBridge custom bus
+                                       │
+                       ┌───────────────┼───────────────┐
+                       ▼               ▼               ▼
+              Schema Inference   Quality Gate    Metadata Log
+              Agent (LLM +       Lambda           DynamoDB
+              Glue Crawler)      (size, format)   (ingest record)
+                       │
+                       ▼
+              Glue Catalog updated
+                       │
+                       ▼
+              SQS queue ──► Glue PySpark job
+                            (normalize, partition)
+                                       │
+                                       ▼
+                            S3 Curated zone (Parquet)
+                                       │
+                                       ▼
+                            Validator Agent
+                            - reconcile vs. source
+                            - LLM summary of diffs
+                                       │
+                            ┌──────────┴──────────┐
+                            ▼                     ▼
+                  Auto-approve            Slack alert →
+                  (within tolerance)      human review
+</div>
+
+<h4>Component drilldowns</h4>
+<ul>
+  <li><strong>Schema Inference Agent</strong>: Glue Crawler infers Parquet/CSV schema; LLM enriches with column descriptions and proposes data types where ambiguous (e.g., date format). Persists to Glue Catalog. On schema change vs. last run, classifies breaking vs. additive.</li>
+  <li><strong>Validator Agent</strong>: AgentCore async session. Tools: query source via API, query curated lake, fetch metadata. Produces a markdown report including row count parity, sum parity, sample-row diff, and an LLM-generated summary. Posts to Slack on anomaly.</li>
+</ul>
+
+<h4>Failure modes</h4>
+<ul>
+  <li>Vendor file missing: cron-based check at expected arrival time; agent reaches out to vendor or alerts.</li>
+  <li>Malformed file: quarantined to error zone, alert.</li>
+  <li>Glue job fails: SQS DLQ catches; retry with backoff.</li>
+  <li>Schema change breaks downstream: Catalog change triggers downstream impact analysis agent.</li>
+</ul>
+
+<h4>Scaling</h4>
+<p>To 500 vendors: SQS handles fanout, Glue auto-scales. The Validator Agent becomes the bottleneck — parallelize per vendor via separate AgentCore sessions. Cost: dominated by Glue DPUs; consider EMR Serverless for >10TB/day.</p>
+
+<h4>Tradeoffs</h4>
+<ul>
+  <li>Glue vs. EMR Serverless: chose Glue for simplicity, would switch if jobs >1hr.</li>
+  <li>EventBridge vs. direct S3→Lambda: EventBridge for future extensibility.</li>
+  <li>Per-vendor agent session vs. shared: per-vendor for isolation and parallelism, at modest extra cost.</li>
+</ul>
+
+<h3>9.3 Scenario B: Reverse engineer 500 Informatica jobs</h3>
+
+<p>Already covered in Part 7.1 with full architecture. The interview move here: <em>draw that diagram, defend each agent's role, then they will drill into "how do you handle X" — refer to Part 7.1 Q&amp;A.</em></p>
+
+<h3>9.4 Scenario C: Self-healing data lake</h3>
+
+<p><em>"Build an agent that monitors a data lake and auto-remediates broken pipelines."</em></p>
+
+<h4>Architecture</h4>
+<div class="ascii">
+   Sources of signal:
+   - CloudWatch metrics (job failures, latency)
+   - CloudWatch Logs (job errors)
+   - Data quality results (Glue Data Quality)
+   - Anomaly detection on Catalog (row count, freshness)
+                          │
+                          ▼
+              EventBridge incident bus
+                          │
+                          ▼
+              Triage Agent (AgentCore)
+              - reads incident
+              - classifies severity
+              - identifies affected pipeline
+                          │
+                          ▼
+              Diagnosis Agent
+              Tools:
+              - read CloudWatch Logs
+              - read job code from git
+              - read recent commits
+              - sample input/output data
+              - read Catalog schema history
+                          │
+                          ▼
+              Root cause + proposed fix
+                          │
+              ┌───────────┴───────────┐
+              ▼                       ▼
+      Confidence high?           Confidence low
+      Risk low?                  or risk high
+              │                       │
+              ▼                       ▼
+      Auto-fix (PR or            Page on-call,
+      direct patch)              attach diagnosis
+              │                       │
+              ▼                       ▼
+      Validation suite           Human-in-loop
+      (test in staging)          approval flow
+              │
+              ▼
+      Deploy + monitor
+              │
+              ▼
+      Log to learning corpus
+      (feedback for next time)
+</div>
+
+<h4>Key choices</h4>
+<ul>
+  <li>Confidence + risk gate, not confidence alone — a high-confidence "fix" on a financial pipeline still needs human review.</li>
+  <li>Diagnosis agent has read-only tools — write actions go through the remediation step with explicit approval.</li>
+  <li>Learning corpus: every diagnosis (whether auto-fixed or human-corrected) is logged with outcome; periodically used as few-shot examples or fine-tuning data.</li>
+</ul>
+
+<h3>9.5 Scenario D: Agent Forge on AgentCore</h3>
+
+<p><em>"Re-architect Agent Forge to run on AWS AgentCore."</em></p>
+
+<h4>Mapping</h4>
+<table>
+<tr><th>Agent Forge component</th><th>AgentCore primitive</th><th>Notes</th></tr>
+<tr><td>Agent runtime</td><td>AgentCore Runtime</td><td>Each registered agent as Runtime endpoint</td></tr>
+<tr><td>Agent memory</td><td>AgentCore Memory</td><td>Custom extractors for domain facts</td></tr>
+<tr><td>Tool registry</td><td>AgentCore Gateway</td><td>MCP servers for internal Lambdas/APIs</td></tr>
+<tr><td>Identity, OAuth</td><td>AgentCore Identity</td><td>Token vault for external systems</td></tr>
+<tr><td>Observability</td><td>AgentCore Observability + OTEL</td><td>Native CloudWatch integration</td></tr>
+<tr><td>Guardrails</td><td>External (keep our richer engine)</td><td>Bedrock Guardrails as additional layer</td></tr>
+<tr><td>Registration/Discovery</td><td>Custom (DynamoDB)</td><td>Not AgentCore's concern</td></tr>
+<tr><td>No-code builder</td><td>Custom UI on top</td><td>Generates AgentCore Runtime configs</td></tr>
+<tr><td>Eval pipeline</td><td>Custom + AgentCore traces</td><td>Use traces as eval input</td></tr>
+</table>
+
+<h4>Migration approach</h4>
+<ol>
+  <li>New agents go on AgentCore Runtime from day one. Existing agents keep running.</li>
+  <li>Migrate one agent end-to-end as the pilot — refine our Runtime adapter, debug observability mapping.</li>
+  <li>Migrate Memory: backfill from our vector store into AgentCore Memory; shadow-mode validation; swap.</li>
+  <li>Migrate Gateway last — biggest blast radius; do it tool by tool.</li>
+  <li>Decommission self-managed runtime once last agent moved.</li>
+</ol>
+
+<h3>9.6 Scenario E: Text-to-SQL for a 10,000-table warehouse</h3>
+
+<p><em>"Build a Text-to-SQL system for a warehouse with 10,000 tables."</em></p>
+
+<h4>Why this is hard</h4>
+<p>Stuffing 10K table schemas in a prompt is impossible. Vector retrieval over tables alone has poor recall — table names are cryptic, descriptions sparse.</p>
+
+<h4>Architecture</h4>
+<ol>
+  <li><strong>Hierarchical retrieval</strong>: (a) Domain classifier — LLM maps query to one of ~20 business domains. (b) Table retrieval — vector search within the domain, top-50. (c) Cross-encoder reranker — top-50 to top-5.</li>
+  <li><strong>Schema enrichment offline</strong>: LLM batch-generates business descriptions for every table and column. Manual review for highest-traffic tables. These descriptions are what we embed.</li>
+  <li><strong>Few-shot example bank</strong>: per domain, ~20 canonical query patterns. Semantic-search at runtime.</li>
+  <li><strong>Decomposition for complex queries</strong>: LLM detects multi-domain queries, breaks into sub-queries with explicit join keys.</li>
+  <li><strong>Execution sandbox</strong>: read-only credentials, query timeout, max-row limit.</li>
+  <li><strong>Feedback loop</strong>: user thumbs-up/down captured; flagged SQL goes to a labeling queue; periodic fine-tuning of the SQL generator.</li>
+</ol>
+
+<h4>Eval</h4>
+<ul>
+  <li>Execution accuracy on held-out gold set.</li>
+  <li>Top-K table recall (did the retriever surface the right tables?).</li>
+  <li>Latency p50 / p95.</li>
+  <li>User satisfaction (thumbs).</li>
+</ul>
+
+<hr>
+
+<h2 id="part-10">Part 10 — CI/CD with AI <span class="tag tag-likely">LIKELY</span></h2>
+
+<p>JD requires Jenkins/Harness, Bitbucket, SonarQube, Veracode, and embedding agentic workflows in CI/CD. You have Harness + Docker on resume; round out the others.</p>
+
+<h3>10.1 Standard pipeline structure</h3>
+<div class="ascii">
+  Developer push
+        │
+        ▼
+  ┌─────────────────────────┐
+  │ PR Open trigger         │
+  └─────────────────────────┘
+        │
+        ▼
+  ┌─────────────────────────┐
+  │ Stage 1: Build          │
+  │ - lint, format          │
+  │ - type check            │
+  │ - unit tests            │
+  └─────────────────────────┘
+        │
+        ▼
+  ┌─────────────────────────┐
+  │ Stage 2: Quality        │
+  │ - SonarQube scan        │
+  │ - test coverage gate    │
+  │ - dependency check      │
+  └─────────────────────────┘
+        │
+        ▼
+  ┌─────────────────────────┐
+  │ Stage 3: Security       │
+  │ - SAST (Veracode)       │
+  │ - secret scan           │
+  │ - SCA (vulns)           │
+  └─────────────────────────┘
+        │
+        ▼
+  ┌─────────────────────────┐
+  │ Stage 4: AI review      │
+  │ - LLM PR review agent   │
+  │ - LLM test gen for gaps │
+  │ - Eval suite for agents │
+  └─────────────────────────┘
+        │
+        ▼
+  ┌─────────────────────────┐
+  │ Stage 5: Deploy         │
+  │ - staging deploy        │
+  │ - smoke tests           │
+  │ - canary or full        │
+  └─────────────────────────┘
+</div>
+
+<h3>10.2 SonarQube basics</h3>
+<ul>
+  <li>Static analysis platform — code smells, bugs, security hotspots, coverage.</li>
+  <li>Quality Gate: pass/fail thresholds on metrics (coverage, duplications, new bugs).</li>
+  <li>Integration: scanner runs in CI, posts results to SonarQube server, gate blocks merge if failed.</li>
+  <li>Languages: covers everything you'd care about (Python, Java, JS, SQL).</li>
+</ul>
+
+<h3>10.3 Veracode basics</h3>
+<ul>
+  <li>SAST (static), DAST (dynamic), SCA (software composition — vulnerable dependencies).</li>
+  <li>Policy-driven: severity thresholds block deploys.</li>
+  <li>Integrates with Bitbucket/Jenkins/Harness via plugin or CLI.</li>
+  <li>Veracode SCA = Snyk / Dependabot equivalent.</li>
+</ul>
+
+<h3>10.4 Embedding AI in CI/CD</h3>
+
+<h4>PR review agent</h4>
+<ul>
+  <li>Triggers on PR open / push.</li>
+  <li>Reads diff, posts inline comments via Bitbucket API.</li>
+  <li>Domain checklist: security patterns, error handling, observability coverage, license compliance.</li>
+  <li>Critical: agent is advisory, not gating, in early days. Promote to gate once trust is built.</li>
+</ul>
+
+<h4>Test generation agent</h4>
+<ul>
+  <li>Analyzes coverage report, finds uncovered code paths.</li>
+  <li>Generates unit tests using context of the function + surrounding code.</li>
+  <li>Submits as PR comment for human to accept.</li>
+</ul>
+
+<h4>Eval-driven development for AI features</h4>
+<ul>
+  <li>Every PR runs the eval suite for affected agents.</li>
+  <li>Reports delta vs. baseline — accuracy, latency, cost.</li>
+  <li>Regression gate: PR can't merge if accuracy drops &gt; X% or cost rises &gt; Y%.</li>
+</ul>
+
+<h4>Security with AI assist</h4>
+<ul>
+  <li>SAST findings get LLM-generated remediation suggestions.</li>
+  <li>Dependency vulnerabilities get LLM assessment of exploitability in our codebase.</li>
+  <li>Caveat: never auto-apply security fixes; always human review.</li>
+</ul>
+
+<h3>10.5 Harness specifics (you list this)</h3>
+<ul>
+  <li>Pipeline-as-code via YAML.</li>
+  <li>Strong feature: GitOps with delegate model.</li>
+  <li>Deployment strategies: blue-green, canary, rolling — declarative.</li>
+  <li>Approval steps for prod deploys.</li>
+  <li>Be ready to talk about: your Harness pipeline structure for Alpha Copilot, how you handle secrets (Harness Secret Manager / external vault), and rollback strategy.</li>
+</ul>
+
+<h3>10.6 Q&amp;A</h3>
+
+<div class="qa">
+  <div class="qa-q">Q: How would you embed an LLM-based code review into a CI pipeline?</div>
+  <div class="qa-a">Three principles. (1) Advisory first, gating later — start by posting comments, build trust over months before blocking merges. (2) Domain-specific — generic LLM review is noisy; encode your team's policy (security patterns, observability requirements, license rules). (3) Bound the scope — review the diff, not the whole file, to control cost and noise. Implementation: a Harness stage calls a small service that pulls the PR diff via Bitbucket API, runs the review agent (LangGraph + Claude), and posts comments back. Cost is bounded per PR. We measure: comment acceptance rate, false positive rate, time-to-merge.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: How do you prevent an LLM from writing insecure code in production?</div>
+  <div class="qa-a">Defense in depth. (1) Type system catches most API misuse. (2) SAST (Bandit/Semgrep/Sonar) catches known patterns. (3) Veracode SCA catches vulnerable deps. (4) The CI pipeline gates on these; you can't merge with critical findings. (5) AI-specific: prompt the model with our security conventions (CLAUDE.md), include security-focused tests in the gen prompt. (6) Code review is mandatory regardless of who wrote it. The LLM is not a special threat — it's another contributor whose work goes through the same gates.</div>
+</div>
+
+<hr>
+
+<h2 id="part-11">Part 11 — Security &amp; governance <span class="tag tag-likely">LIKELY</span></h2>
+
+<p>FTSE 100 + financial-services-adjacent (Experian's data is heavily regulated). Be sharp on these.</p>
+
+<h3>11.1 AWS IAM essentials</h3>
+<ul>
+  <li><strong>Principle of least privilege</strong> — every role gets only what it needs.</li>
+  <li><strong>Roles over keys</strong> — IAM roles assumed via STS, never long-lived access keys.</li>
+  <li><strong>Resource-based vs. identity-based policies</strong> — S3 bucket policy is resource-based; user/role policy is identity-based.</li>
+  <li><strong>Permission boundaries</strong> — cap what a role can be granted, even by an admin.</li>
+  <li><strong>SCPs (Service Control Policies)</strong> — at AWS Organizations level, restrict accounts org-wide.</li>
+</ul>
+
+<h3>11.2 Encryption</h3>
+<ul>
+  <li><strong>At rest</strong>: KMS-managed keys. SSE-KMS on S3, encrypted EBS, DynamoDB encryption at rest (default).</li>
+  <li><strong>In transit</strong>: TLS 1.2+. ACM for cert management.</li>
+  <li><strong>Customer-managed keys (CMK)</strong> vs. AWS-managed keys — CMK gives you key rotation control and explicit policy.</li>
+  <li><strong>Envelope encryption</strong> — data key encrypted by master key; standard pattern for performance.</li>
+</ul>
+
+<h3>11.3 Secrets management</h3>
+<ul>
+  <li><strong>AWS Secrets Manager</strong> — versioned, auto-rotation supported (RDS, Redshift).</li>
+  <li><strong>SSM Parameter Store</strong> — cheaper, simpler; SecureString uses KMS. Lower limits.</li>
+  <li>Never commit secrets. Pre-commit hooks (detect-secrets, gitleaks).</li>
+</ul>
+
+<h3>11.4 Data classification</h3>
+<ul>
+  <li><strong>PII</strong> — names, emails, SSN, addresses.</li>
+  <li><strong>PHI</strong> — health info (HIPAA in US).</li>
+  <li><strong>PCI</strong> — payment card data (PCI DSS).</li>
+  <li><strong>Financial</strong> — material non-public info, KYC.</li>
+  <li>Experian-specific: credit-bureau data is extremely regulated; consent and FCRA-style controls matter.</li>
+</ul>
+
+<h3>11.5 Audit logging</h3>
+<ul>
+  <li><strong>CloudTrail</strong> — every API call to AWS. Mandatory.</li>
+  <li><strong>VPC Flow Logs</strong> — network traffic metadata.</li>
+  <li><strong>Application audit log</strong> — every user action, model invocation, tool call. Immutable storage (S3 with Object Lock).</li>
+</ul>
+
+<h3>11.6 LLM-specific security</h3>
+<ul>
+  <li><strong>Prompt injection</strong> — covered in 5.8.</li>
+  <li><strong>Data exfiltration via tools</strong> — agent has tool access to read sensitive data; user tricks it into emitting that data. Defense: scoped tools per user role; output filters.</li>
+  <li><strong>Training data leakage</strong> — fine-tuned model memorizes training samples; prompt extraction attacks. Defense: PII removal pre-training, differential privacy (research-grade), output filters.</li>
+  <li><strong>Model jailbreaks</strong> — adversarial prompts bypass guardrails. Defense: layered guardrails, red teaming, monitoring.</li>
+  <li><strong>Supply chain</strong> — downloaded models or prompts may be poisoned. Defense: pin sources, hash-verify, sandboxed execution.</li>
+</ul>
+
+<h3>11.7 OWASP Top 10 for LLM Applications</h3>
+<ol>
+  <li>Prompt Injection</li>
+  <li>Insecure Output Handling (model output executed without sanitization)</li>
+  <li>Training Data Poisoning</li>
+  <li>Model Denial of Service</li>
+  <li>Supply Chain Vulnerabilities</li>
+  <li>Sensitive Information Disclosure</li>
+  <li>Insecure Plugin Design (tool design)</li>
+  <li>Excessive Agency (too-broad tool access)</li>
+  <li>Overreliance</li>
+  <li>Model Theft</li>
+</ol>
+<p>Know this list. The interviewer might cite "OWASP LLM Top 10" by name.</p>
+
+<h3>11.8 Q&amp;A</h3>
+
+<div class="qa">
+  <div class="qa-q">Q: How do you scope tool access for an agent?</div>
+  <div class="qa-a">Least privilege per agent, per user. Each agent declares the tools it needs at registration. Each tool declares the auth scope it requires. At runtime, the agent assumes a role with only those tools, and the role's permissions are further constrained by the user's identity propagated via AgentCore Identity. So an agent that summarizes a user's own orders cannot see other users' orders, even though the underlying tool could in principle. We also have a separate "destructive action" classifier — writes, sends, deletes require explicit approval gates regardless of role.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: How do you handle PII in prompts and logs?</div>
+  <div class="qa-a">Three-layer approach. (1) Input filter — Presidio scans for PII; high-sensitivity fields (SSN, full card numbers) are blocked or replaced with tokens before the prompt is sent to the model. (2) Provider settings — Anthropic and Azure OpenAI both have data-handling agreements that prohibit training on our data; we use enterprise endpoints. (3) Logs — structured logs use placeholders for PII fields; full payloads only in encrypted audit storage with restricted access. For our financial domain, we also tag PII columns in the Catalog and enforce that retrieval agents cannot fetch them unless the user has explicit authz.</div>
+</div>
+
+<hr>
+
+<h2 id="part-12">Part 12 — Behavioral / leadership <span class="tag tag-likely">LIKELY</span></h2>
+
+<p>This is a Lead role. Prepare 8 STAR stories. Each: 90 seconds, Situation → Task → Action → Result, quantify the Result. Draft answers below — edit to match your actual experience.</p>
+
+<h3>12.1 Story bank (STAR format)</h3>
+
+<div class="star">
+<strong>Theme:</strong> Leading without authority<br>
+<strong>Situation:</strong> Multiple business teams at State Street were independently building agentic workflows — duplicating glue code, inconsistent guardrails, no central observability. No one had been asked to fix it.<br>
+<strong>Task:</strong> Get teams to converge on a shared platform without organizational mandate to do so.<br>
+<strong>Action:</strong> Built Agent Forge as an MVP first, focused on the highest-pain workflow for one team. Got that team adopted by making integration two lines of code and demonstrating immediate value — observability and guardrails for free. Used their adoption as a reference for the next team. Built a registration/discovery layer that made it easier to find existing capabilities than to build new — created pull, not push.<br>
+<strong>Result:</strong> 5+ teams adopted in [N months], 50+ registered workflows. Adopted as the standard agentic platform across our org without an exec mandate.<br>
+<strong>Lesson:</strong> Solve a real problem for one team well, and the platform sells itself.
+</div>
+
+<div class="star">
+<strong>Theme:</strong> Disagreeing with a senior stakeholder<br>
+<strong>Situation:</strong> A senior stakeholder pushed for fine-tuning a model for every new use case, citing accuracy gains.<br>
+<strong>Task:</strong> Push back without damaging the relationship.<br>
+<strong>Action:</strong> Ran a controlled comparison on three representative use cases — RAG with few-shot vs. fine-tuned model. Presented the cost-benefit including engineering time, ongoing eval cost, and accuracy delta. Two of three use cases showed FT didn't meaningfully outperform RAG. Framed the discussion as "where does FT pay off" rather than "FT is wrong."<br>
+<strong>Result:</strong> Agreed FT for one use case, RAG for the others. Saved months of engineering on the others, and the stakeholder credited us for rigor when leadership asked about it.<br>
+<strong>Lesson:</strong> Don't win arguments with opinions; win with data, framed as serving the same goal.
+</div>
+
+<div class="star">
+<strong>Theme:</strong> Production incident<br>
+<strong>Situation:</strong> Alpha Copilot started returning malformed SQL spikes for one team's queries — error rate jumped from &lt;1% to ~15%.<br>
+<strong>Task:</strong> Diagnose and resolve under time pressure.<br>
+<strong>Action:</strong> First, pulled traces from observability. Identified that the schema linker was retrieving wrong tables for queries with a specific phrasing pattern. Root cause: a recent schema update added a table with a name that semantically collided with an existing one. The embedding model was over-weighting the new one. Rolled back the embedding index, restored service in 25 minutes. Added a regression test for the collision case; wrote a post-mortem; designed a schema-update validation gate.<br>
+<strong>Result:</strong> Service restored same hour. No recurrence. Post-mortem led to standing pre-deploy validation for schema indices across all retrieval systems.<br>
+<strong>Lesson:</strong> Observability pays for itself. The root cause was upstream — without traces I'd have been guessing.
+</div>
+
+<div class="star">
+<strong>Theme:</strong> Mentorship<br>
+<strong>Situation:</strong> A junior engineer was struggling to ship their first agentic feature; kept getting blocked on architectural choices.<br>
+<strong>Task:</strong> Get them unblocked sustainably, not just answer questions.<br>
+<strong>Action:</strong> Paired with them for two sessions, not to write code but to map their decision tree. Showed them how I'd rule out options with quick experiments instead of debating in their head. Set a rule: any architectural question, they had to bring two candidate designs and a concrete tradeoff before we'd discuss. Within a sprint they started bringing me reviews rather than questions.<br>
+<strong>Result:</strong> Shipped the feature 3 weeks later than initially planned but it landed cleanly. More importantly, they've shipped two more features since without architectural blockers.<br>
+<strong>Lesson:</strong> Mentorship is teaching the decision process, not the decision.
+</div>
+
+<div class="star">
+<strong>Theme:</strong> Cross-functional collaboration (compliance/BA)<br>
+<strong>Situation:</strong> Compliance was nervous about LLM use on financial data — risk of hallucinated numbers, regulatory exposure.<br>
+<strong>Task:</strong> Get a green light to ship Alpha Copilot.<br>
+<strong>Action:</strong> Met with compliance early, not at the end. Walked them through the architecture, showed retrieval-only generation (LLM never invents numbers, only formats), demonstrated audit logs and guardrails. Co-designed the approval process for new query patterns. Built a compliance dashboard with evidence on demand.<br>
+<strong>Result:</strong> Compliance approval for prod, established a template for future LLM systems. Compliance became an ally for the next two launches.<br>
+<strong>Lesson:</strong> Compliance isn't an obstacle; lack of compliance literacy in engineering is.
+</div>
+
+<div class="star">
+<strong>Theme:</strong> Failure / lesson learned<br>
+<strong>Situation:</strong> Early version of Agent Forge tried to enforce too rigid a registration schema. Teams complained about friction.<br>
+<strong>Task:</strong> Decide whether to hold the line or change the model.<br>
+<strong>Action:</strong> Initially held the line, thinking standardization would win. After two months of low adoption, I admitted the model was wrong. Redesigned to a tiered registration — minimal required fields, optional rich metadata. Adoption jumped within a month.<br>
+<strong>Result:</strong> Adoption recovered, eventually exceeded original target. Cost: two months of slowed adoption.<br>
+<strong>Lesson:</strong> Platforms succeed by removing friction, not by enforcing aesthetic preferences. I learned to watch adoption curves like a product manager.
+</div>
+
+<div class="star">
+<strong>Theme:</strong> AI-first thinking<br>
+<strong>Situation:</strong> Team was scoping a 6-week project to manually catalog ~200 internal data assets — table descriptions, column meanings, owners.<br>
+<strong>Task:</strong> Find a faster path.<br>
+<strong>Action:</strong> Proposed an LLM-assisted approach — automated extraction from existing docs/SQL/dashboards, human review of low-confidence outputs. Built a prototype in three days that produced first-pass catalogs for half the assets, with confidence scores. Reframed the human work from authoring to reviewing.<br>
+<strong>Result:</strong> Project completed in 2.5 weeks instead of 6. Quality matched manual baseline on spot checks. Approach reused for two later catalog efforts.<br>
+<strong>Lesson:</strong> Most "manual" projects are LLM-assistable if you decompose them — and you build proof faster than you can argue the case in meetings.
+</div>
+
+<div class="star">
+<strong>Theme:</strong> Prioritization / saying no<br>
+<strong>Situation:</strong> Multiple teams requesting Agent Forge feature additions simultaneously, each "urgent."<br>
+<strong>Task:</strong> Allocate without alienating teams.<br>
+<strong>Action:</strong> Published a public roadmap with a clear scoring rubric (user count impacted, blocked-vs-nice-to-have, alignment with platform direction). Made teams self-score. Held a monthly prioritization review where teams could lobby. Saying no became "your ask scored X; here are higher-scored asks ahead."<br>
+<strong>Result:</strong> Reduced 1:1 lobbying significantly. Roadmap became a coordination tool. Teams started self-filtering low-value asks before submitting.<br>
+<strong>Lesson:</strong> Transparent prioritization is kinder than private prioritization, even when the answer is the same.
+</div>
+
+<h3>12.2 Behavioral questions to expect</h3>
+<ul>
+  <li>Tell me about a time you led a project end to end.</li>
+  <li>Describe a technical disagreement with a senior person and how you handled it.</li>
+  <li>Walk me through a production incident you owned.</li>
+  <li>How have you mentored junior engineers?</li>
+  <li>Tell me about a time you had to say no.</li>
+  <li>What's a project you're proud of, and what did you do to make it succeed?</li>
+  <li>What's a project that failed, and what did you learn?</li>
+  <li>How do you balance technical debt vs. new features?</li>
+  <li>How do you handle ambiguous requirements?</li>
+  <li>How do you stay current with AI?</li>
+</ul>
+
+<hr>
+
+<h2 id="part-13">Part 13 — Questions to ask them <span class="tag tag-likely">LIKELY</span></h2>
+
+<p>A Lead candidate who asks no questions looks junior. Pick 4-6 from this list depending on who's interviewing.</p>
+
+<h3>For engineering leadership / Director</h3>
+<ul>
+  <li>What does success in the first 90 days look like for this role?</li>
+  <li>What are the biggest technical bets the team is making right now?</li>
+  <li>What's the current state of the agentic platform — greenfield, or migrating from something?</li>
+  <li>How do you measure "developer productivity improvement from AI"? What metrics are you tracking?</li>
+  <li>What's the team shape — IC-heavy or split with managers? Who else is at Lead level?</li>
+  <li>What's the biggest technical risk you're worried about right now?</li>
+  <li>How autonomous is engineering's decision-making vs. driven from above?</li>
+</ul>
+
+<h3>For peer engineers / team members</h3>
+<ul>
+  <li>How does the team currently use Claude Code / Cursor? What's the adoption story?</li>
+  <li>What's the biggest pipeline you're trying to reverse engineer? Mainframe? Informatica?</li>
+  <li>What does AgentCore adoption look like — production, POC, or evaluation stage?</li>
+  <li>What's the team's eval/guardrail strategy? Centralized or per-agent?</li>
+  <li>What's the on-call rotation like? How often do you get paged?</li>
+  <li>How does the team make architecture decisions — RFC, ad-hoc, top-down?</li>
+</ul>
+
+<h3>For product / business stakeholders</h3>
+<ul>
+  <li>What's the business outcome you're optimizing for? Cost reduction, new product, time-to-market?</li>
+  <li>Who's the primary internal customer for the AI engineering team's work?</li>
+  <li>How are AI investment decisions made — model, tooling, headcount?</li>
+</ul>
+
+<h3>For HR / final round</h3>
+<ul>
+  <li>What's the growth path from Lead — Staff, Principal, manager? How is that handled?</li>
+  <li>What does hybrid look like in practice — days/week in office, flexibility?</li>
+  <li>What's the compensation structure — base, bonus, RSU?</li>
+</ul>
+
+<h3>Strong closer (use sparingly)</h3>
+<blockquote>"From everything I've heard, this role is squarely about making AI agents do real engineering work. I've been doing exactly that — Agent Forge, Alpha Copilot, the Text-to-SQL research, the 1B-param pretraining. What I'd want to confirm before I commit is the latitude — will this role have the scope to set agentic engineering standards across teams, or is it more focused on building specific systems?"</blockquote>
+
+<hr>
+
+<h2 id="part-14">Part 14 — Study schedule &amp; final checklist <span class="tag tag-core">CORE</span></h2>
+
+<h3>14.1 Two-week sprint (recommended)</h3>
+
+<h4>Week 1 — fill the gaps</h4>
+<table>
+<tr><th>Day</th><th>Focus</th><th>Output</th></tr>
+<tr><td>1</td><td>AWS AgentCore docs end-to-end + hello-world deploy</td><td>Notes file; working agent</td></tr>
+<tr><td>2</td><td>S3, Glue, Lambda deep dive</td><td>Architecture sketches for each</td></tr>
+<tr><td>3</td><td>DynamoDB, EventBridge, MSK/SQS, event-driven patterns</td><td>Reference ingestion pipeline drawn from memory</td></tr>
+<tr><td>4</td><td>PySpark fundamentals; write one job on sample data</td><td>Working job: CSV → clean → Parquet</td></tr>
+<tr><td>5</td><td>Agentic AI patterns + framework comparison</td><td>1-page cheat sheet</td></tr>
+<tr><td>6</td><td>Resume deep-dive prep — every bullet defended</td><td>Annotated resume with answers</td></tr>
+<tr><td>7</td><td>Light day. Re-read JD. Walk through Part 7.1 (legacy reverse engineering)</td><td>Whiteboard it cold</td></tr>
+</table>
+
+<h4>Week 2 — polish and integrate</h4>
+<table>
+<tr><th>Day</th><th>Focus</th><th>Output</th></tr>
+<tr><td>8</td><td>LLM fundamentals refresh + eval frameworks</td><td>Cheat sheet</td></tr>
+<tr><td>9</td><td>Data engineering for AI scenarios (lineage, quality, reconciliation)</td><td>Practice scenarios B-E from Part 9</td></tr>
+<tr><td>10</td><td>CI/CD with AI, security, OWASP LLM Top 10</td><td>Cheat sheet</td></tr>
+<tr><td>11</td><td>STAR stories — write out all 8, rehearse aloud</td><td>Recordings of yourself; trim to 90s each</td></tr>
+<tr><td>12</td><td>Mock system design: 2 scenarios with a friend / out loud</td><td>Recorded</td></tr>
+<tr><td>13</td><td>Mock behavioral round + Q&amp;A prep</td><td>Final Q list</td></tr>
+<tr><td>14</td><td>Light review, rest, logistics</td><td>Ready</td></tr>
+</table>
+
+<h3>14.2 One-week crash (if 2 weeks isn't possible)</h3>
+<table>
+<tr><th>Day</th><th>Focus</th></tr>
+<tr><td>1</td><td>AgentCore + AWS data stack (Parts 1, 2)</td></tr>
+<tr><td>2</td><td>PySpark + Claude Code/Cursor (Parts 3, 4)</td></tr>
+<tr><td>3</td><td>Agentic AI + LLM fundamentals (Parts 5, 6)</td></tr>
+<tr><td>4</td><td>Data engineering for AI + System design (Parts 7, 9)</td></tr>
+<tr><td>5</td><td>Resume deep-dive + STAR stories (Parts 8, 12)</td></tr>
+<tr><td>6</td><td>CI/CD + Security + Q&amp;A (Parts 10, 11, 13)</td></tr>
+<tr><td>7</td><td>Mock interviews + rest</td></tr>
+</table>
+
+<h3>14.3 Red flags to avoid</h3>
+<ol>
+  <li><strong>Don't oversell AWS.</strong> Be honest about Azure-leaning background, frame the gap as fast-fillable.</li>
+  <li><strong>Don't bash legacy systems.</strong> Experian has decades of legacy. Respect it.</li>
+  <li><strong>Don't dismiss "data engineering" as beneath AI work.</strong> It's the job.</li>
+  <li><strong>Don't be vague on Agent Forge.</strong> They will press. Have specifics ready.</li>
+  <li><strong>Don't use buzzwords without depth.</strong> "We use RAG" → "what retriever, what reranker, what eval metric?"</li>
+  <li><strong>Don't claim to be an expert on PySpark.</strong> Honest gap is better than caught bluff.</li>
+  <li><strong>Don't ramble.</strong> 90-second answers. If they want more, they'll ask.</li>
+  <li><strong>Don't forget to ask questions.</strong> Silent candidates look uninterested.</li>
+</ol>
+
+<h3>14.4 Day-before checklist</h3>
+<ul>
+  <li>[ ] Re-read JD once</li>
+  <li>[ ] Re-read your resume — every bullet, ready to defend</li>
+  <li>[ ] One-pager: Agent Forge architecture, drawn from memory</li>
+  <li>[ ] One-pager: AWS AgentCore primitives (R-MIG-BCO)</li>
+  <li>[ ] One-pager: Reverse engineering legacy pipeline (Part 7.1 diagram)</li>
+  <li>[ ] One-pager: Reference ingestion pipeline (Part 2.8 diagram)</li>
+  <li>[ ] STAR stories printed/reviewed (8 of them, 90s each)</li>
+  <li>[ ] 6-8 questions for them</li>
+  <li>[ ] 2-vs-5 years answer rehearsed</li>
+  <li>[ ] Logistics: hybrid in Hyderabad, address, route, parking, attire</li>
+  <li>[ ] Charger, water, notebook, pen</li>
+  <li>[ ] Sleep at least 7 hours</li>
+</ul>
+
+<h3>14.5 Day-of mental model</h3>
+<ul>
+  <li>You are not begging for a job — you are evaluating if this is the right place for the next 2-3 years of your career.</li>
+  <li>Mutual interview. They sell, you sell.</li>
+  <li>If they ask something you don't know — say so, propose how you'd figure it out, move on.</li>
+  <li>If you make a mistake mid-answer — correct it openly. Self-correction shows judgment.</li>
+  <li>Smile, breathe, take a beat before answering complex questions. It's not a quiz show.</li>
+</ul>
+
+<h3>14.6 After the interview</h3>
+<ul>
+  <li>Send a thank-you note within 24 hours — short, specific (reference one thing discussed), and reaffirms interest.</li>
+  <li>Write down what was asked. Useful regardless of outcome.</li>
+  <li>If rejected — ask for feedback. Most won't share, some will.</li>
+</ul>
+
+<hr>
+
+<div class="callout callout-tip">
+  <strong>Final word</strong>
+  Your resume genuinely does match this role. The agentic platform, the publications, the production AI experience — that's exactly what the JD is asking for. The gaps (years, AWS depth, PySpark) are real but addressable. Prepare deliberately on the gaps, polish the wins, and walk in like the strong candidate you are.
+</div>
+
+<p style="text-align:center; color:var(--muted); margin-top:3em; font-size:0.9em;">
+End of guide · Last updated 2026-05-29 · Open in browser or print to PDF
+</p>
+
+</body>
+</html>

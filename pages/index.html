@@ -92,9 +92,50 @@
     color: var(--muted);
     font-size: 0.9em;
   }
+  html.dark {
+    --fg: #e6e6e6;
+    --muted: #a0a0a0;
+    --bg: #121212;
+    --accent: #4ecdc4;
+    --accent-soft: #1a2e2e;
+    --border: #333;
+    --card-bg: #1e1e1e;
+    --card-hover: #2a2a2a;
+  }
+  
+  .theme-toggle {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1.2rem;
+    line-height: 1;
+    color: var(--fg);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.3s ease;
+    z-index: 1000;
+  }
+  .theme-toggle:hover {
+    transform: scale(1.08);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+  
+  body, a.card, .theme-toggle {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  }
 </style>
 </head>
 <body>
+
+<button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">🌙</button>
 
 <h1>Learning AI — Guides</h1>
 <p class="tagline">A consolidated index of long-form study notes covering AI engineering, cloud platforms, and core software fundamentals.</p>
@@ -149,11 +190,49 @@
     <div class="card-title">System Design</div>
     <div class="card-desc">Architectural patterns, scalability, reliability, and trade-off analysis.</div>
   </a>
+  <a class="card" href="interview-prep.html">
+    <div class="card-title">Interview Prep</div>
+    <div class="card-desc">Strategies, common question frameworks, and practical tips for AI/ML and software engineering interviews.</div>
+  </a>
 </div>
 
 <footer>
   Part of the <a href="../" style="color: var(--accent);">LearningAI</a> repository.
 </footer>
+<script>
+(function() {
+  const html = document.documentElement;
+  const btn = document.getElementById('theme-toggle');
+  const STORAGE_KEY = 'theme';
+
+  function setTheme(theme) {
+    if (theme === 'dark') {
+      html.classList.add('dark');
+      btn.textContent = '☀️';
+      btn.setAttribute('aria-label', 'Toggle light mode');
+    } else {
+      html.classList.remove('dark');
+      btn.textContent = '🌙';
+      btn.setAttribute('aria-label', 'Toggle dark mode');
+    }
+    localStorage.setItem(STORAGE_KEY, theme);
+  }
+
+  // Initialise
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    setTheme(saved);
+  } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    setTheme('dark');
+  }
+
+  // Toggle
+  btn.addEventListener('click', () => {
+    const isDark = html.classList.contains('dark');
+    setTheme(isDark ? 'light' : 'dark');
+  });
+})();
+</script>
 
 </body>
 </html>

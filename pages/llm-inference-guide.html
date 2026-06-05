@@ -190,9 +190,57 @@
     .booknav { margin: -40px -20px 24px; padding: 10px 20px; font-size: 0.8em; }
   }
   /* /booknav */
+  
+  html.dark {
+    --fg: #e8e8e8;
+    --muted: #a8a8a8;
+    --bg: #2e2e2e;
+    --accent-soft: #1f1f1f;
+    --border: #4a4a4a;
+    --code-bg: #383838;
+    --code-fg: #d4d4d4;
+    --warn-bg: #3a3320;
+    --warn-bd: #b89847;
+    --tip-bg: #2a3a2e;
+    --tip-bd: #6ba577;
+    --gap-bg: #3a2826;
+    --gap-bd: #b8453a;
+  }
+  
+  .theme-toggle {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1.2rem;
+    line-height: 1;
+    color: var(--fg);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.3s ease;
+    z-index: 1000;
+  }
+  .theme-toggle:hover {
+    transform: scale(1.08);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  }
+  
+  body, .theme-toggle, pre, code, .callout, .booknav {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  }
 </style>
 </head>
 <body>
+
+<button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">🌙</button>
+
 <nav class="booknav">
   <a class="home" href="index.html">← Index</a>
   <a href="ai-engineering-guide.html">AI Engineering</a>
@@ -1081,6 +1129,39 @@
 
 <hr>
 <div class="meta">End of LLM inference &amp; serving guide. The engines and exact numbers evolve fast — but the underlying physics (memory bandwidth, the KV cache, the prefill/decode split) is stable. Master the reasoning, not just the tool names.</div>
+
+<script>
+(function() {
+  const html = document.documentElement;
+  const btn = document.getElementById('theme-toggle');
+  const STORAGE_KEY = 'theme';
+
+  function setTheme(theme) {
+    if (theme === 'dark') {
+      html.classList.add('dark');
+      btn.textContent = '☀️';
+      btn.setAttribute('aria-label', 'Toggle light mode');
+    } else {
+      html.classList.remove('dark');
+      btn.textContent = '🌙';
+      btn.setAttribute('aria-label', 'Toggle dark mode');
+    }
+    localStorage.setItem(STORAGE_KEY, theme);
+  }
+
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    setTheme(saved);
+  } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    setTheme('dark');
+  }
+
+  btn.addEventListener('click', () => {
+    const isDark = html.classList.contains('dark');
+    setTheme(isDark ? 'light' : 'dark');
+  });
+})();
+</script>
 
 </body>
 </html>

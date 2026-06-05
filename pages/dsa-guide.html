@@ -163,28 +163,33 @@
     background: var(--bg);
     border-bottom: 1px solid var(--border);
     margin: -40px -30px 30px;
-    padding: 10px 30px;
+    padding: 8px 30px;
     font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
-    font-size: 0.85em;
+    font-size: 0.82em;
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     align-items: center;
-    gap: 6px 12px;
+    gap: 4px 8px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
   }
   .booknav .home {
     font-weight: 600;
     color: var(--accent);
     text-decoration: none;
-    padding-right: 10px;
+    padding-right: 8px;
     border-right: 1px solid var(--border);
-    margin-right: 4px;
+    margin-right: 2px;
+    flex-shrink: 0;
   }
   .booknav a {
     color: var(--muted);
     text-decoration: none;
-    padding: 3px 8px;
+    padding: 3px 7px;
     border-radius: 4px;
     white-space: nowrap;
+    flex-shrink: 0;
   }
   .booknav a:hover { background: var(--accent-soft); color: var(--accent); }
   .booknav a.current {
@@ -193,7 +198,7 @@
     font-weight: 600;
   }
   @media (max-width: 700px) {
-    .booknav { margin: -40px -20px 24px; padding: 10px 20px; font-size: 0.8em; }
+    .booknav { margin: -40px -20px 24px; padding: 8px 20px; }
   }
   /* /booknav */
   

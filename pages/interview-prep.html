@@ -413,11 +413,11 @@
     body {
       max-width: none;
       display: grid;
-      grid-template-columns: 3fr minmax(240px, 1fr);
+      grid-template-columns: 1fr minmax(280px, 420px);
       gap: 0 32px;
       padding: 50px 32px 90px;
     }
-    main { grid-column: 1; min-width: 0; max-width: 720px; justify-self: end; }
+    main { grid-column: 1; min-width: 0; max-width: 720px; justify-self: start; }
     .reading-progress { position: fixed; }
     .booknav {
       grid-column: 1 / -1;
@@ -439,7 +439,7 @@
     }
   }
   @media (min-width: 1100px) and (max-width: 1300px) {
-    body { grid-template-columns: 3fr minmax(200px, 1fr); gap: 0 24px; padding: 50px 24px 90px; }
+    body { grid-template-columns: 1fr minmax(220px, 360px); gap: 0 24px; padding: 50px 24px 90px; }
     .booknav { margin: -50px -24px 30px; }
     .sidebar-toc { font-size: 0.74em; padding: 14px 14px; }
   }

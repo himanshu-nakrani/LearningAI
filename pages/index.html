@@ -104,6 +104,8 @@
     color: var(--muted);
     font-size: 0.9em;
   }
+  footer a { color: var(--accent); }
+
   .skip-link {
     position: absolute;
     top: -40px;
@@ -117,6 +119,43 @@
     font-weight: 600;
   }
   .skip-link:focus { top: 0; }
+
+  .page-nav {
+    display: flex;
+    align-items: center;
+    margin: -50px -30px 24px;
+    padding: 7px 24px;
+    border-bottom: 1px solid var(--border);
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+    font-size: 0.85em;
+  }
+  .page-nav a {
+    color: var(--muted);
+    text-decoration: none;
+  }
+  .page-nav a:hover { color: var(--accent); }
+
+  .theme-toggle-inline {
+    margin-left: auto;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1rem;
+    line-height: 1;
+    color: var(--fg);
+    padding: 0;
+    flex-shrink: 0;
+    transition: background 0.15s ease, transform 0.15s ease;
+  }
+  .theme-toggle-inline:hover { background: var(--accent-soft); transform: scale(1.08); }
+
+
 
   html.dark {
     --fg: #e8e8e8;
@@ -226,7 +265,10 @@
 
 <div class="reading-progress" id="reading-progress"></div>
 
-<button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">🌙</button>
+<nav class="page-nav">
+  <a class="home" href="ai-engineering-guide.html">Start with AI Engineering →</a>
+  <button class="theme-toggle-inline" id="theme-toggle" aria-label="Toggle dark mode">🌙</button>
+</nav>
 
 <main id="main" tabindex="-1">
 
@@ -290,7 +332,7 @@
 </div>
 
 <footer>
-  Part of the <a href="../" style="color: var(--accent);">LearningAI</a> repository.
+  Part of the <a href="../">LearningAI</a> repository.
 </footer></main>
 
 

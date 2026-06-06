@@ -274,7 +274,8 @@
   
   html.dark {
     --fg: #e8e8e8;
-    --muted: #a8a8a8;
+    --muted: #b8b8b8;
+    --accent: #d374c5;
     --bg: #2e2e2e;
     --accent-soft: #1f1f1f;
     --border: #4a4a4a;
@@ -344,9 +345,9 @@
   Covers the mechanics of inference, the KV cache, batching, quantization, parallelism, serving engines, and the cost/latency math senior engineers are expected to know.<br>
   Targets the modern inference stack (vLLM, TensorRT-LLM, TGI, SGLang) as of 2026.<br>
   Legend:
-  <span class="tag tag-core">CORE</span> must know
-  <span class="tag tag-concept">CONCEPT</span> foundational idea
-  <span class="tag tag-prod">PROD</span> production concern
+  <span class="tag tag-core">★ CORE</span> must know
+  <span class="tag tag-concept">◆ CONCEPT</span> foundational idea
+  <span class="tag tag-prod">▲ PROD</span> production concern
 </div>
 
 <div class="toc">
@@ -372,7 +373,7 @@
 </ol>
 </div>
 
-<h2 id="part-0">Part 0 — Why inference is hard &amp; what we optimize <span class="tag tag-concept">CONCEPT</span></h2>
+<h2 id="part-0">Part 0 — Why inference is hard &amp; what we optimize <span class="tag tag-concept">◆ CONCEPT</span></h2>
 
 <p>Training gets the headlines, but in production <em>inference</em> is where the money goes — a deployed model serves predictions millions of times. LLM inference is uniquely hard because models are huge (billions of parameters), generation is sequential (one token at a time), and GPUs are expensive and memory-constrained. The whole field is about squeezing more tokens per second per dollar out of fixed hardware.</p>
 
@@ -411,7 +412,7 @@
 
 <hr>
 
-<h2 id="part-1">Part 1 — The two phases: prefill vs decode <span class="tag tag-core">CORE</span></h2>
+<h2 id="part-1">Part 1 — The two phases: prefill vs decode <span class="tag tag-core">★ CORE</span></h2>
 
 <p>Every LLM request has two fundamentally different phases with opposite performance characteristics. Understanding this split is the foundation of everything else.</p>
 
@@ -461,7 +462,7 @@
 
 <hr>
 
-<h2 id="part-2">Part 2 — The KV cache (the heart of it all) <span class="tag tag-core">CORE</span></h2>
+<h2 id="part-2">Part 2 — The KV cache (the heart of it all) <span class="tag tag-core">★ CORE</span></h2>
 
 <p>The KV cache is the most important concept in LLM serving. It's an optimization that makes decode tractable — and it's also the main thing competing for GPU memory.</p>
 
@@ -520,7 +521,7 @@
 
 <hr>
 
-<h2 id="part-3">Part 3 — Memory math: what fits on a GPU <span class="tag tag-core">CORE</span></h2>
+<h2 id="part-3">Part 3 — Memory math: what fits on a GPU <span class="tag tag-core">★ CORE</span></h2>
 
 <p>Senior interviews love "will this model fit?" and "how many GPUs do I need?" Know the back-of-envelope math cold.</p>
 
@@ -567,7 +568,7 @@
 
 <hr>
 
-<h2 id="part-4">Part 4 — Roofline: compute-bound vs memory-bound <span class="tag tag-concept">CONCEPT</span></h2>
+<h2 id="part-4">Part 4 — Roofline: compute-bound vs memory-bound <span class="tag tag-concept">◆ CONCEPT</span></h2>
 
 <p>The roofline model explains <em>why</em> batching helps and where the ceilings are. It's the theoretical backbone of inference optimization.</p>
 
@@ -609,7 +610,7 @@
 
 <hr>
 
-<h2 id="part-5">Part 5 — Batching: static, dynamic, continuous <span class="tag tag-core">CORE</span></h2>
+<h2 id="part-5">Part 5 — Batching: static, dynamic, continuous <span class="tag tag-core">★ CORE</span></h2>
 
 <p>Batching is the highest-impact throughput technique. How you batch matters enormously — continuous batching is the breakthrough that modern engines are built around.</p>
 
@@ -665,7 +666,7 @@
 
 <hr>
 
-<h2 id="part-6">Part 6 — PagedAttention &amp; KV cache management <span class="tag tag-core">CORE</span></h2>
+<h2 id="part-6">Part 6 — PagedAttention &amp; KV cache management <span class="tag tag-core">★ CORE</span></h2>
 
 <p>PagedAttention (introduced by vLLM) solved the KV cache <em>memory fragmentation</em> problem and is the reason vLLM became the default serving engine. It's the most-asked optimization in serving interviews.</p>
 
@@ -712,7 +713,7 @@
 
 <hr>
 
-<h2 id="part-7">Part 7 — Quantization <span class="tag tag-core">CORE</span></h2>
+<h2 id="part-7">Part 7 — Quantization <span class="tag tag-core">★ CORE</span></h2>
 
 <p>Quantization stores weights (and sometimes activations and the KV cache) in lower precision — fewer bits per number. It shrinks memory, lets bigger models fit on fewer GPUs, and speeds up the memory-bound decode phase (less data to move).</p>
 
@@ -772,7 +773,7 @@
 
 <hr>
 
-<h2 id="part-8">Part 8 — Attention optimizations (FlashAttention, GQA, MQA) <span class="tag tag-core">CORE</span></h2>
+<h2 id="part-8">Part 8 — Attention optimizations (FlashAttention, GQA, MQA) <span class="tag tag-core">★ CORE</span></h2>
 
 <h3>FlashAttention — fix the memory bottleneck in attention</h3>
 <p>Naive attention computes the full N×N attention score matrix and writes it to HBM — slow and memory-hungry (O(N²) memory). FlashAttention computes attention in <em>tiles</em> that fit in fast on-chip SRAM, never materializing the full matrix in HBM. It's mathematically identical, just IO-aware.</p>
@@ -816,7 +817,7 @@
 
 <hr>
 
-<h2 id="part-9">Part 9 — Speculative decoding &amp; parallel decoding <span class="tag tag-core">CORE</span></h2>
+<h2 id="part-9">Part 9 — Speculative decoding &amp; parallel decoding <span class="tag tag-core">★ CORE</span></h2>
 
 <p>Decode is sequential and memory-bound, so the GPU is underused. Speculative decoding exploits that idle compute: use a cheap method to <em>guess</em> several future tokens, then verify them all in one parallel pass of the big model. Accepted guesses are free tokens.</p>
 
@@ -862,7 +863,7 @@
 
 <hr>
 
-<h2 id="part-10">Part 10 — Parallelism: tensor, pipeline, expert, data <span class="tag tag-core">CORE</span></h2>
+<h2 id="part-10">Part 10 — Parallelism: tensor, pipeline, expert, data <span class="tag tag-core">★ CORE</span></h2>
 
 <p>When a model is too big for one GPU, or you need more throughput, you split work across GPUs. The four parallelism strategies solve different problems and are often combined.</p>
 
@@ -927,7 +928,7 @@
 
 <hr>
 
-<h2 id="part-11">Part 11 — Prefix caching, disaggregation &amp; advanced tricks <span class="tag tag-prod">PROD</span></h2>
+<h2 id="part-11">Part 11 — Prefix caching, disaggregation &amp; advanced tricks <span class="tag tag-prod">▲ PROD</span></h2>
 
 <h3>Prefix caching (automatic prefix sharing)</h3>
 <p>Many requests share a common prefix — a long system prompt, a few-shot template, or a RAG document reused across questions. Prefix caching stores the KV cache of that shared prefix and reuses it, skipping redundant prefill.</p>
@@ -971,7 +972,7 @@
 
 <hr>
 
-<h2 id="part-12">Part 12 — Serving engines compared <span class="tag tag-prod">PROD</span></h2>
+<h2 id="part-12">Part 12 — Serving engines compared <span class="tag tag-prod">▲ PROD</span></h2>
 
 <p>You rarely build a serving stack from scratch — you pick an engine. Know the landscape and the trade-offs.</p>
 
@@ -1000,7 +1001,7 @@
 
 <hr>
 
-<h2 id="part-13">Part 13 — Metrics, SLOs &amp; benchmarking <span class="tag tag-core">CORE</span></h2>
+<h2 id="part-13">Part 13 — Metrics, SLOs &amp; benchmarking <span class="tag tag-core">★ CORE</span></h2>
 
 <p>You can't optimize what you don't measure. These are the metrics every serving discussion uses — know them precisely.</p>
 
@@ -1052,7 +1053,7 @@
 
 <hr>
 
-<h2 id="part-14">Part 14 — Cost optimization &amp; capacity planning <span class="tag tag-prod">PROD</span></h2>
+<h2 id="part-14">Part 14 — Cost optimization &amp; capacity planning <span class="tag tag-prod">▲ PROD</span></h2>
 
 <h3>The cost equation</h3>
 <div class="ascii">  $ per million tokens =
@@ -1100,7 +1101,7 @@
 
 <hr>
 
-<h2 id="part-15">Part 15 — Autoscaling, routing &amp; production patterns <span class="tag tag-prod">PROD</span></h2>
+<h2 id="part-15">Part 15 — Autoscaling, routing &amp; production patterns <span class="tag tag-prod">▲ PROD</span></h2>
 
 <h3>The serving architecture</h3>
 <div class="ascii">         clients

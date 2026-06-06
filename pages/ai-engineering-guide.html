@@ -274,7 +274,8 @@
   
   html.dark {
     --fg: #e8e8e8;
-    --muted: #a8a8a8;
+    --muted: #b8b8b8;
+    --accent: #6fb0b9;
     --bg: #2e2e2e;
     --accent-soft: #1f1f1f;
     --border: #4a4a4a;
@@ -344,9 +345,9 @@
   Covers fundamentals, prompting, RAG, agents, fine-tuning, evaluation, and production operations (LLMOps).<br>
   Code samples are in Python. Targets the modern LLM stack (2024–2026).<br>
   Legend:
-  <span class="tag tag-core">CORE</span> must know
-  <span class="tag tag-concept">CONCEPT</span> foundational idea
-  <span class="tag tag-prod">PROD</span> production concern
+  <span class="tag tag-core">★ CORE</span> must know
+  <span class="tag tag-concept">◆ CONCEPT</span> foundational idea
+  <span class="tag tag-prod">▲ PROD</span> production concern
 </div>
 
 <div class="toc">
@@ -374,7 +375,7 @@
 </ol>
 </div>
 
-<h2 id="part-0">Part 0 — What AI engineering is (and isn't) <span class="tag tag-concept">CONCEPT</span></h2>
+<h2 id="part-0">Part 0 — What AI engineering is (and isn't) <span class="tag tag-concept">◆ CONCEPT</span></h2>
 
 <p>AI engineering is building <em>applications</em> on top of foundation models. You usually don't train models from scratch — you adapt, prompt, retrieve, orchestrate, evaluate, and operate them. It's a discipline that sits between traditional software engineering and machine learning.</p>
 
@@ -425,7 +426,7 @@
 
 <hr>
 
-<h2 id="part-1">Part 1 — How LLMs work: tokens, embeddings, transformers <span class="tag tag-core">CORE</span></h2>
+<h2 id="part-1">Part 1 — How LLMs work: tokens, embeddings, transformers <span class="tag tag-core">★ CORE</span></h2>
 
 <p>You don't need to derive backpropagation, but you must understand the mechanics that explain an LLM's behavior, costs, and limits.</p>
 
@@ -488,7 +489,7 @@
 
 <hr>
 
-<h2 id="part-2">Part 2 — Inference: sampling, context windows, parameters <span class="tag tag-core">CORE</span></h2>
+<h2 id="part-2">Part 2 — Inference: sampling, context windows, parameters <span class="tag tag-core">★ CORE</span></h2>
 
 <h3>The decoding parameters you'll actually tune</h3>
 <table>
@@ -536,7 +537,7 @@
 
 <hr>
 
-<h2 id="part-3">Part 3 — Prompt engineering <span class="tag tag-core">CORE</span></h2>
+<h2 id="part-3">Part 3 — Prompt engineering <span class="tag tag-core">★ CORE</span></h2>
 
 <p>The prompt is your primary control surface. Small structural changes produce large quality differences. Prompting is iterative empirical work, not magic incantations.</p>
 
@@ -607,7 +608,7 @@ Review: 'The food was cold' ->
 
 <hr>
 
-<h2 id="part-4">Part 4 — Structured output &amp; function/tool calling <span class="tag tag-core">CORE</span></h2>
+<h2 id="part-4">Part 4 — Structured output &amp; function/tool calling <span class="tag tag-core">★ CORE</span></h2>
 
 <p>To integrate an LLM into software, you need reliable structured output (usually JSON) and the ability to let it call your code. This is what turns a chatbot into a system component.</p>
 
@@ -666,7 +667,7 @@ data = Extraction.model_validate_json(llm_response)</code></pre>
 
 <hr>
 
-<h2 id="part-5">Part 5 — Embeddings &amp; vector search <span class="tag tag-core">CORE</span></h2>
+<h2 id="part-5">Part 5 — Embeddings &amp; vector search <span class="tag tag-core">★ CORE</span></h2>
 
 <p>Embeddings turn text (or images, audio) into vectors so you can find semantically similar content by measuring distance. This powers search, RAG, clustering, recommendations, and deduplication.</p>
 
@@ -720,7 +721,7 @@ data = Extraction.model_validate_json(llm_response)</code></pre>
 
 <hr>
 
-<h2 id="part-6">Part 6 — Retrieval-Augmented Generation (RAG) <span class="tag tag-core">CORE</span></h2>
+<h2 id="part-6">Part 6 — Retrieval-Augmented Generation (RAG) <span class="tag tag-core">★ CORE</span></h2>
 
 <p>RAG grounds the model in <em>your</em> data: retrieve relevant context at query time and inject it into the prompt so the model answers from facts, not just its training. It's the dominant pattern for knowledge-based AI apps because it's cheaper than fine-tuning, updates instantly, and supports citations.</p>
 
@@ -800,7 +801,7 @@ Question: {question}"""
 
 <hr>
 
-<h2 id="part-7">Part 7 — Advanced RAG &amp; chunking strategies <span class="tag tag-concept">CONCEPT</span></h2>
+<h2 id="part-7">Part 7 — Advanced RAG &amp; chunking strategies <span class="tag tag-concept">◆ CONCEPT</span></h2>
 
 <h3>Chunking: the most underrated lever</h3>
 <p>How you split documents determines what can be retrieved. Too large → diluted relevance and wasted context. Too small → lost meaning and fragmented answers. There's no universal size; tune it per content type.</p>
@@ -862,7 +863,7 @@ Question: {question}"""
 
 <hr>
 
-<h2 id="part-8">Part 8 — AI agents: the core loop <span class="tag tag-core">CORE</span></h2>
+<h2 id="part-8">Part 8 — AI agents: the core loop <span class="tag tag-core">★ CORE</span></h2>
 
 <p>An agent is an LLM that can <strong>reason, act, observe, and repeat</strong> to accomplish a goal — instead of producing a single response. The model decides which tools to call, looks at the results, and keeps going until the task is done. The dominant pattern is <strong>ReAct</strong> (Reason + Act).</p>
 
@@ -933,7 +934,7 @@ Question: {question}"""
 
 <hr>
 
-<h2 id="part-9">Part 9 — Multi-agent systems &amp; orchestration <span class="tag tag-concept">CONCEPT</span></h2>
+<h2 id="part-9">Part 9 — Multi-agent systems &amp; orchestration <span class="tag tag-concept">◆ CONCEPT</span></h2>
 
 <p>When one agent's prompt gets overloaded with tools and responsibilities, split the work across specialized agents that collaborate. Each agent has a focused role, fewer tools, and a clearer prompt.</p>
 
@@ -977,7 +978,7 @@ Question: {question}"""
 
 <hr>
 
-<h2 id="part-10">Part 10 — Memory &amp; context management <span class="tag tag-prod">PROD</span></h2>
+<h2 id="part-10">Part 10 — Memory &amp; context management <span class="tag tag-prod">▲ PROD</span></h2>
 
 <p>LLMs are stateless — each call only knows what's in the context window. "Memory" is engineering you add to carry information across turns and sessions.</p>
 
@@ -1027,7 +1028,7 @@ Question: {question}"""
 
 <hr>
 
-<h2 id="part-11">Part 11 — Fine-tuning &amp; model adaptation <span class="tag tag-concept">CONCEPT</span></h2>
+<h2 id="part-11">Part 11 — Fine-tuning &amp; model adaptation <span class="tag tag-concept">◆ CONCEPT</span></h2>
 
 <p>Fine-tuning continues training a pre-trained model on your examples to change its <em>behavior</em> — tone, format, a narrow skill, or a domain style. It does not reliably add factual knowledge (use RAG for that).</p>
 
@@ -1075,7 +1076,7 @@ Question: {question}"""
 
 <hr>
 
-<h2 id="part-12">Part 12 — Evaluation &amp; testing LLM systems <span class="tag tag-core">CORE</span> <span class="tag tag-prod">PROD</span></h2>
+<h2 id="part-12">Part 12 — Evaluation &amp; testing LLM systems <span class="tag tag-core">★ CORE</span> <span class="tag tag-prod">▲ PROD</span></h2>
 
 <p>Because outputs are non-deterministic and "correctness" is fuzzy, evaluation is the hardest and most important part of AI engineering. Without evals you're flying blind — you can't tell if a prompt change helped or hurt.</p>
 
@@ -1132,7 +1133,7 @@ Question: {question}"""
 
 <hr>
 
-<h2 id="part-13">Part 13 — Guardrails, safety &amp; security <span class="tag tag-core">CORE</span> <span class="tag tag-prod">PROD</span></h2>
+<h2 id="part-13">Part 13 — Guardrails, safety &amp; security <span class="tag tag-core">★ CORE</span> <span class="tag tag-prod">▲ PROD</span></h2>
 
 <p>LLM applications have a unique attack surface and unique failure modes. Guardrails are the input/output checks that keep the system safe, on-topic, and compliant.</p>
 
@@ -1194,7 +1195,7 @@ Question: {question}"""
 
 <hr>
 
-<h2 id="part-14">Part 14 — LLMOps: serving, cost, latency, monitoring <span class="tag tag-prod">PROD</span></h2>
+<h2 id="part-14">Part 14 — LLMOps: serving, cost, latency, monitoring <span class="tag tag-prod">▲ PROD</span></h2>
 
 <p>Getting a demo working is easy; running it reliably and affordably at scale is the real job. LLMOps is MLOps adapted to the realities of LLMs: token costs, high latency, non-determinism, and external dependencies.</p>
 
@@ -1258,7 +1259,7 @@ Question: {question}"""
 
 <hr>
 
-<h2 id="part-15">Part 15 — Multimodal &amp; beyond text <span class="tag tag-concept">CONCEPT</span></h2>
+<h2 id="part-15">Part 15 — Multimodal &amp; beyond text <span class="tag tag-concept">◆ CONCEPT</span></h2>
 
 <p>Modern foundation models handle images, audio, and video alongside text. The engineering patterns (prompting, RAG, tools, evals) carry over; the inputs and some components change.</p>
 
@@ -1295,7 +1296,7 @@ Question: {question}"""
 
 <hr>
 
-<h2 id="part-16">Part 16 — Worked design: RAG chatbot over company docs <span class="tag tag-core">CORE</span></h2>
+<h2 id="part-16">Part 16 — Worked design: RAG chatbot over company docs <span class="tag tag-core">★ CORE</span></h2>
 
 <p>The most common AI engineering project. Walk it end to end the way you would in an interview.</p>
 
@@ -1349,7 +1350,7 @@ Question: {question}"""
 
 <hr>
 
-<h2 id="part-17">Part 17 — Worked design: agentic workflow system <span class="tag tag-prod">PROD</span></h2>
+<h2 id="part-17">Part 17 — Worked design: agentic workflow system <span class="tag tag-prod">▲ PROD</span></h2>
 
 <p>A system where an LLM agent automates a multi-step task — e.g., "triage and resolve an incoming support ticket" or "research a topic and produce a report."</p>
 

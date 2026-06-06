@@ -274,7 +274,8 @@
   
   html.dark {
     --fg: #e8e8e8;
-    --muted: #a8a8a8;
+    --muted: #b8b8b8;
+    --accent: #76abf1;
     --bg: #2e2e2e;
     --accent-soft: #1f1f1f;
     --border: #4a4a4a;
@@ -344,9 +345,9 @@
   Covers the resource hierarchy, core services across every category, networking, and Google's leading AI/data stack.<br>
   Service names current as of 2026; verify specifics in docs.<br>
   Legend:
-  <span class="tag tag-core">CORE</span> must know
-  <span class="tag tag-concept">CONCEPT</span> foundational idea
-  <span class="tag tag-prod">PROD</span> production concern
+  <span class="tag tag-core">★ CORE</span> must know
+  <span class="tag tag-concept">◆ CONCEPT</span> foundational idea
+  <span class="tag tag-prod">▲ PROD</span> production concern
 </div>
 
 <div class="toc">
@@ -370,7 +371,7 @@
 </ol>
 </div>
 
-<h2 id="part-0">Part 0 — Mental model &amp; global infrastructure <span class="tag tag-core">CORE</span></h2>
+<h2 id="part-0">Part 0 — Mental model &amp; global infrastructure <span class="tag tag-core">★ CORE</span></h2>
 
 <p>Google Cloud Platform runs your workloads on the same global infrastructure that powers Google Search, Gmail, and YouTube. Its differentiators are a famously fast global network, data &amp; analytics (BigQuery), Kubernetes (which Google created), and cutting-edge AI (Gemini, Vertex AI, TPUs).</p>
 
@@ -417,7 +418,7 @@ gcloud compute instances create my-vm \
 
 <hr>
 
-<h2 id="part-1">Part 1 — Resource hierarchy &amp; projects <span class="tag tag-concept">CONCEPT</span></h2>
+<h2 id="part-1">Part 1 — Resource hierarchy &amp; projects <span class="tag tag-concept">◆ CONCEPT</span></h2>
 
 <p>The <strong>Project</strong> is the fundamental organizing unit in GCP — every resource belongs to exactly one project, which is the boundary for billing, APIs, permissions, and quotas.</p>
 
@@ -452,7 +453,7 @@ gcloud services enable run.googleapis.com</code></pre>
 
 <hr>
 
-<h2 id="part-2">Part 2 — Identity &amp; access (IAM) <span class="tag tag-core">CORE</span></h2>
+<h2 id="part-2">Part 2 — Identity &amp; access (IAM) <span class="tag tag-core">★ CORE</span></h2>
 
 <p>Google Cloud IAM answers: <em>who</em> can do <em>what</em> on <em>which resource</em>. The model is consistent across all of GCP.</p>
 
@@ -501,7 +502,7 @@ gcloud services enable run.googleapis.com</code></pre>
 
 <hr>
 
-<h2 id="part-3">Part 3 — Compute <span class="tag tag-core">CORE</span></h2>
+<h2 id="part-3">Part 3 — Compute <span class="tag tag-core">★ CORE</span></h2>
 
 <div class="ascii">  more control                          less ops burden
   <-------------------------------------------------->
@@ -547,7 +548,7 @@ gcloud services enable run.googleapis.com</code></pre>
 
 <hr>
 
-<h2 id="part-4">Part 4 — Containers &amp; Kubernetes (GKE) <span class="tag tag-core">CORE</span></h2>
+<h2 id="part-4">Part 4 — Containers &amp; Kubernetes (GKE) <span class="tag tag-core">★ CORE</span></h2>
 
 <p>Google created Kubernetes, and <strong>Google Kubernetes Engine (GKE)</strong> is widely regarded as the most mature managed Kubernetes. Containers are central to GCP's story.</p>
 
@@ -585,7 +586,7 @@ gcloud services enable run.googleapis.com</code></pre>
 
 <hr>
 
-<h2 id="part-5">Part 5 — Serverless <span class="tag tag-core">CORE</span></h2>
+<h2 id="part-5">Part 5 — Serverless <span class="tag tag-core">★ CORE</span></h2>
 
 <table>
   <tr><th>Service</th><th>What it is</th><th>Use for</th></tr>
@@ -615,7 +616,7 @@ gcloud services enable run.googleapis.com</code></pre>
 
 <hr>
 
-<h2 id="part-6">Part 6 — Storage <span class="tag tag-core">CORE</span></h2>
+<h2 id="part-6">Part 6 — Storage <span class="tag tag-core">★ CORE</span></h2>
 
 <table>
   <tr><th>Service</th><th>Model</th><th>Use for</th></tr>
@@ -651,7 +652,7 @@ gcloud services enable run.googleapis.com</code></pre>
 
 <hr>
 
-<h2 id="part-7">Part 7 — Databases <span class="tag tag-core">CORE</span></h2>
+<h2 id="part-7">Part 7 — Databases <span class="tag tag-core">★ CORE</span></h2>
 
 <h3>Relational</h3>
 <table>
@@ -689,7 +690,7 @@ gcloud services enable run.googleapis.com</code></pre>
 
 <hr>
 
-<h2 id="part-8">Part 8 — Networking <span class="tag tag-core">CORE</span></h2>
+<h2 id="part-8">Part 8 — Networking <span class="tag tag-core">★ CORE</span></h2>
 
 <h3>VPC — a global private network</h3>
 <p>A GCP Virtual Private Cloud is <strong>global</strong>: a single VPC can span all regions, with subnets that are regional. This simplifies multi-region architectures compared to clouds where VPCs are regional.</p>
@@ -733,7 +734,7 @@ gcloud services enable run.googleapis.com</code></pre>
 
 <hr>
 
-<h2 id="part-9">Part 9 — Messaging &amp; integration <span class="tag tag-concept">CONCEPT</span></h2>
+<h2 id="part-9">Part 9 — Messaging &amp; integration <span class="tag tag-concept">◆ CONCEPT</span></h2>
 
 <table>
   <tr><th>Service</th><th>Pattern</th><th>Use for</th></tr>
@@ -767,7 +768,7 @@ gcloud services enable run.googleapis.com</code></pre>
 
 <hr>
 
-<h2 id="part-10">Part 10 — Data &amp; analytics (BigQuery &amp; friends) <span class="tag tag-core">CORE</span></h2>
+<h2 id="part-10">Part 10 — Data &amp; analytics (BigQuery &amp; friends) <span class="tag tag-core">★ CORE</span></h2>
 
 <p>Data analytics is arguably GCP's strongest domain, anchored by BigQuery.</p>
 
@@ -810,7 +811,7 @@ gcloud services enable run.googleapis.com</code></pre>
 
 <hr>
 
-<h2 id="part-11">Part 11 — AI &amp; machine learning (Vertex AI &amp; Gemini) <span class="tag tag-core">CORE</span></h2>
+<h2 id="part-11">Part 11 — AI &amp; machine learning (Vertex AI &amp; Gemini) <span class="tag tag-core">★ CORE</span></h2>
 
 <p>AI is core to Google's identity. GCP offers Gemini foundation models, the Vertex AI platform, pre-built APIs, and custom hardware (TPUs).</p>
 
@@ -864,7 +865,7 @@ gcloud services enable run.googleapis.com</code></pre>
 
 <hr>
 
-<h2 id="part-12">Part 12 — DevOps, IaC &amp; observability <span class="tag tag-prod">PROD</span></h2>
+<h2 id="part-12">Part 12 — DevOps, IaC &amp; observability <span class="tag tag-prod">▲ PROD</span></h2>
 
 <h3>Infrastructure as Code</h3>
 <table>
@@ -907,7 +908,7 @@ resource "google_storage_bucket" "data" {
 
 <hr>
 
-<h2 id="part-13">Part 13 — Security &amp; cost management <span class="tag tag-core">CORE</span> <span class="tag tag-prod">PROD</span></h2>
+<h2 id="part-13">Part 13 — Security &amp; cost management <span class="tag tag-core">★ CORE</span> <span class="tag tag-prod">▲ PROD</span></h2>
 
 <h3>Security services</h3>
 <table>

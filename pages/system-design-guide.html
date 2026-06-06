@@ -274,7 +274,8 @@
   
   html.dark {
     --fg: #e8e8e8;
-    --muted: #a8a8a8;
+    --muted: #b8b8b8;
+    --accent: #a695c6;
     --bg: #2e2e2e;
     --accent-soft: #1f1f1f;
     --border: #4a4a4a;
@@ -343,8 +344,8 @@
   Self-contained reference for system design interviews and real-world architecture. Open in browser, or print to PDF.<br>
   Covers fundamentals, building blocks, scaling techniques, and full worked design walkthroughs.<br>
   Legend:
-  <span class="tag tag-core">CORE</span> must know
-  <span class="tag tag-concept">CONCEPT</span> foundational idea
+  <span class="tag tag-core">★ CORE</span> must know
+  <span class="tag tag-concept">◆ CONCEPT</span> foundational idea
   <span class="tag tag-scale">SCALE</span> scaling technique
 </div>
 
@@ -374,7 +375,7 @@
 </ol>
 </div>
 
-<h2 id="part-0">Part 0 — The interview framework <span class="tag tag-core">CORE</span></h2>
+<h2 id="part-0">Part 0 — The interview framework <span class="tag tag-core">★ CORE</span></h2>
 
 <p>A system design interview is open-ended on purpose. The interviewer wants to see <em>how you think</em>, not a memorized answer. The biggest mistake is jumping straight to boxes and arrows. Drive the conversation with a repeatable framework so you never freeze.</p>
 
@@ -427,7 +428,7 @@
 
 <hr>
 
-<h2 id="part-1">Part 1 — Back-of-the-envelope estimation <span class="tag tag-core">CORE</span></h2>
+<h2 id="part-1">Part 1 — Back-of-the-envelope estimation <span class="tag tag-core">★ CORE</span></h2>
 
 <p>Estimation justifies your design choices with numbers. You don't need precision — you need the right order of magnitude. Round aggressively.</p>
 
@@ -487,7 +488,7 @@ Storage (5 years of tweets):
 
 <hr>
 
-<h2 id="part-2">Part 2 — Core concepts: latency, throughput, availability <span class="tag tag-concept">CONCEPT</span></h2>
+<h2 id="part-2">Part 2 — Core concepts: latency, throughput, availability <span class="tag tag-concept">◆ CONCEPT</span></h2>
 
 <h3>Latency vs throughput</h3>
 <p>They're different and often in tension. <strong>Latency</strong> is how long one request takes. <strong>Throughput</strong> is how many requests you handle per second. A highway analogy: latency is how long your car takes to travel the road; throughput is how many cars pass per minute. Adding lanes (parallelism) raises throughput without lowering any single car's travel time.</p>
@@ -531,7 +532,7 @@ Storage (5 years of tweets):
 
 <hr>
 
-<h2 id="part-3">Part 3 — The CAP theorem &amp; consistency models <span class="tag tag-concept">CONCEPT</span></h2>
+<h2 id="part-3">Part 3 — The CAP theorem &amp; consistency models <span class="tag tag-concept">◆ CONCEPT</span></h2>
 
 <p>The CAP theorem says a distributed system can guarantee only two of these three during a network partition:</p>
 <ul>
@@ -574,7 +575,7 @@ Storage (5 years of tweets):
 
 <hr>
 
-<h2 id="part-4">Part 4 — Networking, DNS, load balancing <span class="tag tag-core">CORE</span></h2>
+<h2 id="part-4">Part 4 — Networking, DNS, load balancing <span class="tag tag-core">★ CORE</span></h2>
 
 <h3>What happens when you type a URL</h3>
 <div class="ascii">  browser
@@ -702,7 +703,7 @@ Storage (5 years of tweets):
 
 <hr>
 
-<h2 id="part-6">Part 6 — Databases: SQL vs NoSQL <span class="tag tag-core">CORE</span></h2>
+<h2 id="part-6">Part 6 — Databases: SQL vs NoSQL <span class="tag tag-core">★ CORE</span></h2>
 
 <p>Choosing the right datastore is often the most consequential design decision. There's no universally "better" option — it depends on your access patterns, consistency needs, and scale.</p>
 
@@ -896,7 +897,7 @@ Storage (5 years of tweets):
 
 <hr>
 
-<h2 id="part-9">Part 9 — Microservices, APIs &amp; communication <span class="tag tag-concept">CONCEPT</span></h2>
+<h2 id="part-9">Part 9 — Microservices, APIs &amp; communication <span class="tag tag-concept">◆ CONCEPT</span></h2>
 
 <h3>Monolith vs microservices</h3>
 <p>A <strong>monolith</strong> is one deployable unit — simple to build and debug, but every change redeploys everything and one bug can crash the whole app. <strong>Microservices</strong> split the system into independently deployable services owned by small teams, at the cost of operational and network complexity.</p>
@@ -1009,7 +1010,7 @@ Storage (5 years of tweets):
 
 <hr>
 
-<h2 id="part-11">Part 11 — Consistency patterns &amp; distributed transactions <span class="tag tag-concept">CONCEPT</span></h2>
+<h2 id="part-11">Part 11 — Consistency patterns &amp; distributed transactions <span class="tag tag-concept">◆ CONCEPT</span></h2>
 
 <p>When a single business operation spans multiple services or databases, you can't use one ACID transaction. You need patterns that keep data consistent across boundaries.</p>
 
@@ -1064,7 +1065,7 @@ Storage (5 years of tweets):
 
 <hr>
 
-<h2 id="part-12">Part 12 — Reliability, observability &amp; failure handling <span class="tag tag-core">CORE</span></h2>
+<h2 id="part-12">Part 12 — Reliability, observability &amp; failure handling <span class="tag tag-core">★ CORE</span></h2>
 
 <p>At scale, failure is constant — disks die, networks blip, deploys go bad. Reliable systems are designed to <em>expect</em> failure and degrade gracefully rather than collapse.</p>
 
@@ -1123,7 +1124,7 @@ Storage (5 years of tweets):
 
 <hr>
 
-<h2 id="part-13">Part 13 — Security &amp; rate limiting <span class="tag tag-core">CORE</span></h2>
+<h2 id="part-13">Part 13 — Security &amp; rate limiting <span class="tag tag-core">★ CORE</span></h2>
 
 <h3>Authentication vs authorization</h3>
 <ul>
@@ -1225,7 +1226,7 @@ Storage (5 years of tweets):
 
 <hr>
 
-<h2 id="part-15">Part 15 — Worked design: URL shortener (TinyURL) <span class="tag tag-core">CORE</span></h2>
+<h2 id="part-15">Part 15 — Worked design: URL shortener (TinyURL) <span class="tag tag-core">★ CORE</span></h2>
 
 <p>A great warm-up problem that touches encoding, storage, caching, and read-heavy scale.</p>
 
@@ -1422,7 +1423,7 @@ Table urls:
 
 <hr>
 
-<h2 id="part-18">Part 18 — More worked designs (rate limiter, typeahead, notifications) <span class="tag tag-concept">CONCEPT</span></h2>
+<h2 id="part-18">Part 18 — More worked designs (rate limiter, typeahead, notifications) <span class="tag tag-concept">◆ CONCEPT</span></h2>
 
 <h3>Distributed rate limiter</h3>
 <p><em>Limit each user to N requests per window across a fleet of servers.</em> The challenge: the count must be shared, or each server enforces its own limit and the global rate is N × servers.</p>

@@ -274,7 +274,8 @@
   
   html.dark {
     --fg: #e8e8e8;
-    --muted: #a8a8a8;
+    --muted: #b8b8b8;
+    --accent: #66aee5;
     --bg: #2e2e2e;
     --accent-soft: #1f1f1f;
     --border: #4a4a4a;
@@ -344,9 +345,9 @@
   Covers the global infrastructure, core services across every category, architecture best practices, and the AI stack.<br>
   Service names current as of 2026; cloud moves fast, so verify specifics in docs.<br>
   Legend:
-  <span class="tag tag-core">CORE</span> must know
-  <span class="tag tag-concept">CONCEPT</span> foundational idea
-  <span class="tag tag-prod">PROD</span> production concern
+  <span class="tag tag-core">★ CORE</span> must know
+  <span class="tag tag-concept">◆ CONCEPT</span> foundational idea
+  <span class="tag tag-prod">▲ PROD</span> production concern
 </div>
 
 <div class="toc">
@@ -370,7 +371,7 @@
 </ol>
 </div>
 
-<h2 id="part-0">Part 0 — Mental model &amp; global infrastructure <span class="tag tag-core">CORE</span></h2>
+<h2 id="part-0">Part 0 — Mental model &amp; global infrastructure <span class="tag tag-core">★ CORE</span></h2>
 
 <p>Azure is Microsoft's cloud platform: a global network of datacenters offering compute, storage, networking, databases, and higher-level managed services on demand. Its strength is deep enterprise and Microsoft-ecosystem integration (Windows, Active Directory, Office 365, .NET).</p>
 
@@ -419,7 +420,7 @@ az vm create --resource-group myRG --name myVM \
 
 <hr>
 
-<h2 id="part-1">Part 1 — Accounts, subscriptions &amp; governance <span class="tag tag-concept">CONCEPT</span></h2>
+<h2 id="part-1">Part 1 — Accounts, subscriptions &amp; governance <span class="tag tag-concept">◆ CONCEPT</span></h2>
 
 <h3>The management hierarchy</h3>
 <div class="ascii">  Microsoft Entra Tenant  (your organization's identity)
@@ -459,7 +460,7 @@ az vm create --resource-group myRG --name myVM \
 
 <hr>
 
-<h2 id="part-2">Part 2 — Identity: Microsoft Entra ID &amp; RBAC <span class="tag tag-core">CORE</span></h2>
+<h2 id="part-2">Part 2 — Identity: Microsoft Entra ID &amp; RBAC <span class="tag tag-core">★ CORE</span></h2>
 
 <p>Identity is the foundation of cloud security. <strong>Microsoft Entra ID</strong> (formerly Azure Active Directory) is Azure's cloud identity and access management service — it controls who can sign in and what they can access.</p>
 
@@ -517,7 +518,7 @@ az vm create --resource-group myRG --name myVM \
 
 <hr>
 
-<h2 id="part-3">Part 3 — Compute <span class="tag tag-core">CORE</span></h2>
+<h2 id="part-3">Part 3 — Compute <span class="tag tag-core">★ CORE</span></h2>
 
 <p>Azure offers a spectrum of compute, from raw VMs (you manage everything) to serverless (you manage nothing but code). The trade-off is control vs operational burden.</p>
 
@@ -564,7 +565,7 @@ az vm create --resource-group myRG --name myVM \
 
 <hr>
 
-<h2 id="part-4">Part 4 — Containers &amp; Kubernetes <span class="tag tag-core">CORE</span></h2>
+<h2 id="part-4">Part 4 — Containers &amp; Kubernetes <span class="tag tag-core">★ CORE</span></h2>
 
 <table>
   <tr><th>Service</th><th>What it is</th><th>Use when</th></tr>
@@ -594,7 +595,7 @@ az vm create --resource-group myRG --name myVM \
 
 <hr>
 
-<h2 id="part-5">Part 5 — Serverless <span class="tag tag-core">CORE</span></h2>
+<h2 id="part-5">Part 5 — Serverless <span class="tag tag-core">★ CORE</span></h2>
 
 <p>Serverless means you deploy code or workflows and pay only for execution — no servers to provision or scale. Azure scales it automatically, including to zero when idle.</p>
 
@@ -631,7 +632,7 @@ az vm create --resource-group myRG --name myVM \
 
 <hr>
 
-<h2 id="part-6">Part 6 — Storage <span class="tag tag-core">CORE</span></h2>
+<h2 id="part-6">Part 6 — Storage <span class="tag tag-core">★ CORE</span></h2>
 
 <p>The Azure Storage account is the umbrella for several data services. Pick the type that matches your access pattern.</p>
 
@@ -672,7 +673,7 @@ az vm create --resource-group myRG --name myVM \
 
 <hr>
 
-<h2 id="part-7">Part 7 — Databases <span class="tag tag-core">CORE</span></h2>
+<h2 id="part-7">Part 7 — Databases <span class="tag tag-core">★ CORE</span></h2>
 
 <h3>Relational (SQL)</h3>
 <table>
@@ -718,7 +719,7 @@ az vm create --resource-group myRG --name myVM \
 
 <hr>
 
-<h2 id="part-8">Part 8 — Networking <span class="tag tag-core">CORE</span></h2>
+<h2 id="part-8">Part 8 — Networking <span class="tag tag-core">★ CORE</span></h2>
 
 <h3>Virtual Network (VNet) — your private network</h3>
 <p>A VNet is your isolated network in Azure. You divide it into subnets, control traffic with security rules, and connect it to other networks or on-prem.</p>
@@ -760,7 +761,7 @@ az vm create --resource-group myRG --name myVM \
 
 <hr>
 
-<h2 id="part-9">Part 9 — Messaging &amp; integration <span class="tag tag-concept">CONCEPT</span></h2>
+<h2 id="part-9">Part 9 — Messaging &amp; integration <span class="tag tag-concept">◆ CONCEPT</span></h2>
 
 <p>Messaging decouples components so they can scale and fail independently. Azure has distinct services for different patterns — choosing the right one is a common design question.</p>
 
@@ -796,7 +797,7 @@ az vm create --resource-group myRG --name myVM \
 
 <hr>
 
-<h2 id="part-10">Part 10 — Data &amp; analytics <span class="tag tag-concept">CONCEPT</span></h2>
+<h2 id="part-10">Part 10 — Data &amp; analytics <span class="tag tag-concept">◆ CONCEPT</span></h2>
 
 <p>Azure's analytics stack moves data from many sources into a lake/warehouse, transforms it, and serves insights.</p>
 <div class="ascii">  INGEST          STORE            PROCESS          SERVE
@@ -828,7 +829,7 @@ az vm create --resource-group myRG --name myVM \
 
 <hr>
 
-<h2 id="part-11">Part 11 — AI &amp; machine learning <span class="tag tag-core">CORE</span></h2>
+<h2 id="part-11">Part 11 — AI &amp; machine learning <span class="tag tag-core">★ CORE</span></h2>
 
 <p>Azure's AI portfolio spans pre-built APIs, the OpenAI partnership, and a full ML platform. This is a key strength given the Microsoft-OpenAI relationship.</p>
 
@@ -877,7 +878,7 @@ az vm create --resource-group myRG --name myVM \
 
 <hr>
 
-<h2 id="part-12">Part 12 — DevOps, IaC &amp; monitoring <span class="tag tag-prod">PROD</span></h2>
+<h2 id="part-12">Part 12 — DevOps, IaC &amp; monitoring <span class="tag tag-prod">▲ PROD</span></h2>
 
 <h3>Infrastructure as Code (IaC)</h3>
 <table>
@@ -921,7 +922,7 @@ resource sa 'Microsoft.Storage/storageAccounts@2023-01-01' = {
 
 <hr>
 
-<h2 id="part-13">Part 13 — Security &amp; cost management <span class="tag tag-core">CORE</span> <span class="tag tag-prod">PROD</span></h2>
+<h2 id="part-13">Part 13 — Security &amp; cost management <span class="tag tag-core">★ CORE</span> <span class="tag tag-prod">▲ PROD</span></h2>
 
 <h3>Security services</h3>
 <table>

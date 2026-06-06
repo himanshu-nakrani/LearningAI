@@ -274,7 +274,8 @@
   
   html.dark {
     --fg: #e8e8e8;
-    --muted: #a8a8a8;
+    --muted: #b8b8b8;
+    --accent: #8e88df;
     --bg: #2e2e2e;
     --accent-soft: #1f1f1f;
     --border: #4a4a4a;
@@ -344,9 +345,9 @@
   Covers the agent loop, design &amp; planning patterns, tool use, MCP, memory, multi-agent systems, evaluation, safety, and production operations — with worked designs for data-engineering agents.<br>
   Goes deeper than the agent sections of the AI Engineering guide. Code samples in Python. Current to 2026.<br>
   Legend:
-  <span class="tag tag-core">CORE</span> must know
-  <span class="tag tag-concept">CONCEPT</span> foundational idea
-  <span class="tag tag-prod">PROD</span> production concern
+  <span class="tag tag-core">★ CORE</span> must know
+  <span class="tag tag-concept">◆ CONCEPT</span> foundational idea
+  <span class="tag tag-prod">▲ PROD</span> production concern
 </div>
 
 <div class="toc">
@@ -373,7 +374,7 @@
 </ol>
 </div>
 
-<h2 id="part-0">Part 0 — What an agent actually is (and isn't) <span class="tag tag-concept">CONCEPT</span></h2>
+<h2 id="part-0">Part 0 — What an agent actually is (and isn't) <span class="tag tag-concept">◆ CONCEPT</span></h2>
 
 <p>An <strong>AI agent</strong> is a system where an LLM directs its own process — it decides what actions to take, in what order, using tools to interact with the world, looping until a goal is met. The defining trait is that <em>the model controls the flow</em>, not a fixed script.</p>
 
@@ -425,7 +426,7 @@
 
 <hr>
 
-<h2 id="part-1">Part 1 — The agent loop &amp; ReAct <span class="tag tag-core">CORE</span></h2>
+<h2 id="part-1">Part 1 — The agent loop &amp; ReAct <span class="tag tag-core">★ CORE</span></h2>
 
 <p>The dominant agent pattern is <strong>ReAct</strong> (Reason + Act): the model alternates between reasoning about what to do and taking an action, observing the result, and reasoning again. This interleaving of thought and action is what lets an agent course-correct.</p>
 
@@ -488,7 +489,7 @@
 
 <hr>
 
-<h2 id="part-2">Part 2 — Planning patterns <span class="tag tag-core">CORE</span></h2>
+<h2 id="part-2">Part 2 — Planning patterns <span class="tag tag-core">★ CORE</span></h2>
 
 <p>ReAct decides one step at a time (reactive). For complex tasks, explicit planning helps. The trade-off: upfront planning is more predictable and parallelizable; step-by-step is more adaptive.</p>
 
@@ -541,7 +542,7 @@
 
 <hr>
 
-<h2 id="part-3">Part 3 — Reflection &amp; self-correction <span class="tag tag-concept">CONCEPT</span></h2>
+<h2 id="part-3">Part 3 — Reflection &amp; self-correction <span class="tag tag-concept">◆ CONCEPT</span></h2>
 
 <p>Agents improve markedly when they critique their own output and retry. Reflection turns a one-shot generator into an iterative refiner — at the cost of more LLM calls.</p>
 
@@ -577,7 +578,7 @@
 
 <hr>
 
-<h2 id="part-4">Part 4 — Tools &amp; function calling <span class="tag tag-core">CORE</span></h2>
+<h2 id="part-4">Part 4 — Tools &amp; function calling <span class="tag tag-core">★ CORE</span></h2>
 
 <p>Tools are how an agent affects and observes the world. Without tools an LLM can only talk; with tools it can query databases, call APIs, run code, search, and act. Tool use is the mechanism that makes "agent" more than "chatbot."</p>
 
@@ -627,7 +628,7 @@
 
 <hr>
 
-<h2 id="part-5">Part 5 — Tool selection at scale &amp; MCP <span class="tag tag-core">CORE</span></h2>
+<h2 id="part-5">Part 5 — Tool selection at scale &amp; MCP <span class="tag tag-core">★ CORE</span></h2>
 
 <h3>The too-many-tools problem</h3>
 <p>Models choose tools from their descriptions in the context window. With 10 tools that's fine; with 200 it's expensive (huge prompt), slow, and error-prone (the model picks wrong). Real systems need a strategy.</p>
@@ -684,7 +685,7 @@
 
 <hr>
 
-<h2 id="part-6">Part 6 — Memory &amp; state <span class="tag tag-core">CORE</span></h2>
+<h2 id="part-6">Part 6 — Memory &amp; state <span class="tag tag-core">★ CORE</span></h2>
 
 <p>LLMs are stateless — they only know what's in the current context. Agents need memory engineered around them to carry information across steps and sessions, and to learn from experience.</p>
 
@@ -735,7 +736,7 @@
 
 <hr>
 
-<h2 id="part-7">Part 7 — Context engineering for agents <span class="tag tag-core">CORE</span> <span class="tag tag-prod">PROD</span></h2>
+<h2 id="part-7">Part 7 — Context engineering for agents <span class="tag tag-core">★ CORE</span> <span class="tag tag-prod">▲ PROD</span></h2>
 
 <p>"Context engineering" — curating exactly what goes into the model's context at each step — has become the central skill for reliable agents. An agent's context fills up fast with tool definitions, results, history, and instructions; how you manage it largely determines whether the agent works.</p>
 
@@ -778,7 +779,7 @@
 
 <hr>
 
-<h2 id="part-8">Part 8 — Multi-agent systems <span class="tag tag-core">CORE</span></h2>
+<h2 id="part-8">Part 8 — Multi-agent systems <span class="tag tag-core">★ CORE</span></h2>
 
 <p>When one agent's responsibilities or tool set grow unwieldy, split the work across specialized agents. Each gets a focused role, fewer tools, a cleaner context — and they collaborate. But multi-agent adds real cost and coordination complexity.</p>
 
@@ -831,7 +832,7 @@
 
 <hr>
 
-<h2 id="part-9">Part 9 — Agent communication &amp; protocols (A2A) <span class="tag tag-concept">CONCEPT</span></h2>
+<h2 id="part-9">Part 9 — Agent communication &amp; protocols (A2A) <span class="tag tag-concept">◆ CONCEPT</span></h2>
 
 <p>As multi-agent and cross-vendor systems grow, agents need standard ways to talk — both to tools (MCP, Part 5) and to <em>each other</em>.</p>
 
@@ -866,7 +867,7 @@
 
 <hr>
 
-<h2 id="part-10">Part 10 — Orchestration frameworks compared <span class="tag tag-prod">PROD</span></h2>
+<h2 id="part-10">Part 10 — Orchestration frameworks compared <span class="tag tag-prod">▲ PROD</span></h2>
 
 <p>You rarely hand-roll the full loop, memory, and tooling — you use a framework. Know the landscape and trade-offs.</p>
 
@@ -901,7 +902,7 @@
 
 <hr>
 
-<h2 id="part-11">Part 11 — AWS Bedrock AgentCore deep dive <span class="tag tag-core">CORE</span> <span class="tag tag-prod">PROD</span></h2>
+<h2 id="part-11">Part 11 — AWS Bedrock AgentCore deep dive <span class="tag tag-core">★ CORE</span> <span class="tag tag-prod">▲ PROD</span></h2>
 
 <p>AgentCore is AWS's framework for building, deploying, and operating production agents. It is <strong>framework-agnostic</strong> (use LangGraph, CrewAI, Strands, LlamaIndex, or custom) and <strong>model-agnostic</strong> (Bedrock models or others). Think of it as managed infrastructure for agents — the operational layer beneath your agent logic.</p>
 
@@ -959,7 +960,7 @@
 
 <hr>
 
-<h2 id="part-12">Part 12 — Evaluating agents <span class="tag tag-core">CORE</span> <span class="tag tag-prod">PROD</span></h2>
+<h2 id="part-12">Part 12 — Evaluating agents <span class="tag tag-core">★ CORE</span> <span class="tag tag-prod">▲ PROD</span></h2>
 
 <p>Agents are harder to evaluate than single LLM calls because they take multi-step <em>trajectories</em> with non-deterministic paths. You must evaluate both the final result and <em>how</em> the agent got there.</p>
 
@@ -1016,7 +1017,7 @@
 
 <hr>
 
-<h2 id="part-13">Part 13 — Safety, guardrails &amp; security <span class="tag tag-core">CORE</span> <span class="tag tag-prod">PROD</span></h2>
+<h2 id="part-13">Part 13 — Safety, guardrails &amp; security <span class="tag tag-core">★ CORE</span> <span class="tag tag-prod">▲ PROD</span></h2>
 
 <p>Agents are uniquely dangerous because they take <em>actions</em>, not just produce text. A jailbroken or confused agent with tool access can delete data, leak secrets, spend money, or send communications. Safety is non-negotiable, especially in regulated/financial domains.</p>
 
@@ -1082,7 +1083,7 @@
 
 <hr>
 
-<h2 id="part-14">Part 14 — Production: cost, latency, reliability, observability <span class="tag tag-prod">PROD</span></h2>
+<h2 id="part-14">Part 14 — Production: cost, latency, reliability, observability <span class="tag tag-prod">▲ PROD</span></h2>
 
 <h3>Cost — agents multiply token usage</h3>
 <div class="ascii">  A single agent task = MANY LLM calls (reason every step)
@@ -1136,7 +1137,7 @@
 
 <hr>
 
-<h2 id="part-15">Part 15 — Worked design: data-engineering agents <span class="tag tag-core">CORE</span></h2>
+<h2 id="part-15">Part 15 — Worked design: data-engineering agents <span class="tag tag-core">★ CORE</span></h2>
 
 <p>The target use case: agents that automate data-engineering work — ingestion, validation, reconciliation, anomaly handling. Walk this the way you would in an interview.</p>
 
@@ -1186,7 +1187,7 @@
 
 <hr>
 
-<h2 id="part-16">Part 16 — Worked design: legacy pipeline reverse-engineering <span class="tag tag-core">CORE</span></h2>
+<h2 id="part-16">Part 16 — Worked design: legacy pipeline reverse-engineering <span class="tag tag-core">★ CORE</span></h2>
 
 <p>The JD's headline scenario: <em>"Build autonomous systems capable of reverse engineering legacy pipelines and generating cloud-native equivalents."</em> Be ready to whiteboard this.</p>
 

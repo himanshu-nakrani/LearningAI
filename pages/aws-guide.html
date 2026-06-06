@@ -274,7 +274,8 @@
   
   html.dark {
     --fg: #e8e8e8;
-    --muted: #a8a8a8;
+    --muted: #b8b8b8;
+    --accent: #e8ab66;
     --bg: #2e2e2e;
     --accent-soft: #1f1f1f;
     --border: #4a4a4a;
@@ -344,9 +345,9 @@
   Covers the global infrastructure, core services across every category, networking, and the AI/ML &amp; agentic stack (Bedrock).<br>
   Service names current as of 2026; verify specifics in docs.<br>
   Legend:
-  <span class="tag tag-core">CORE</span> must know
-  <span class="tag tag-concept">CONCEPT</span> foundational idea
-  <span class="tag tag-prod">PROD</span> production concern
+  <span class="tag tag-core">★ CORE</span> must know
+  <span class="tag tag-concept">◆ CONCEPT</span> foundational idea
+  <span class="tag tag-prod">▲ PROD</span> production concern
 </div>
 
 <div class="toc">
@@ -370,7 +371,7 @@
 </ol>
 </div>
 
-<h2 id="part-0">Part 0 — Mental model &amp; global infrastructure <span class="tag tag-core">CORE</span></h2>
+<h2 id="part-0">Part 0 — Mental model &amp; global infrastructure <span class="tag tag-core">★ CORE</span></h2>
 
 <p>AWS is the largest and most mature cloud provider, with the broadest service catalog. Its strengths are breadth, depth, market share, and a vast ecosystem. The trade-off: sheer size means a steeper learning curve and many overlapping services.</p>
 
@@ -418,7 +419,7 @@ aws ec2 run-instances \
 
 <hr>
 
-<h2 id="part-1">Part 1 — Accounts, Organizations &amp; governance <span class="tag tag-concept">CONCEPT</span></h2>
+<h2 id="part-1">Part 1 — Accounts, Organizations &amp; governance <span class="tag tag-concept">◆ CONCEPT</span></h2>
 
 <p>The AWS <strong>account</strong> is the fundamental boundary for billing, security, and resource isolation. Mature setups use <em>many</em> accounts, managed centrally with AWS Organizations.</p>
 
@@ -450,7 +451,7 @@ aws ec2 run-instances \
 
 <hr>
 
-<h2 id="part-2">Part 2 — Identity &amp; access (IAM) <span class="tag tag-core">CORE</span></h2>
+<h2 id="part-2">Part 2 — Identity &amp; access (IAM) <span class="tag tag-core">★ CORE</span></h2>
 
 <p>IAM controls authentication and authorization for everything in AWS. It's the most important service to understand deeply — most security incidents trace back to IAM misconfiguration.</p>
 
@@ -518,7 +519,7 @@ aws ec2 run-instances \
 
 <hr>
 
-<h2 id="part-3">Part 3 — Compute (EC2) <span class="tag tag-core">CORE</span></h2>
+<h2 id="part-3">Part 3 — Compute (EC2) <span class="tag tag-core">★ CORE</span></h2>
 
 <div class="ascii">  more control                          less ops burden
   <-------------------------------------------------->
@@ -564,7 +565,7 @@ aws ec2 run-instances \
 
 <hr>
 
-<h2 id="part-4">Part 4 — Containers &amp; Kubernetes <span class="tag tag-core">CORE</span></h2>
+<h2 id="part-4">Part 4 — Containers &amp; Kubernetes <span class="tag tag-core">★ CORE</span></h2>
 
 <table>
   <tr><th>Service</th><th>What it is</th></tr>
@@ -596,7 +597,7 @@ aws ec2 run-instances \
 
 <hr>
 
-<h2 id="part-5">Part 5 — Serverless (Lambda &amp; friends) <span class="tag tag-core">CORE</span></h2>
+<h2 id="part-5">Part 5 — Serverless (Lambda &amp; friends) <span class="tag tag-core">★ CORE</span></h2>
 
 <p>AWS pioneered modern serverless with Lambda. You run code without provisioning servers, paying only for compute time consumed.</p>
 
@@ -641,7 +642,7 @@ aws ec2 run-instances \
 
 <hr>
 
-<h2 id="part-6">Part 6 — Storage (S3 &amp; friends) <span class="tag tag-core">CORE</span></h2>
+<h2 id="part-6">Part 6 — Storage (S3 &amp; friends) <span class="tag tag-core">★ CORE</span></h2>
 
 <table>
   <tr><th>Service</th><th>Model</th><th>Use for</th></tr>
@@ -685,7 +686,7 @@ aws ec2 run-instances \
 
 <hr>
 
-<h2 id="part-7">Part 7 — Databases <span class="tag tag-core">CORE</span></h2>
+<h2 id="part-7">Part 7 — Databases <span class="tag tag-core">★ CORE</span></h2>
 
 <h3>Relational</h3>
 <table>
@@ -728,7 +729,7 @@ aws ec2 run-instances \
 
 <hr>
 
-<h2 id="part-8">Part 8 — Networking (VPC) <span class="tag tag-core">CORE</span></h2>
+<h2 id="part-8">Part 8 — Networking (VPC) <span class="tag tag-core">★ CORE</span></h2>
 
 <h3>VPC — your isolated network</h3>
 <p>A Virtual Private Cloud is your private, logically isolated network in a region. You carve it into subnets across AZs, and control traffic with security groups and route tables. VPCs are <strong>regional</strong> (subnets are AZ-specific).</p>
@@ -777,7 +778,7 @@ aws ec2 run-instances \
 
 <hr>
 
-<h2 id="part-9">Part 9 — Messaging &amp; integration <span class="tag tag-concept">CONCEPT</span></h2>
+<h2 id="part-9">Part 9 — Messaging &amp; integration <span class="tag tag-concept">◆ CONCEPT</span></h2>
 
 <table>
   <tr><th>Service</th><th>Pattern</th><th>Use for</th></tr>
@@ -814,7 +815,7 @@ aws ec2 run-instances \
 
 <hr>
 
-<h2 id="part-10">Part 10 — Data &amp; analytics <span class="tag tag-concept">CONCEPT</span></h2>
+<h2 id="part-10">Part 10 — Data &amp; analytics <span class="tag tag-concept">◆ CONCEPT</span></h2>
 
 <div class="ascii">  INGEST          STORE            PROCESS          SERVE
   ------          -----            -------          -----
@@ -844,7 +845,7 @@ aws ec2 run-instances \
 
 <hr>
 
-<h2 id="part-11">Part 11 — AI &amp; machine learning (Bedrock &amp; SageMaker) <span class="tag tag-core">CORE</span></h2>
+<h2 id="part-11">Part 11 — AI &amp; machine learning (Bedrock &amp; SageMaker) <span class="tag tag-core">★ CORE</span></h2>
 
 <p>AWS's AI stack centers on <strong>Bedrock</strong> (managed access to foundation models + agents) and <strong>SageMaker</strong> (custom ML platform), plus a set of pre-built AI services.</p>
 
@@ -913,7 +914,7 @@ aws ec2 run-instances \
 
 <hr>
 
-<h2 id="part-12">Part 12 — DevOps, IaC &amp; observability <span class="tag tag-prod">PROD</span></h2>
+<h2 id="part-12">Part 12 — DevOps, IaC &amp; observability <span class="tag tag-prod">▲ PROD</span></h2>
 
 <h3>Infrastructure as Code</h3>
 <table>
@@ -961,7 +962,7 @@ class MyStack(Stack):
 
 <hr>
 
-<h2 id="part-13">Part 13 — Security &amp; cost management <span class="tag tag-core">CORE</span> <span class="tag tag-prod">PROD</span></h2>
+<h2 id="part-13">Part 13 — Security &amp; cost management <span class="tag tag-core">★ CORE</span> <span class="tag tag-prod">▲ PROD</span></h2>
 
 <h3>Security services</h3>
 <table>

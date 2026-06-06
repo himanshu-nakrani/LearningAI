@@ -116,7 +116,8 @@
   }
   a { color: var(--link); text-decoration: none; }
   a:hover { text-decoration: underline; }
-  .shell { max-width: 1240px; margin: 0 auto; padding: 28px; }
+  main p, main ul, main ol { max-width: 70ch; }
+  .shell { max-width: 1100px; margin: 0 auto; padding: 28px; }
   .hero {
     border: 1px solid var(--line);
     border-radius: 28px;
@@ -287,9 +288,9 @@
     transition: color 0.15s ease;
   }
   .sidebar-toc a:hover { color: var(--accent); }
-  .sidebar-toc a.active { color: var(--accent); font-weight: 600; }
+  .sidebar-toc a.active { color: var(--accent); font-weight: 600; border-left: 2px solid var(--accent); padding-left: 8px; margin-left: -10px; }
   @media print { .sidebar-toc { display: none; } }
-  @media (min-width: 1550px) {
+  @media (min-width: 1400px) {
     .shell {
       max-width: none;
       display: grid;
@@ -297,7 +298,7 @@
       gap: 0 32px;
       padding: 28px 32px;
     }
-    main { grid-column: 1; min-width: 0; max-width: 1240px; justify-self: end; }
+    main { grid-column: 1; min-width: 0; max-width: 1100px; justify-self: end; }
     .toc { display: none; }
     .sidebar-toc {
       display: block;
@@ -312,7 +313,7 @@
       max-width: none;
     }
   }
-  @media (min-width: 1550px) and (max-width: 1750px) {
+  @media (min-width: 1400px) and (max-width: 1600px) {
     .shell { grid-template-columns: 3fr minmax(220px, 1fr); gap: 0 24px; padding: 28px 24px; }
     .sidebar-toc { font-size: 0.76em; padding: 14px 16px; }
   }
@@ -772,6 +773,10 @@
   });
 })();
 </script>
+
+</body>
+</html>
+pt>
 
 </body>
 </html>

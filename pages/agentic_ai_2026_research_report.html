@@ -264,18 +264,14 @@
   .theme-toggle-inline:hover { transform: scale(1.08); }
 
   .sidebar-toc {
-    position: fixed;
-    top: 80px;
-    z-index: 50;
+    display: none;
     background: var(--bg);
     border: 1px solid var(--line);
     border-radius: 14px;
     padding: 16px 20px;
     font-size: 0.82em;
     line-height: 1.5;
-    max-height: calc(100vh - 120px);
     overflow-y: auto;
-    display: none;
     box-shadow: var(--card-shadow);
     transition: background 0.3s ease, border-color 0.3s ease;
   }
@@ -292,8 +288,34 @@
   }
   .sidebar-toc a:hover { color: var(--accent); }
   .sidebar-toc a.active { color: var(--accent); font-weight: 600; }
-  @media (min-width: 1550px) { .sidebar-toc { display: block; left: calc(50% + 636px); right: 24px; max-width: 460px; } }
   @media print { .sidebar-toc { display: none; } }
+  @media (min-width: 1550px) {
+    .shell {
+      max-width: none;
+      display: grid;
+      grid-template-columns: 3fr minmax(280px, 1fr);
+      gap: 0 32px;
+      padding: 28px 32px;
+    }
+    main { grid-column: 1; min-width: 0; max-width: 1240px; justify-self: end; }
+    .toc { display: none; }
+    .sidebar-toc {
+      display: block;
+      position: sticky;
+      top: 48px;
+      grid-column: 2;
+      align-self: start;
+      max-height: calc(100vh - 96px);
+      left: auto;
+      right: auto;
+      width: auto;
+      max-width: none;
+    }
+  }
+  @media (min-width: 1550px) and (max-width: 1750px) {
+    .shell { grid-template-columns: 3fr minmax(220px, 1fr); gap: 0 24px; padding: 28px 24px; }
+    .sidebar-toc { font-size: 0.76em; padding: 14px 16px; }
+  }
 </style>
 </head>
 <body>
@@ -723,7 +745,7 @@
     list.appendChild(li);
   });
   sidebar.appendChild(list);
-  document.body.appendChild(sidebar);
+  document.querySelector('.shell').appendChild(sidebar);
 
   var links = sidebar.querySelectorAll('a');
   var headingIds = [];

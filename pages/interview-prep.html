@@ -307,10 +307,24 @@
   
   /* focus states for accessibility */
   a:focus-visible, button:focus-visible {
-    outline: 2px solid var(--accent);
+    outline: 3px solid var(--accent);
     outline-offset: 2px;
   }
   
+  .skip-link {
+    position: absolute;
+    top: -40px;
+    left: 8px;
+    background: var(--accent);
+    color: #fff;
+    padding: 8px 16px;
+    z-index: 9999;
+    text-decoration: none;
+    border-radius: 0 0 4px 4px;
+    font-weight: 600;
+  }
+  .skip-link:focus { top: 0; }
+
   html.dark {
     --fg: #e8e8e8;
     --muted: #b8b8b8;
@@ -360,6 +374,9 @@
 </head>
 <body>
 
+<a class="skip-link" href="#main">Skip to main content</a>
+
+
 <div class="reading-progress" id="reading-progress"></div>
 
 <nav class="booknav">
@@ -377,6 +394,8 @@
   <a href="interview-prep.html" class="current">Interview Prep</a>
   <button class="theme-toggle-inline" id="theme-toggle" aria-label="Toggle dark mode">🌙</button>
 </nav>
+
+<main id="main" tabindex="-1">
 
 <h1>Experian Lead AI Engineer — Complete Interview Prep</h1>
 <div class="meta">
@@ -466,7 +485,7 @@
 <h3>1.2 The seven AgentCore primitives</h3>
 
 <table>
-<tr><th>Service</th><th>What it does</th><th>When to use</th></tr>
+<tr><th scope="col">Service</th><th scope="col">What it does</th><th scope="col">When to use</th></tr>
 <tr>
   <td><strong>Runtime</strong></td>
   <td>Serverless execution environment for agents. Session isolation, up to 8-hour async sessions, scales to thousands of concurrent agents.</td>
@@ -512,7 +531,7 @@
 <h3>1.3 AgentCore vs. Bedrock Agents vs. self-hosted</h3>
 
 <table>
-<tr><th>Option</th><th>Abstraction level</th><th>Flexibility</th><th>Best for</th></tr>
+<tr><th scope="col">Option</th><th scope="col">Abstraction level</th><th scope="col">Flexibility</th><th scope="col">Best for</th></tr>
 <tr><td>Bedrock Agents</td><td>High — declarative, action groups</td><td>Low — locked to AWS patterns</td><td>Simple agents, low custom logic</td></tr>
 <tr><td>AgentCore</td><td>Medium — primitives you compose</td><td>High — any framework on Runtime</td><td>Production-grade custom agents</td></tr>
 <tr><td>Self-hosted (LangGraph on ECS)</td><td>Low — you build everything</td><td>Total</td><td>Strict customization, multi-cloud</td></tr>
@@ -686,7 +705,7 @@ def invoke(payload):
 
 <h4>Glue vs. EMR vs. Athena</h4>
 <table>
-<tr><th>Service</th><th>Use when</th><th>Avoid when</th></tr>
+<tr><th scope="col">Service</th><th scope="col">Use when</th><th scope="col">Avoid when</th></tr>
 <tr><td>Glue</td><td>Serverless ETL, &lt; 1 hour jobs, AWS-native</td><td>Custom Spark configs, very large jobs</td></tr>
 <tr><td>EMR</td><td>Heavy Spark, custom configs, long-running, cost-optimized at scale</td><td>Small jobs, ops overhead</td></tr>
 <tr><td>Athena</td><td>Ad-hoc SQL on S3</td><td>Sub-second latency, complex pipelines</td></tr>
@@ -802,7 +821,7 @@ ORDER#999       ITEM#1              Item    sku, qty
 
 <h4>EventBridge vs. SNS vs. SQS</h4>
 <table>
-<tr><th></th><th>EventBridge</th><th>SNS</th><th>SQS</th></tr>
+<tr><th scope="col"></th><th scope="col">EventBridge</th><th scope="col">SNS</th><th scope="col">SQS</th></tr>
 <tr><td>Pattern</td><td>Pub/sub with content-based routing</td><td>Pub/sub, fanout</td><td>Queue (point-to-point)</td></tr>
 <tr><td>Filtering</td><td>Rich JSON pattern matching</td><td>Message attribute filtering</td><td>None</td></tr>
 <tr><td>Latency</td><td>~500ms</td><td>~30ms</td><td>~10ms</td></tr>
@@ -853,7 +872,7 @@ ORDER#999       ITEM#1              Item    sku, qty
 
 <h4>Choosing between them</h4>
 <table>
-<tr><th>Need</th><th>Pick</th></tr>
+<tr><th scope="col">Need</th><th scope="col">Pick</th></tr>
 <tr><td>Decouple producer/consumer, simple queue</td><td>SQS</td></tr>
 <tr><td>Strict ordering, exactly-once</td><td>SQS FIFO</td></tr>
 <tr><td>Stream processing, multiple consumers replay</td><td>Kinesis or MSK</td></tr>
@@ -996,7 +1015,7 @@ ORDER#999       ITEM#1              Item    sku, qty
 
 <h3>3.2 RDD vs. DataFrame vs. Dataset</h3>
 <table>
-<tr><th></th><th>RDD</th><th>DataFrame</th><th>Dataset</th></tr>
+<tr><th scope="col"></th><th scope="col">RDD</th><th scope="col">DataFrame</th><th scope="col">Dataset</th></tr>
 <tr><td>API</td><td>Low-level, functional</td><td>High-level, SQL-like</td><td>Typed (Scala/Java only)</td></tr>
 <tr><td>Optimization</td><td>None — you control</td><td>Catalyst + Tungsten</td><td>Catalyst + Tungsten</td></tr>
 <tr><td>When to use</td><td>Rarely now — only for custom partitioning or unstructured</td><td>Default for PySpark</td><td>N/A in Python</td></tr>
@@ -1153,7 +1172,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
 
 <h3>4.3 Claude Code vs. Cursor — when to use each</h3>
 <table>
-<tr><th></th><th>Claude Code</th><th>Cursor</th></tr>
+<tr><th scope="col"></th><th scope="col">Claude Code</th><th scope="col">Cursor</th></tr>
 <tr><td>Form factor</td><td>CLI / terminal</td><td>IDE</td></tr>
 <tr><td>Strength</td><td>Multi-step autonomous tasks, codebase-wide refactors, ops work</td><td>Inline editing, line-by-line refinement</td></tr>
 <tr><td>Workflow</td><td>Plan → execute → verify</td><td>Type → tab → review</td></tr>
@@ -1327,7 +1346,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
 
 <h3>5.5 Orchestration frameworks comparison</h3>
 <table>
-<tr><th>Framework</th><th>Strength</th><th>Weakness</th><th>Best for</th></tr>
+<tr><th scope="col">Framework</th><th scope="col">Strength</th><th scope="col">Weakness</th><th scope="col">Best for</th></tr>
 <tr>
   <td><strong>LangGraph</strong></td>
   <td>State machines, branching, human-in-loop, debug-friendly</td>
@@ -1487,7 +1506,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
 
 <h3>6.2 Architecture families</h3>
 <table>
-<tr><th>Type</th><th>Example</th><th>Use</th></tr>
+<tr><th scope="col">Type</th><th scope="col">Example</th><th scope="col">Use</th></tr>
 <tr><td>Decoder-only</td><td>GPT, Llama, Claude</td><td>Generation, default for chat/instruction</td></tr>
 <tr><td>Encoder-decoder</td><td>T5, BART, original Transformer</td><td>Translation, summarization (less common now)</td></tr>
 <tr><td>Encoder-only</td><td>BERT, RoBERTa</td><td>Embeddings, classification, retrieval</td></tr>
@@ -1505,7 +1524,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
 
 <h4>Quantization</h4>
 <table>
-<tr><th>Format</th><th>Bits</th><th>Quality loss</th><th>Speed</th></tr>
+<tr><th scope="col">Format</th><th scope="col">Bits</th><th scope="col">Quality loss</th><th scope="col">Speed</th></tr>
 <tr><td>FP32</td><td>32</td><td>None (baseline)</td><td>Slowest</td></tr>
 <tr><td>FP16 / BF16</td><td>16</td><td>Negligible</td><td>2x</td></tr>
 <tr><td>INT8</td><td>8</td><td>Minor</td><td>~3x</td></tr>
@@ -1530,7 +1549,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
 <h3>6.4 Fine-tuning techniques</h3>
 
 <table>
-<tr><th>Method</th><th>What</th><th>Use when</th></tr>
+<tr><th scope="col">Method</th><th scope="col">What</th><th scope="col">Use when</th></tr>
 <tr><td>Full FT</td><td>Update all weights</td><td>You have lots of data and compute</td></tr>
 <tr><td>LoRA</td><td>Train low-rank adapters, freeze base</td><td>Default for FT — fast, cheap, swappable</td></tr>
 <tr><td>QLoRA</td><td>LoRA on 4-bit quantized base</td><td>Fine-tune big models on one GPU</td></tr>
@@ -2058,7 +2077,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
 
 <h4>Mapping</h4>
 <table>
-<tr><th>Agent Forge component</th><th>AgentCore primitive</th><th>Notes</th></tr>
+<tr><th scope="col">Agent Forge component</th><th scope="col">AgentCore primitive</th><th scope="col">Notes</th></tr>
 <tr><td>Agent runtime</td><td>AgentCore Runtime</td><td>Each registered agent as Runtime endpoint</td></tr>
 <tr><td>Agent memory</td><td>AgentCore Memory</td><td>Custom extractors for domain facts</td></tr>
 <tr><td>Tool registry</td><td>AgentCore Gateway</td><td>MCP servers for internal Lambdas/APIs</td></tr>
@@ -2456,7 +2475,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
 
 <h4>Week 1 — fill the gaps</h4>
 <table>
-<tr><th>Day</th><th>Focus</th><th>Output</th></tr>
+<tr><th scope="col">Day</th><th scope="col">Focus</th><th scope="col">Output</th></tr>
 <tr><td>1</td><td>AWS AgentCore docs end-to-end + hello-world deploy</td><td>Notes file; working agent</td></tr>
 <tr><td>2</td><td>S3, Glue, Lambda deep dive</td><td>Architecture sketches for each</td></tr>
 <tr><td>3</td><td>DynamoDB, EventBridge, MSK/SQS, event-driven patterns</td><td>Reference ingestion pipeline drawn from memory</td></tr>
@@ -2468,7 +2487,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
 
 <h4>Week 2 — polish and integrate</h4>
 <table>
-<tr><th>Day</th><th>Focus</th><th>Output</th></tr>
+<tr><th scope="col">Day</th><th scope="col">Focus</th><th scope="col">Output</th></tr>
 <tr><td>8</td><td>LLM fundamentals refresh + eval frameworks</td><td>Cheat sheet</td></tr>
 <tr><td>9</td><td>Data engineering for AI scenarios (lineage, quality, reconciliation)</td><td>Practice scenarios B-E from Part 9</td></tr>
 <tr><td>10</td><td>CI/CD with AI, security, OWASP LLM Top 10</td><td>Cheat sheet</td></tr>
@@ -2480,7 +2499,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
 
 <h3>14.2 One-week crash (if 2 weeks isn't possible)</h3>
 <table>
-<tr><th>Day</th><th>Focus</th></tr>
+<tr><th scope="col">Day</th><th scope="col">Focus</th></tr>
 <tr><td>1</td><td>AgentCore + AWS data stack (Parts 1, 2)</td></tr>
 <tr><td>2</td><td>PySpark + Claude Code/Cursor (Parts 3, 4)</td></tr>
 <tr><td>3</td><td>Agentic AI + LLM fundamentals (Parts 5, 6)</td></tr>
@@ -2544,6 +2563,8 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
 <p style="text-align:center; color:var(--muted); margin-top:3em; font-size:0.9em;">
 End of guide · Last updated 2026-05-29 · Open in browser or print to PDF
 </p>
+</main>
+
 
 <script>
 (function() {

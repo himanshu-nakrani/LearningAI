@@ -286,10 +286,24 @@
   
   /* focus states for accessibility */
   a:focus-visible, button:focus-visible {
-    outline: 2px solid var(--accent);
+    outline: 3px solid var(--accent);
     outline-offset: 2px;
   }
   
+  .skip-link {
+    position: absolute;
+    top: -40px;
+    left: 8px;
+    background: var(--accent);
+    color: #fff;
+    padding: 8px 16px;
+    z-index: 9999;
+    text-decoration: none;
+    border-radius: 0 0 4px 4px;
+    font-weight: 600;
+  }
+  .skip-link:focus { top: 0; }
+
   html.dark {
     --fg: #e8e8e8;
     --muted: #b8b8b8;
@@ -339,6 +353,9 @@
 </head>
 <body>
 
+<a class="skip-link" href="#main">Skip to main content</a>
+
+
 <div class="reading-progress" id="reading-progress"></div>
 
 <nav class="booknav">
@@ -356,6 +373,8 @@
   <a href="interview-prep.html">Interview Prep</a>
   <button class="theme-toggle-inline" id="theme-toggle" aria-label="Toggle dark mode">🌙</button>
 </nav>
+
+<main id="main" tabindex="-1">
 
 <h1>DSA Interview Guide — Basic to Medium</h1>
 <div class="meta">
@@ -415,7 +434,7 @@
 
 <h3>How to recognize a pattern fast</h3>
 <table>
-  <tr><th>If you see…</th><th>Reach for…</th></tr>
+  <tr><th scope="col">If you see…</th><th scope="col">Reach for…</th></tr>
   <tr><td>"Find pair / count / seen before"</td><td>Hash map / set</td></tr>
   <tr><td>Sorted array, find pair/triplet</td><td>Two pointers</td></tr>
   <tr><td>"Contiguous subarray/substring"</td><td>Sliding window</td></tr>
@@ -462,7 +481,7 @@ decide whether your program finishes in milliseconds or never.</div>
 
 <h3>The complexity ladder (best to worst)</h3>
 <table>
-  <tr><th>Notation</th><th>Name</th><th>Example</th></tr>
+  <tr><th scope="col">Notation</th><th scope="col">Name</th><th scope="col">Example</th></tr>
   <tr><td><code>O(1)</code></td><td>Constant</td><td>Hash lookup, array index</td></tr>
   <tr><td><code>O(log n)</code></td><td>Logarithmic</td><td>Binary search</td></tr>
   <tr><td><code>O(n)</code></td><td>Linear</td><td>Single loop</td></tr>
@@ -475,7 +494,7 @@ decide whether your program finishes in milliseconds or never.</div>
 <h3>What input size implies about the target complexity</h3>
 <p>Interviewers often hint at the expected solution via the constraints:</p>
 <table>
-  <tr><th>n up to</th><th>Acceptable complexity</th></tr>
+  <tr><th scope="col">n up to</th><th scope="col">Acceptable complexity</th></tr>
   <tr><td>~10–20</td><td>O(2ⁿ) or O(n!) — backtracking is fine</td></tr>
   <tr><td>~500</td><td>O(n³)</td></tr>
   <tr><td>~5,000</td><td>O(n²)</td></tr>
@@ -542,7 +561,7 @@ after   |  x  |  1  |  4  |  1  |  5  |
 
 <h3>Core operations &amp; costs</h3>
 <table>
-  <tr><th>Operation</th><th>Cost</th></tr>
+  <tr><th scope="col">Operation</th><th scope="col">Cost</th></tr>
   <tr><td>Index access <code>a[i]</code></td><td>O(1)</td></tr>
   <tr><td>Append / pop end</td><td>O(1) amortized</td></tr>
   <tr><td>Insert / pop at front</td><td>O(n) — shifts everything</td></tr>
@@ -1100,7 +1119,7 @@ def min_feasible(lo, hi, feasible):
 <p>You'll rarely implement a sort in an interview — Python's <code>sorted()</code> is O(n log n) Timsort. But you must know the trade-offs and how custom keys work.</p>
 
 <table>
-  <tr><th>Algorithm</th><th>Avg</th><th>Worst</th><th>Space</th><th>Stable?</th></tr>
+  <tr><th scope="col">Algorithm</th><th scope="col">Avg</th><th scope="col">Worst</th><th scope="col">Space</th><th scope="col">Stable?</th></tr>
   <tr><td>Merge sort</td><td>O(n log n)</td><td>O(n log n)</td><td>O(n)</td><td>Yes</td></tr>
   <tr><td>Quick sort</td><td>O(n log n)</td><td>O(n²)</td><td>O(log n)</td><td>No</td></tr>
   <tr><td>Heap sort</td><td>O(n log n)</td><td>O(n log n)</td><td>O(1)</td><td>No</td></tr>
@@ -1248,7 +1267,7 @@ collect, then pop back up (un-choose) to try siblings.
 
 <h3>The four traversals</h3>
 <table>
-  <tr><th>Traversal</th><th>Order</th><th>Use</th></tr>
+  <tr><th scope="col">Traversal</th><th scope="col">Order</th><th scope="col">Use</th></tr>
   <tr><td>Pre-order</td><td>Node, Left, Right</td><td>Copy/serialize tree</td></tr>
   <tr><td>In-order</td><td>Left, Node, Right</td><td>BST → sorted order</td></tr>
   <tr><td>Post-order</td><td>Left, Right, Node</td><td>Delete tree, compute height</td></tr>
@@ -1634,7 +1653,7 @@ def erase_overlap(intervals):
 <p>Occasionally an interviewer throws a bit trick. Know the basics; they yield elegant O(1)-space solutions.</p>
 
 <table>
-  <tr><th>Operation</th><th>Meaning</th></tr>
+  <tr><th scope="col">Operation</th><th scope="col">Meaning</th></tr>
   <tr><td><code>a &amp; b</code></td><td>AND</td></tr>
   <tr><td><code>a | b</code></td><td>OR</td></tr>
   <tr><td><code>a ^ b</code></td><td>XOR (1 if bits differ)</td></tr>
@@ -1670,7 +1689,7 @@ def single(nums):
 
 <h3>One-page pattern recognition</h3>
 <table>
-  <tr><th>Pattern</th><th>Trigger phrase</th><th>Typical complexity</th></tr>
+  <tr><th scope="col">Pattern</th><th scope="col">Trigger phrase</th><th scope="col">Typical complexity</th></tr>
   <tr><td>Hash map</td><td>seen before, count, pair sum</td><td>O(n)</td></tr>
   <tr><td>Two pointers</td><td>sorted, pair/triplet, palindrome</td><td>O(n)</td></tr>
   <tr><td>Sliding window</td><td>contiguous subarray/substring</td><td>O(n)</td></tr>
@@ -1726,6 +1745,8 @@ def single(nums):
 
 <hr>
 <div class="meta">End of DSA guide. Pair this with consistent practice on a judge (LeetCode/HackerRank). Re-read the pattern cheat sheet the morning of your interview.</div>
+</main>
+
 
 <script>
 (function() {

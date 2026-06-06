@@ -286,10 +286,24 @@
   
   /* focus states for accessibility */
   a:focus-visible, button:focus-visible {
-    outline: 2px solid var(--accent);
+    outline: 3px solid var(--accent);
     outline-offset: 2px;
   }
   
+  .skip-link {
+    position: absolute;
+    top: -40px;
+    left: 8px;
+    background: var(--accent);
+    color: #fff;
+    padding: 8px 16px;
+    z-index: 9999;
+    text-decoration: none;
+    border-radius: 0 0 4px 4px;
+    font-weight: 600;
+  }
+  .skip-link:focus { top: 0; }
+
   html.dark {
     --fg: #e8e8e8;
     --muted: #b8b8b8;
@@ -339,6 +353,9 @@
 </head>
 <body>
 
+<a class="skip-link" href="#main">Skip to main content</a>
+
+
 <div class="reading-progress" id="reading-progress"></div>
 
 <nav class="booknav">
@@ -356,6 +373,8 @@
   <a href="interview-prep.html">Interview Prep</a>
   <button class="theme-toggle-inline" id="theme-toggle" aria-label="Toggle dark mode">🌙</button>
 </nav>
+
+<main id="main" tabindex="-1">
 
 <h1>LLM Inference &amp; Serving Optimization</h1>
 <div class="meta">
@@ -413,7 +432,7 @@
 
 <h3>The optimization landscape (the map)</h3>
 <table>
-  <tr><th>Layer</th><th>Techniques</th><th>Mainly improves</th></tr>
+  <tr><th scope="col">Layer</th><th scope="col">Techniques</th><th scope="col">Mainly improves</th></tr>
   <tr><td>Model</td><td>Quantization, distillation, pruning, smaller model</td><td>Memory, cost, latency</td></tr>
   <tr><td>Attention/kernel</td><td>FlashAttention, GQA/MQA, fused kernels</td><td>Latency, memory</td></tr>
   <tr><td>Decoding</td><td>Speculative decoding, Medusa, lookahead</td><td>Latency</td></tr>
@@ -454,7 +473,7 @@
 
 <h3>Why they behave so differently</h3>
 <table>
-  <tr><th></th><th>Prefill</th><th>Decode</th></tr>
+  <tr><th scope="col"></th><th scope="col">Prefill</th><th scope="col">Decode</th></tr>
   <tr><td>Tokens processed</td><td>All prompt tokens at once</td><td>One at a time</td></tr>
   <tr><td>Parallelism</td><td>High (parallel over sequence)</td><td>None (sequential dependency)</td></tr>
   <tr><td>Bottleneck</td><td>Compute (FLOPs)</td><td>Memory bandwidth</td></tr>
@@ -571,7 +590,7 @@
 
 <h3>Common GPU memory sizes</h3>
 <table>
-  <tr><th>GPU</th><th>HBM</th><th>Comfortably serves (FP16)</th></tr>
+  <tr><th scope="col">GPU</th><th scope="col">HBM</th><th scope="col">Comfortably serves (FP16)</th></tr>
   <tr><td>A10G / L4</td><td>24 GB</td><td>~7B (or quantized 13B)</td></tr>
   <tr><td>A100 40GB</td><td>40 GB</td><td>~13B; 70B needs quant or multi-GPU</td></tr>
   <tr><td>A100 / H100 80GB</td><td>80 GB</td><td>~70B quantized, or 1 of several for 70B FP16</td></tr>
@@ -670,7 +689,7 @@
   starving active decodes. Balances TTFT vs TPOT.</div>
 
 <table>
-  <tr><th>Batching</th><th>Throughput</th><th>Notes</th></tr>
+  <tr><th scope="col">Batching</th><th scope="col">Throughput</th><th scope="col">Notes</th></tr>
   <tr><td>None (1 req)</td><td>Worst</td><td>GPU mostly idle in decode</td></tr>
   <tr><td>Static</td><td>OK</td><td>Wastes slots on length variance</td></tr>
   <tr><td>Continuous</td><td>Best</td><td>Standard in modern engines</td></tr>
@@ -737,7 +756,7 @@
 
 <h3>The precision ladder</h3>
 <table>
-  <tr><th>Format</th><th>Bits</th><th>Memory vs FP16</th><th>Typical use</th></tr>
+  <tr><th scope="col">Format</th><th scope="col">Bits</th><th scope="col">Memory vs FP16</th><th scope="col">Typical use</th></tr>
   <tr><td>FP32</td><td>32</td><td>2x</td><td>Rare for inference</td></tr>
   <tr><td>FP16 / BF16</td><td>16</td><td>1x (baseline)</td><td>Default full precision</td></tr>
   <tr><td>FP8</td><td>8</td><td>0.5x</td><td>Modern GPUs (H100+), great quality/speed</td></tr>
@@ -758,7 +777,7 @@
 
 <h3>PTQ vs QAT</h3>
 <table>
-  <tr><th>Post-Training Quantization (PTQ)</th><th>Quantization-Aware Training (QAT)</th></tr>
+  <tr><th scope="col">Post-Training Quantization (PTQ)</th><th scope="col">Quantization-Aware Training (QAT)</th></tr>
   <tr><td>Quantize an already-trained model</td><td>Simulate quantization during training</td></tr>
   <tr><td>Fast, cheap, no retraining</td><td>Expensive, needs training pipeline</td></tr>
   <tr><td>The norm for LLM inference</td><td>For squeezing out the last accuracy</td></tr>
@@ -766,7 +785,7 @@
 
 <h3>The popular LLM quantization methods</h3>
 <table>
-  <tr><th>Method</th><th>What it does</th></tr>
+  <tr><th scope="col">Method</th><th scope="col">What it does</th></tr>
   <tr><td>GPTQ</td><td>Layer-wise weight quantization (4-bit) minimizing output error; weight-only</td></tr>
   <tr><td>AWQ</td><td>Activation-aware: protects the most important weights; strong 4-bit quality</td></tr>
   <tr><td>GGUF (llama.cpp)</td><td>Flexible CPU/GPU quant formats (Q4_K_M, etc.) for local inference</td></tr>
@@ -822,7 +841,7 @@
        Used by Llama-3, Mistral, most current models.</div>
 
 <table>
-  <tr><th>Scheme</th><th>KV cache size</th><th>Quality</th></tr>
+  <tr><th scope="col">Scheme</th><th scope="col">KV cache size</th><th scope="col">Quality</th></tr>
   <tr><td>MHA</td><td>Largest (1 KV per Q head)</td><td>Best</td></tr>
   <tr><td>GQA</td><td>Medium (shared in groups)</td><td>Near-MHA</td></tr>
   <tr><td>MQA</td><td>Smallest (1 KV total)</td><td>Slight drop</td></tr>
@@ -860,7 +879,7 @@
 
 <h3>Variants</h3>
 <table>
-  <tr><th>Method</th><th>How it drafts</th></tr>
+  <tr><th scope="col">Method</th><th scope="col">How it drafts</th></tr>
   <tr><td>Draft model</td><td>A small separate model (e.g. 1B drafts for 70B)</td></tr>
   <tr><td>Self-speculative</td><td>The model drafts with some of its own layers</td></tr>
   <tr><td>Medusa</td><td>Extra prediction heads guess multiple next tokens</td></tr>
@@ -932,7 +951,7 @@
   comms (all-to-all). Used by Mixtral, DeepSeek, etc.</div>
 
 <table>
-  <tr><th>Type</th><th>Splits</th><th>Use when</th><th>Comms cost</th></tr>
+  <tr><th scope="col">Type</th><th scope="col">Splits</th><th scope="col">Use when</th><th scope="col">Comms cost</th></tr>
   <tr><td>Data</td><td>Requests (full model replicated)</td><td>Model fits on 1 GPU; want throughput</td><td>None</td></tr>
   <tr><td>Tensor</td><td>Within each layer</td><td>Model too big; want low latency</td><td>High (per layer) — needs NVLink</td></tr>
   <tr><td>Pipeline</td><td>Across layers</td><td>Model spans nodes</td><td>Low (stage boundaries)</td></tr>
@@ -995,7 +1014,7 @@
 <p>You rarely build a serving stack from scratch — you pick an engine. Know the landscape and the trade-offs.</p>
 
 <table>
-  <tr><th>Engine</th><th>By</th><th>Strengths</th><th>Notes</th></tr>
+  <tr><th scope="col">Engine</th><th scope="col">By</th><th scope="col">Strengths</th><th scope="col">Notes</th></tr>
   <tr><td>vLLM</td><td>OSS (Berkeley origin)</td><td>PagedAttention, continuous batching, broad model + feature support</td><td>The default OSS choice; huge community</td></tr>
   <tr><td>TensorRT-LLM</td><td>NVIDIA</td><td>Fastest on NVIDIA GPUs; deep kernel optimization</td><td>Compile step; NVIDIA-only; less flexible</td></tr>
   <tr><td>TGI</td><td>Hugging Face</td><td>Production-ready, easy HF integration</td><td>Solid all-rounder</td></tr>
@@ -1006,7 +1025,7 @@
 
 <h3>Managed / cloud options</h3>
 <table>
-  <tr><th>Cloud</th><th>Managed serving</th></tr>
+  <tr><th scope="col">Cloud</th><th scope="col">Managed serving</th></tr>
   <tr><td>AWS</td><td>Bedrock (fully managed models), SageMaker endpoints (bring your own + LMI/vLLM containers)</td></tr>
   <tr><td>Azure</td><td>Azure OpenAI (PTUs), Azure ML managed endpoints</td></tr>
   <tr><td>GCP</td><td>Vertex AI endpoints, Model Garden one-click deploy</td></tr>
@@ -1045,7 +1064,7 @@
               (the system-wide capacity / cost metric).</div>
 
 <table>
-  <tr><th>Metric</th><th>Means</th><th>Driven by</th></tr>
+  <tr><th scope="col">Metric</th><th scope="col">Means</th><th scope="col">Driven by</th></tr>
   <tr><td>TTFT</td><td>Time to first token</td><td>Queue + prefill (prompt length, load)</td></tr>
   <tr><td>TPOT / ITL</td><td>Time per output token</td><td>Decode (model size, batch, bandwidth)</td></tr>
   <tr><td>E2E latency</td><td>Total request time</td><td>TTFT + TPOT × output length</td></tr>
@@ -1088,7 +1107,7 @@
 
 <h3>The cost-reduction toolkit (in rough order of impact)</h3>
 <table>
-  <tr><th>Lever</th><th>Effect</th></tr>
+  <tr><th scope="col">Lever</th><th scope="col">Effect</th></tr>
   <tr><td>Use a smaller / distilled model</td><td>Often the biggest win — right-size to the task</td></tr>
   <tr><td>Quantization (FP8/INT8/INT4)</td><td>Fewer/smaller GPUs, faster decode</td></tr>
   <tr><td>Continuous batching</td><td>2-4x throughput on the same GPU</td></tr>
@@ -1190,7 +1209,7 @@
 
 <h3>Which technique for which goal</h3>
 <table>
-  <tr><th>Goal</th><th>Reach for</th></tr>
+  <tr><th scope="col">Goal</th><th scope="col">Reach for</th></tr>
   <tr><td>Lower TTFT</td><td>Prefix caching, chunked prefill, less queueing, disaggregation</td></tr>
   <tr><td>Lower TPOT (faster tokens)</td><td>Quantization, speculative decoding, smaller model, FlashAttention</td></tr>
   <tr><td>Higher throughput</td><td>Continuous batching, PagedAttention, GQA, bigger batch</td></tr>
@@ -1202,7 +1221,7 @@
 
 <h3>Numbers &amp; facts to have ready</h3>
 <table>
-  <tr><th>Fact</th><th>Value / rule</th></tr>
+  <tr><th scope="col">Fact</th><th scope="col">Value / rule</th></tr>
   <tr><td>FP16 weight memory</td><td>~2 GB per billion params</td></tr>
   <tr><td>INT8 / INT4 weights</td><td>~1 GB / ~0.5 GB per billion params</td></tr>
   <tr><td>Decode bottleneck</td><td>Memory bandwidth (not compute)</td></tr>
@@ -1231,6 +1250,8 @@
 
 <hr>
 <div class="meta">End of LLM inference &amp; serving guide. The engines and exact numbers evolve fast — but the underlying physics (memory bandwidth, the KV cache, the prefill/decode split) is stable. Master the reasoning, not just the tool names.</div>
+</main>
+
 
 <script>
 (function() {

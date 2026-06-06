@@ -110,7 +110,25 @@
   .print-note { color: var(--faint); font-size: 13px; margin-top: 18px; }
   .refs li { font-size: 14px; color: var(--muted); overflow-wrap: anywhere; }
   .matrix td:first-child { color: var(--ink); font-weight: 650; }
-  @media print {
+  .skip-link {
+    position: absolute;
+    top: -40px;
+    left: 8px;
+    background: var(--accent);
+    color: #fff;
+    padding: 8px 16px;
+    z-index: 9999;
+    text-decoration: none;
+    border-radius: 0 0 4px 4px;
+    font-weight: 600;
+  }
+  .skip-link:focus { top: 0; }
+
+  a:focus-visible, button:focus-visible {
+    outline: 3px solid var(--accent);
+    outline-offset: 2px;
+  }
+
   @media (max-width: 480px) {
     .shell { padding: 14px; }
     .hero { padding: 22px; border-radius: 22px; }
@@ -127,6 +145,7 @@
     h2 { font-size: 22px; }
     .card { padding: 14px; }
   }
+  @media print {
     body { background: white; color: var(--paperInk); }
     .shell { max-width: none; padding: 0; }
     .hero, .card { background: white; color: var(--paperInk); border-color: var(--paperLine); box-shadow: none; break-inside: avoid; }
@@ -139,7 +158,11 @@
 </style>
 </head>
 <body>
+
+<a class="skip-link" href="#main">Skip to main content</a>
+
 <div class="shell">
+<main id="main" tabindex="-1">
   <header class="hero">
     <div class="eyebrow">Deep Research Report · Agentic AI · 2026</div>
     <h1>Agentic AI in 2026: Current State, Research Frontiers, Industry Adoption, Open Gaps, and Paper Ideas</h1>
@@ -199,7 +222,7 @@
       <div>
         <h3>2.2 What changed since simple chatbots</h3>
         <table>
-          <tr><th>Old chatbot assumption</th><th>Agentic reality</th></tr>
+          <tr><th scope="col">Old chatbot assumption</th><th scope="col">Agentic reality</th></tr>
           <tr><td>Wrong output is mostly text</td><td>Wrong output can become file writes, API calls, payments, emails, code execution, or data leaks.</td></tr>
           <tr><td>Evaluation can be final-answer accuracy</td><td>Evaluation needs trajectory quality, cost, latency, repeatability, tool correctness, and safety.</td></tr>
           <tr><td>Prompt injection is a text problem</td><td>Injection propagates through tools, web pages, documents, memory, skill files, and multi-turn workflows.</td></tr>
@@ -231,7 +254,7 @@
     <h3>3.3 Multi-agent systems and coordination</h3>
     <p>Multi-agent work is shifting from role-play demos to controlled studies of communication, coordination cost, topology, and failure attribution. Silo-Bench, MASEval, MAESTRO, COLLAB, EmCoop, and related papers investigate whether multiple agents genuinely improve outcomes or merely add overhead.</p>
     <table class="matrix">
-      <tr><th>Multi-agent theme</th><th>Current finding</th><th>Research opportunity</th></tr>
+      <tr><th scope="col">Multi-agent theme</th><th scope="col">Current finding</th><th scope="col">Research opportunity</th></tr>
       <tr><td>Coordination overhead</td><td>More agents often increase cost and communication without proportional accuracy gains.</td><td>Develop metrics for when multi-agent decomposition is worth it.</td></tr>
       <tr><td>Communication-reasoning gap</td><td>Agents may exchange enough information but fail to integrate distributed state.</td><td>Design integration protocols and diagnostic benchmarks.</td></tr>
       <tr><td>Framework effects</td><td>Framework choice can matter as much as model choice within the same capability tier.</td><td>Evaluate frameworks under controlled model/tool/task settings.</td></tr>
@@ -281,7 +304,7 @@
 
     <h3>4.1 Where adoption is strongest</h3>
     <table>
-      <tr><th>Function</th><th>Why it leads</th><th>Typical agent use</th></tr>
+      <tr><th scope="col">Function</th><th scope="col">Why it leads</th><th scope="col">Typical agent use</th></tr>
       <tr><td>Software engineering</td><td>Clear artifacts, tests, high developer adoption, measurable productivity.</td><td>Code generation, debugging, tests, reviews, documentation, CI/CD help.</td></tr>
       <tr><td>IT operations</td><td>Structured systems, logs, tickets, repeated workflows.</td><td>Service desk, remediation, incident triage, knowledge lookup.</td></tr>
       <tr><td>Customer support</td><td>High-volume workflows and measurable outcomes.</td><td>Case resolution, routing, rebooking, refunds, next-best action.</td></tr>
@@ -452,7 +475,7 @@
 
     <h3>7.2 Minimal viable research paper</h3>
     <table>
-      <tr><th>Section</th><th>Content</th></tr>
+      <tr><th scope="col">Section</th><th scope="col">Content</th></tr>
       <tr><td>Introduction</td><td>Persistent memory is both a capability and a risk surface for agentic AI.</td></tr>
       <tr><td>Related work</td><td>Agent surveys, long-horizon memory benchmarks, memory poisoning, agent safety, system-level evaluation.</td></tr>
       <tr><td>Problem definition</td><td>Define memory hygiene: correctness, freshness, non-redundancy, privacy, provenance, relevance, and safety.</td></tr>
@@ -510,6 +533,7 @@
     </ol>
     <p class="print-note">Tip: Use your browser's Print → Save as PDF if you want a PDF copy of this HTML report.</p>
   </section>
+</main>
 </div>
 </body>
 </html>

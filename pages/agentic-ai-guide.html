@@ -286,10 +286,24 @@
   
   /* focus states for accessibility */
   a:focus-visible, button:focus-visible {
-    outline: 2px solid var(--accent);
+    outline: 3px solid var(--accent);
     outline-offset: 2px;
   }
   
+  .skip-link {
+    position: absolute;
+    top: -40px;
+    left: 8px;
+    background: var(--accent);
+    color: #fff;
+    padding: 8px 16px;
+    z-index: 9999;
+    text-decoration: none;
+    border-radius: 0 0 4px 4px;
+    font-weight: 600;
+  }
+  .skip-link:focus { top: 0; }
+
   html.dark {
     --fg: #e8e8e8;
     --muted: #b8b8b8;
@@ -339,6 +353,9 @@
 </head>
 <body>
 
+<a class="skip-link" href="#main">Skip to main content</a>
+
+
 <div class="reading-progress" id="reading-progress"></div>
 
 <nav class="booknav">
@@ -356,6 +373,8 @@
   <a href="interview-prep.html">Interview Prep</a>
   <button class="theme-toggle-inline" id="theme-toggle" aria-label="Toggle dark mode">🌙</button>
 </nav>
+
+<main id="main" tabindex="-1">
 
 <h1>Agentic AI — Complete Engineering Guide</h1>
 <div class="meta">
@@ -410,7 +429,7 @@
 
 <h3>Workflow vs agent — the most important distinction</h3>
 <table>
-  <tr><th>Workflow (orchestrated)</th><th>Agent (autonomous)</th></tr>
+  <tr><th scope="col">Workflow (orchestrated)</th><th scope="col">Agent (autonomous)</th></tr>
   <tr><td>Steps known in advance; you code the path</td><td>Steps depend on intermediate results; model decides</td></tr>
   <tr><td>Predictable, cheap, testable, debuggable</td><td>Flexible, handles open-ended tasks</td></tr>
   <tr><td>e.g. "extract → classify → store"</td><td>e.g. "investigate this failure and fix it"</td></tr>
@@ -528,7 +547,7 @@
 
 <h3>ReAct vs Plan-and-execute</h3>
 <table>
-  <tr><th>ReAct (reactive)</th><th>Plan-and-execute</th></tr>
+  <tr><th scope="col">ReAct (reactive)</th><th scope="col">Plan-and-execute</th></tr>
   <tr><td>Decide next step each iteration</td><td>Make full plan upfront, then run it</td></tr>
   <tr><td>Highly adaptive to surprises</td><td>Predictable, plan is reviewable</td></tr>
   <tr><td>More LLM calls (reason every step)</td><td>Fewer calls; parallelizable steps</td></tr>
@@ -582,7 +601,7 @@
 
 <h3>Reflection variants</h3>
 <table>
-  <tr><th>Pattern</th><th>How</th></tr>
+  <tr><th scope="col">Pattern</th><th scope="col">How</th></tr>
   <tr><td>Self-critique</td><td>Model reviews its own output against criteria, revises</td></tr>
   <tr><td>Reflexion</td><td>On failure, write a "lesson" to memory and retry with it</td></tr>
   <tr><td>Tool-grounded reflection</td><td>Use real signals (test results, linters, SQL execution, schema validation) as the critic — far more reliable than self-judgment</td></tr>
@@ -683,7 +702,7 @@
   and PROMPTS (templates). Reduces lock-in &amp; duplication.</div>
 
 <table>
-  <tr><th>MCP concept</th><th>What it is</th></tr>
+  <tr><th scope="col">MCP concept</th><th scope="col">What it is</th></tr>
   <tr><td>Host / Client</td><td>The app/agent that consumes capabilities</td></tr>
   <tr><td>Server</td><td>Exposes tools, resources, prompts over the protocol</td></tr>
   <tr><td>Tools</td><td>Callable actions (functions) the agent can invoke</td></tr>
@@ -727,7 +746,7 @@
 
 <h3>Managing the working-memory budget</h3>
 <table>
-  <tr><th>Strategy</th><th>How</th><th>Trade-off</th></tr>
+  <tr><th scope="col">Strategy</th><th scope="col">How</th><th scope="col">Trade-off</th></tr>
   <tr><td>Full history</td><td>Keep everything</td><td>Simple; overflows fast, costly</td></tr>
   <tr><td>Sliding window</td><td>Keep last N steps/turns</td><td>Bounded; forgets older context</td></tr>
   <tr><td>Summarization</td><td>Compress old steps into a summary</td><td>Saves tokens; loses detail</td></tr>
@@ -772,7 +791,7 @@
 
 <h3>The failure modes of long agent context</h3>
 <table>
-  <tr><th>Failure</th><th>What happens</th></tr>
+  <tr><th scope="col">Failure</th><th scope="col">What happens</th></tr>
   <tr><td>Context poisoning</td><td>A hallucination/error enters context and gets repeatedly referenced</td></tr>
   <tr><td>Context distraction</td><td>So much history the model over-focuses on it, ignores instructions</td></tr>
   <tr><td>Context confusion</td><td>Irrelevant tools/info present, model uses the wrong thing</td></tr>
@@ -822,7 +841,7 @@
                    hardest to control — usually avoid)</div>
 
 <table>
-  <tr><th>Pattern</th><th>Use when</th><th>Watch out for</th></tr>
+  <tr><th scope="col">Pattern</th><th scope="col">Use when</th><th scope="col">Watch out for</th></tr>
   <tr><td>Single agent</td><td>Default — most tasks</td><td>Over-splitting too early</td></tr>
   <tr><td>Supervisor/worker</td><td>Distinct sub-skills, parallelizable subtasks</td><td>Supervisor bottleneck; coordination cost</td></tr>
   <tr><td>Pipeline</td><td>Fixed sequential stages</td><td>It's really a workflow — keep it deterministic</td></tr>
@@ -871,7 +890,7 @@
 
 <h3>A2A core ideas</h3>
 <table>
-  <tr><th>Concept</th><th>What it is</th></tr>
+  <tr><th scope="col">Concept</th><th scope="col">What it is</th></tr>
   <tr><td>Agent Card</td><td>A machine-readable description of an agent's skills/endpoint — enables discovery</td></tr>
   <tr><td>Task</td><td>A unit of work one agent delegates to another, with lifecycle/status</td></tr>
   <tr><td>Opacity</td><td>Agents collaborate without exposing internal state/tools — a black-box contract</td></tr>
@@ -890,7 +909,7 @@
 <p>You rarely hand-roll the full loop, memory, and tooling — you use a framework. Know the landscape and trade-offs.</p>
 
 <table>
-  <tr><th>Framework</th><th>Style / strength</th><th>Watch out</th></tr>
+  <tr><th scope="col">Framework</th><th scope="col">Style / strength</th><th scope="col">Watch out</th></tr>
   <tr><td>LangGraph</td><td>Graph/state-machine control of agent flows; explicit, durable, great for complex + cyclic workflows</td><td>Steeper learning curve</td></tr>
   <tr><td>CrewAI</td><td>Role-based collaborating agents ("crew"); intuitive multi-agent</td><td>Less control over low-level flow</td></tr>
   <tr><td>AutoGen (AG2)</td><td>Conversational multi-agent; flexible agent chats</td><td>Conversations can sprawl</td></tr>
@@ -943,7 +962,7 @@
   +--------------------------------------------------------+</div>
 
 <table>
-  <tr><th>Component</th><th>Solves</th></tr>
+  <tr><th scope="col">Component</th><th scope="col">Solves</th></tr>
   <tr><td>Runtime</td><td>Where the agent runs — serverless, isolated sessions, scales, supports long tasks</td></tr>
   <tr><td>Gateway</td><td>Tool integration — wraps existing APIs/Lambdas as MCP tools without rewrites</td></tr>
   <tr><td>Memory</td><td>Managed agent memory (short + long term) so you don't build it</td></tr>
@@ -1000,7 +1019,7 @@
 
 <h3>Component vs end-to-end</h3>
 <table>
-  <tr><th>Level</th><th>Tests</th></tr>
+  <tr><th scope="col">Level</th><th scope="col">Tests</th></tr>
   <tr><td>Component</td><td>Each piece in isolation: does the planner produce valid plans? Does tool selection pick correctly? Does retrieval fetch the right context?</td></tr>
   <tr><td>End-to-end</td><td>The whole agent on realistic tasks: success rate, cost, latency, safety</td></tr>
 </table>
@@ -1014,7 +1033,7 @@
 </ul>
 
 <table>
-  <tr><th>Metric</th><th>Measures</th></tr>
+  <tr><th scope="col">Metric</th><th scope="col">Measures</th></tr>
   <tr><td>Task success rate</td><td>% of tasks fully achieved</td></tr>
   <tr><td>Tool-call accuracy</td><td>% correct tool + arguments</td></tr>
   <tr><td>Trajectory efficiency</td><td>Steps / tokens / cost per task</td></tr>
@@ -1079,7 +1098,7 @@
 
 <h3>The agent safety checklist</h3>
 <table>
-  <tr><th>Risk</th><th>Mitigation</th></tr>
+  <tr><th scope="col">Risk</th><th scope="col">Mitigation</th></tr>
   <tr><td>Prompt injection (esp. indirect)</td><td>Untrusted-content handling, least privilege, approval gates</td></tr>
   <tr><td>Destructive/irreversible actions</td><td>Confirmation steps, dry-run mode, scoped permissions, undo</td></tr>
   <tr><td>Runaway loops / cost</td><td>max_steps, token/time budgets, loop detection</td></tr>
@@ -1189,7 +1208,7 @@
 
 <h3>Key design decisions (and why)</h3>
 <table>
-  <tr><th>Decision</th><th>Choice &amp; rationale</th></tr>
+  <tr><th scope="col">Decision</th><th scope="col">Choice &amp; rationale</th></tr>
   <tr><td>Workflow or agent?</td><td>Mostly a <strong>workflow</strong> (steps are known); use agentic reasoning <em>within</em> steps (schema inference, anomaly diagnosis) where the path is dynamic</td></tr>
   <tr><td>Ground the LLM</td><td>LLM proposes (schema mapping, expectations, transforms); code <strong>executes &amp; verifies</strong> — never trust LLM output unchecked</td></tr>
   <tr><td>Self-healing scope</td><td>Auto-fix only low-risk, high-confidence issues (e.g. encoding, type coercion); escalate schema-breaking or ambiguous cases</td></tr>
@@ -1240,7 +1259,7 @@
 
 <h3>Why each piece exists</h3>
 <table>
-  <tr><th>Stage</th><th>Why</th></tr>
+  <tr><th scope="col">Stage</th><th scope="col">Why</th></tr>
   <tr><td>Spec parser</td><td>Turn opaque legacy code into a normalized, reviewable spec — the source of truth</td></tr>
   <tr><td>Code generation</td><td>The productivity win; LLMs are strong at code translation</td></tr>
   <tr><td>Test generation</td><td>You need an objective parity oracle, not the model's say-so</td></tr>
@@ -1277,7 +1296,7 @@
 
 <h3>Pattern → when to use</h3>
 <table>
-  <tr><th>Goal</th><th>Reach for</th></tr>
+  <tr><th scope="col">Goal</th><th scope="col">Reach for</th></tr>
   <tr><td>Open-ended, adaptive task</td><td>ReAct loop</td></tr>
   <tr><td>Structured multi-step, reviewable</td><td>Plan-and-execute</td></tr>
   <tr><td>Higher quality output</td><td>Reflection (grounded in real checks)</td></tr>
@@ -1309,6 +1328,8 @@
 
 <hr>
 <div class="meta">End of agentic AI guide. The frameworks and product names move monthly; the principles — bounded loops, grounded verification, context discipline, layered safety, eval-driven iteration, and autonomy calibrated to blast radius — are durable. Master the reasoning, not just the tool names.</div>
+</main>
+
 
 <script>
 (function() {

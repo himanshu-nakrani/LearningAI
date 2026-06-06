@@ -292,10 +292,24 @@
   
   /* focus states for accessibility */
   a:focus-visible, button:focus-visible {
-    outline: 2px solid var(--accent);
+    outline: 3px solid var(--accent);
     outline-offset: 2px;
   }
   
+  .skip-link {
+    position: absolute;
+    top: -40px;
+    left: 8px;
+    background: var(--accent);
+    color: #fff;
+    padding: 8px 16px;
+    z-index: 9999;
+    text-decoration: none;
+    border-radius: 0 0 4px 4px;
+    font-weight: 600;
+  }
+  .skip-link:focus { top: 0; }
+
   html.dark {
     --fg: #e8e8e8;
     --muted: #b8b8b8;
@@ -345,6 +359,9 @@
 </head>
 <body>
 
+<a class="skip-link" href="#main">Skip to main content</a>
+
+
 <div class="reading-progress" id="reading-progress"></div>
 
 <nav class="booknav">
@@ -362,6 +379,8 @@
   <a href="interview-prep.html">Interview Prep</a>
   <button class="theme-toggle-inline" id="theme-toggle" aria-label="Toggle dark mode">🌙</button>
 </nav>
+
+<main id="main" tabindex="-1">
 
 <h1>Cloud AI Services Comparison<br>AWS vs Azure vs Google Cloud</h1>
 <div class="meta">
@@ -436,7 +455,7 @@
 <p>The single most useful reference: what's the equivalent service on each cloud? Bookmark this.</p>
 
 <table>
-  <tr><th>Capability</th><th class="aws">AWS</th><th class="azure">Azure</th><th class="gcp">GCP</th></tr>
+  <tr><th scope="col">Capability</th><th class="aws">AWS</th><th class="azure">Azure</th><th class="gcp">GCP</th></tr>
   <tr><td>Foundation-model platform</td><td>Amazon Bedrock</td><td>Azure OpenAI + AI Foundry</td><td>Vertex AI (Gemini API)</td></tr>
   <tr><td>Flagship in-house LLM</td><td>Amazon Nova / Titan</td><td>(uses OpenAI GPT)</td><td>Gemini</td></tr>
   <tr><td>Model marketplace/catalog</td><td>Bedrock model catalog</td><td>Azure AI model catalog</td><td>Vertex Model Garden</td></tr>
@@ -473,7 +492,7 @@
 <p>This is the layer everyone cares about today. The key question per cloud: <em>which models can I run, and how are they delivered?</em></p>
 
 <table>
-  <tr><th>Aspect</th><th class="aws">AWS — Bedrock</th><th class="azure">Azure — OpenAI / Foundry</th><th class="gcp">GCP — Vertex / Gemini</th></tr>
+  <tr><th scope="col">Aspect</th><th class="aws">AWS — Bedrock</th><th class="azure">Azure — OpenAI / Foundry</th><th class="gcp">GCP — Vertex / Gemini</th></tr>
   <tr><td>Delivery</td><td>One managed API across many model providers</td><td>OpenAI models hosted in your Azure tenant + a broader catalog</td><td>Vertex AI API; Gemini + Model Garden</td></tr>
   <tr><td>Headline models</td><td>Anthropic Claude, Meta Llama, Mistral, Cohere, Amazon Nova, Stability</td><td>OpenAI GPT-4o/4.1, o-series (reasoning), DALL·E, + Llama, Mistral, etc.</td><td>Gemini (flagship, multimodal), + Llama, Claude, Mistral, Gemma (open)</td></tr>
   <tr><td>Unique strength</td><td>Model <strong>breadth/choice</strong> + Claude availability</td><td>Privileged <strong>OpenAI</strong> models with enterprise controls</td><td>Best-in-class <strong>own</strong> models + long context + multimodal</td></tr>
@@ -508,7 +527,7 @@
 <p>RAG (retrieve your data, then generate a grounded answer) is the most common GenAI pattern. Each cloud offers a managed path so you don't hand-build the pipeline.</p>
 
 <table>
-  <tr><th>Piece</th><th class="aws">AWS</th><th class="azure">Azure</th><th class="gcp">GCP</th></tr>
+  <tr><th scope="col">Piece</th><th class="aws">AWS</th><th class="azure">Azure</th><th class="gcp">GCP</th></tr>
   <tr><td>Managed RAG</td><td>Bedrock Knowledge Bases (ingest → embed → retrieve → ground)</td><td>Azure AI Search + Azure OpenAI "on your data"</td><td>Vertex AI Search / RAG Engine</td></tr>
   <tr><td>Vector store</td><td>OpenSearch, Aurora/RDS pgvector, Neptune, MemoryDB, Pinecone (3rd-party)</td><td>Azure AI Search (vector + keyword + semantic ranking)</td><td>Vertex AI Vector Search, AlloyDB/Cloud SQL pgvector</td></tr>
   <tr><td>Hybrid search</td><td>OpenSearch (vector + BM25)</td><td>Built into Azure AI Search (a core strength)</td><td>Vertex AI Search (semantic + keyword)</td></tr>
@@ -539,7 +558,7 @@
 <p>Agents (LLMs that reason, call tools, and act in a loop) are the current frontier. All three now offer managed ways to build and run them.</p>
 
 <table>
-  <tr><th>Aspect</th><th class="aws">AWS</th><th class="azure">Azure</th><th class="gcp">GCP</th></tr>
+  <tr><th scope="col">Aspect</th><th class="aws">AWS</th><th class="azure">Azure</th><th class="gcp">GCP</th></tr>
   <tr><td>Agent service</td><td>Bedrock Agents + AgentCore</td><td>Azure AI Foundry Agent Service</td><td>Vertex AI Agent Builder</td></tr>
   <tr><td>Framework stance</td><td>Framework-agnostic runtime (LangGraph, CrewAI, Strands, custom)</td><td>Integrates Semantic Kernel, AutoGen, OpenAI Agents</td><td>Supports ADK (Agent Dev Kit), LangChain/LangGraph</td></tr>
   <tr><td>Tool calling</td><td>Action groups; AgentCore Gateway turns APIs/Lambdas into tools (MCP)</td><td>Tools, function calling, connectors, Logic Apps</td><td>Tools, extensions, function calling, connectors</td></tr>
@@ -575,7 +594,7 @@
 <p>When you build, train, and operate your <em>own</em> models (not just call foundation models), you use the full ML platform. These are broadly at parity — all cover the end-to-end lifecycle.</p>
 
 <table>
-  <tr><th>Capability</th><th class="aws">SageMaker</th><th class="azure">Azure ML</th><th class="gcp">Vertex AI</th></tr>
+  <tr><th scope="col">Capability</th><th class="aws">SageMaker</th><th class="azure">Azure ML</th><th class="gcp">Vertex AI</th></tr>
   <tr><td>Notebooks / IDE</td><td>SageMaker Studio</td><td>Azure ML Studio</td><td>Vertex AI Workbench / Colab Enterprise</td></tr>
   <tr><td>AutoML</td><td>Autopilot</td><td>Automated ML</td><td>Vertex AutoML</td></tr>
   <tr><td>Training (managed)</td><td>Training jobs, distributed</td><td>Command/sweep jobs</td><td>Custom training jobs</td></tr>
@@ -598,7 +617,7 @@
 <p>These are "AI without ML" — call an API, get a result. Near-parity across clouds, with small differences in supported tasks, languages, and accuracy.</p>
 
 <table>
-  <tr><th>Task</th><th class="aws">AWS</th><th class="azure">Azure</th><th class="gcp">GCP</th></tr>
+  <tr><th scope="col">Task</th><th class="aws">AWS</th><th class="azure">Azure</th><th class="gcp">GCP</th></tr>
   <tr><td>Image analysis / objects / faces</td><td>Rekognition</td><td>AI Vision</td><td>Vision AI</td></tr>
   <tr><td>Video analysis</td><td>Rekognition Video</td><td>AI Video Indexer</td><td>Video Intelligence</td></tr>
   <tr><td>OCR / document parsing</td><td>Textract</td><td>Document Intelligence</td><td>Document AI</td></tr>
@@ -622,7 +641,7 @@
 <p>For training large models or high-volume inference, the underlying accelerators and networking matter — for both performance and cost.</p>
 
 <table>
-  <tr><th>Aspect</th><th class="aws">AWS</th><th class="azure">Azure</th><th class="gcp">GCP</th></tr>
+  <tr><th scope="col">Aspect</th><th class="aws">AWS</th><th class="azure">Azure</th><th class="gcp">GCP</th></tr>
   <tr><td>NVIDIA GPUs</td><td>P5 (H100), P6, G6 (L4)</td><td>ND/NC series (H100, A100)</td><td>A3 (H100), G2 (L4)</td></tr>
   <tr><td>Custom AI silicon</td><td>Trainium (train), Inferentia (inference)</td><td>Maia (emerging)</td><td>TPU v5e/v5p/v6 (mature, widely used)</td></tr>
   <tr><td>Why it matters</td><td>Trainium/Inferentia can cut cost vs GPUs for supported workloads</td><td>Massive GPU capacity tied to OpenAI scale</td><td>TPUs power Google's own models; strong price/perf at scale</td></tr>
@@ -639,7 +658,7 @@
 <h2 id="part-8">Part 8 — AI safety, guardrails &amp; governance</h2>
 
 <table>
-  <tr><th>Aspect</th><th class="aws">AWS</th><th class="azure">Azure</th><th class="gcp">GCP</th></tr>
+  <tr><th scope="col">Aspect</th><th class="aws">AWS</th><th class="azure">Azure</th><th class="gcp">GCP</th></tr>
   <tr><td>Guardrails service</td><td>Bedrock Guardrails</td><td>Azure AI Content Safety</td><td>Vertex safety filters / Model Armor</td></tr>
   <tr><td>Content filtering</td><td>Harmful content, denied topics, word filters</td><td>Categories (hate, violence, sexual, self-harm) w/ severity</td><td>Configurable harm categories &amp; thresholds</td></tr>
   <tr><td>PII handling</td><td>PII detection &amp; redaction</td><td>PII detection (AI Language)</td><td>DLP integration / sensitive data filters</td></tr>
@@ -658,7 +677,7 @@
 <h2 id="part-9">Part 9 — Coding &amp; business AI assistants</h2>
 
 <table>
-  <tr><th>Type</th><th class="aws">AWS</th><th class="azure">Azure / Microsoft</th><th class="gcp">GCP / Google</th></tr>
+  <tr><th scope="col">Type</th><th class="aws">AWS</th><th class="azure">Azure / Microsoft</th><th class="gcp">GCP / Google</th></tr>
   <tr><td>Coding assistant</td><td>Amazon Q Developer (in IDE, CLI, AWS console)</td><td>GitHub Copilot (the market leader)</td><td>Gemini Code Assist</td></tr>
   <tr><td>Enterprise/business assistant</td><td>Amazon Q Business (chat over your company data)</td><td>Microsoft 365 Copilot (Word, Excel, Teams, Outlook)</td><td>Gemini for Google Workspace (Docs, Gmail, Sheets)</td></tr>
   <tr><td>Strength</td><td>Deep AWS-aware help (cost, infra, debugging)</td><td>Ubiquity in dev + Office workflows</td><td>Strong in Workspace + grounding in Google data</td></tr>
@@ -690,7 +709,7 @@
     - predictable cost + guaranteed capacity at scale</div>
 
 <table>
-  <tr><th>Lever</th><th class="aws">AWS</th><th class="azure">Azure</th><th class="gcp">GCP</th></tr>
+  <tr><th scope="col">Lever</th><th class="aws">AWS</th><th class="azure">Azure</th><th class="gcp">GCP</th></tr>
   <tr><td>On-demand tokens</td><td>Bedrock per-token</td><td>Azure OpenAI per-token</td><td>Vertex per-token (per 1K chars/tokens)</td></tr>
   <tr><td>Reserved capacity</td><td>Provisioned Throughput</td><td>PTUs</td><td>Provisioned throughput</td></tr>
   <tr><td>Prompt caching</td><td>Supported (cuts cost/latency)</td><td>Supported</td><td>Context caching</td></tr>
@@ -708,7 +727,7 @@
 <h2 id="part-11">Part 11 — Strengths, weaknesses &amp; how to choose</h2>
 
 <table>
-  <tr><th></th><th class="aws">AWS</th><th class="azure">Azure</th><th class="gcp">GCP</th></tr>
+  <tr><th scope="col"></th><th class="aws">AWS</th><th class="azure">Azure</th><th class="gcp">GCP</th></tr>
   <tr><td><strong>Strengths</strong></td>
     <td>Widest model choice (Bedrock), deepest overall catalog, mature agentic infra (AgentCore), biggest ecosystem &amp; market share</td>
     <td>Privileged OpenAI access, best enterprise/Microsoft 365 + Entra integration, strong hybrid retrieval (AI Search)</td>
@@ -754,7 +773,7 @@
 
 <h3>Quick "which cloud for this" table</h3>
 <table>
-  <tr><th>If your priority is…</th><th>Lean toward</th></tr>
+  <tr><th scope="col">If your priority is…</th><th scope="col">Lean toward</th></tr>
   <tr><td>OpenAI GPT / o-series models with enterprise controls</td><td><span class="tag tag-azure">Azure</span></td></tr>
   <tr><td>Google Gemini (multimodal, long context)</td><td><span class="tag tag-gcp">GCP</span></td></tr>
   <tr><td>Anthropic Claude inside your cloud</td><td><span class="tag tag-aws">AWS</span> or <span class="tag tag-gcp">GCP</span></td></tr>
@@ -794,6 +813,8 @@
 
 <hr>
 <div class="meta">End of cloud AI comparison. This space changes monthly — model lineups, service names, and pricing move fast. Use this as a durable mental map of the categories, and verify current specifics in each provider's documentation before deciding.</div>
+</main>
+
 
 <script>
 (function() {

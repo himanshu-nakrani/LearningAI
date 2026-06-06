@@ -286,10 +286,24 @@
   
   /* focus states for accessibility */
   a:focus-visible, button:focus-visible {
-    outline: 2px solid var(--accent);
+    outline: 3px solid var(--accent);
     outline-offset: 2px;
   }
   
+  .skip-link {
+    position: absolute;
+    top: -40px;
+    left: 8px;
+    background: var(--accent);
+    color: #fff;
+    padding: 8px 16px;
+    z-index: 9999;
+    text-decoration: none;
+    border-radius: 0 0 4px 4px;
+    font-weight: 600;
+  }
+  .skip-link:focus { top: 0; }
+
   html.dark {
     --fg: #e8e8e8;
     --muted: #b8b8b8;
@@ -339,6 +353,9 @@
 </head>
 <body>
 
+<a class="skip-link" href="#main">Skip to main content</a>
+
+
 <div class="reading-progress" id="reading-progress"></div>
 
 <nav class="booknav">
@@ -356,6 +373,8 @@
   <a href="interview-prep.html">Interview Prep</a>
   <button class="theme-toggle-inline" id="theme-toggle" aria-label="Toggle dark mode">🌙</button>
 </nav>
+
+<main id="main" tabindex="-1">
 
 <h1>System Design Guide — Complete</h1>
 <div class="meta">
@@ -437,7 +456,7 @@
 
 <h3>Functional vs non-functional requirements</h3>
 <table>
-  <tr><th>Functional (what)</th><th>Non-functional (how well)</th></tr>
+  <tr><th scope="col">Functional (what)</th><th scope="col">Non-functional (how well)</th></tr>
   <tr><td>Upload a video</td><td>99.9% availability</td></tr>
   <tr><td>Search for a user</td><td>&lt; 200 ms p99 latency</td></tr>
   <tr><td>Send a message</td><td>Handle 10k messages/sec</td></tr>
@@ -452,7 +471,7 @@
 
 <h3>Powers of two &amp; ten you must know</h3>
 <table>
-  <tr><th>Power</th><th>Approx value</th><th>Name</th></tr>
+  <tr><th scope="col">Power</th><th scope="col">Approx value</th><th scope="col">Name</th></tr>
   <tr><td>2¹⁰</td><td>~1 thousand</td><td>1 KB</td></tr>
   <tr><td>2²⁰</td><td>~1 million</td><td>1 MB</td></tr>
   <tr><td>2³⁰</td><td>~1 billion</td><td>1 GB</td></tr>
@@ -534,7 +553,7 @@ Storage (5 years of tweets):
 
 <h3>Availability: the nines</h3>
 <table>
-  <tr><th>Availability</th><th>Downtime / year</th><th>Downtime / day</th></tr>
+  <tr><th scope="col">Availability</th><th scope="col">Downtime / year</th><th scope="col">Downtime / day</th></tr>
   <tr><td>99% (two nines)</td><td>3.65 days</td><td>14.4 min</td></tr>
   <tr><td>99.9% (three nines)</td><td>8.77 hours</td><td>1.44 min</td></tr>
   <tr><td>99.99% (four nines)</td><td>52.6 min</td><td>8.6 sec</td></tr>
@@ -579,7 +598,7 @@ Storage (5 years of tweets):
 <h3>The consistency spectrum</h3>
 <p>"Consistency" isn't binary. From strongest to weakest:</p>
 <table>
-  <tr><th>Model</th><th>Guarantee</th><th>Use case</th></tr>
+  <tr><th scope="col">Model</th><th scope="col">Guarantee</th><th scope="col">Use case</th></tr>
   <tr><td>Strong / linearizable</td><td>Reads always see latest write</td><td>Bank balance, locks</td></tr>
   <tr><td>Read-your-writes</td><td>You see your own updates</td><td>Profile edits</td></tr>
   <tr><td>Monotonic reads</td><td>Never go backwards in time</td><td>Timelines</td></tr>
@@ -617,7 +636,7 @@ Storage (5 years of tweets):
 
 <h4>Layer 4 vs Layer 7</h4>
 <table>
-  <tr><th>L4 (transport)</th><th>L7 (application)</th></tr>
+  <tr><th scope="col">L4 (transport)</th><th scope="col">L7 (application)</th></tr>
   <tr><td>Routes by IP + port</td><td>Routes by URL, headers, cookies</td></tr>
   <tr><td>Fast, protocol-agnostic</td><td>Smarter, content-aware</td></tr>
   <tr><td>Can't read request body</td><td>Can do path-based routing, SSL termination</td></tr>
@@ -671,7 +690,7 @@ Storage (5 years of tweets):
 
 <h3>Cache reading strategies</h3>
 <table>
-  <tr><th>Pattern</th><th>How it works</th><th>Trade-off</th></tr>
+  <tr><th scope="col">Pattern</th><th scope="col">How it works</th><th scope="col">Trade-off</th></tr>
   <tr><td>Cache-aside (lazy)</td><td>App checks cache; on miss, reads DB and populates cache</td><td>Most common; first request is slow, possible staleness</td></tr>
   <tr><td>Read-through</td><td>Cache itself loads from DB on miss</td><td>Simpler app code; needs cache library support</td></tr>
   <tr><td>Write-through</td><td>Write to cache and DB together, synchronously</td><td>Cache always fresh; slower writes</td></tr>
@@ -731,7 +750,7 @@ Storage (5 years of tweets):
 <h3>NoSQL (non-relational)</h3>
 <p>Flexible schema, designed to scale <em>out</em> horizontally. Trades joins and strong consistency for throughput and availability. Four main families:</p>
 <table>
-  <tr><th>Type</th><th>Model</th><th>Examples</th><th>Good for</th></tr>
+  <tr><th scope="col">Type</th><th scope="col">Model</th><th scope="col">Examples</th><th scope="col">Good for</th></tr>
   <tr><td>Key-value</td><td>key → blob</td><td>Redis, DynamoDB</td><td>Caching, sessions</td></tr>
   <tr><td>Document</td><td>JSON documents</td><td>MongoDB, Couchbase</td><td>Flexible records, catalogs</td></tr>
   <tr><td>Wide-column</td><td>rows with dynamic columns</td><td>Cassandra, HBase</td><td>Time-series, huge write volume</td></tr>
@@ -751,7 +770,7 @@ Storage (5 years of tweets):
 
 <h3>How to choose (say this in the interview)</h3>
 <table>
-  <tr><th>Choose SQL when…</th><th>Choose NoSQL when…</th></tr>
+  <tr><th scope="col">Choose SQL when…</th><th scope="col">Choose NoSQL when…</th></tr>
   <tr><td>Complex queries &amp; joins</td><td>Simple key-based access at scale</td></tr>
   <tr><td>Strong consistency / transactions (payments)</td><td>Massive write throughput</td></tr>
   <tr><td>Well-defined, stable schema</td><td>Flexible / evolving schema</td></tr>
@@ -797,7 +816,7 @@ Storage (5 years of tweets):
   (replication lag) -> reads may be momentarily stale.</div>
 
 <table>
-  <tr><th>Mode</th><th>Behavior</th><th>Trade-off</th></tr>
+  <tr><th scope="col">Mode</th><th scope="col">Behavior</th><th scope="col">Trade-off</th></tr>
   <tr><td>Synchronous</td><td>Primary waits for replica to confirm</td><td>No data loss, higher write latency</td></tr>
   <tr><td>Asynchronous</td><td>Primary replies before replicas catch up</td><td>Fast writes, risk of losing recent writes on failover</td></tr>
 </table>
@@ -821,7 +840,7 @@ Storage (5 years of tweets):
 
 <h3>Sharding strategies</h3>
 <table>
-  <tr><th>Strategy</th><th>How</th><th>Risk</th></tr>
+  <tr><th scope="col">Strategy</th><th scope="col">How</th><th scope="col">Risk</th></tr>
   <tr><td>Range-based</td><td>Split by key ranges (A–M, N–Z)</td><td>Hot spots if data skews to one range</td></tr>
   <tr><td>Hash-based</td><td><code>hash(key) % N</code> picks shard</td><td>Even spread, but resharding moves most data</td></tr>
   <tr><td>Consistent hashing</td><td>Keys + nodes on a hash ring</td><td>Adding a node moves only ~1/N of keys</td></tr>
@@ -868,7 +887,7 @@ Storage (5 years of tweets):
 
 <h3>Queue vs pub/sub</h3>
 <table>
-  <tr><th>Message queue (point-to-point)</th><th>Pub/sub (publish-subscribe)</th></tr>
+  <tr><th scope="col">Message queue (point-to-point)</th><th scope="col">Pub/sub (publish-subscribe)</th></tr>
   <tr><td>Each message consumed by ONE worker</td><td>Each message delivered to ALL subscribers</td></tr>
   <tr><td>Work distribution, task processing</td><td>Event broadcast, fan-out</td></tr>
   <tr><td>e.g., SQS, RabbitMQ (work queue)</td><td>e.g., SNS, Kafka topics, Redis pub/sub</td></tr>
@@ -930,7 +949,7 @@ Storage (5 years of tweets):
                               +------+  them -> complexity</div>
 
 <table>
-  <tr><th>Monolith wins</th><th>Microservices win</th></tr>
+  <tr><th scope="col">Monolith wins</th><th scope="col">Microservices win</th></tr>
   <tr><td>Small team, early stage</td><td>Large org, many teams</td></tr>
   <tr><td>Simple deployment</td><td>Independent scaling &amp; deploys</td></tr>
   <tr><td>Easy local debugging</td><td>Fault isolation, tech diversity</td></tr>
@@ -944,7 +963,7 @@ Storage (5 years of tweets):
 
 <h3>API styles</h3>
 <table>
-  <tr><th>Style</th><th>Strength</th><th>Best for</th></tr>
+  <tr><th scope="col">Style</th><th scope="col">Strength</th><th scope="col">Best for</th></tr>
   <tr><td>REST</td><td>Simple, cacheable, ubiquitous</td><td>Public CRUD APIs</td></tr>
   <tr><td>GraphQL</td><td>Client picks exactly the fields it needs</td><td>Complex, nested data; mobile</td></tr>
   <tr><td>gRPC</td><td>Fast binary (protobuf), streaming</td><td>Internal service-to-service</td></tr>
@@ -988,7 +1007,7 @@ Storage (5 years of tweets):
 
 <h3>Storage types</h3>
 <table>
-  <tr><th>Type</th><th>Model</th><th>Examples</th><th>Use for</th></tr>
+  <tr><th scope="col">Type</th><th scope="col">Model</th><th scope="col">Examples</th><th scope="col">Use for</th></tr>
   <tr><td>Block storage</td><td>Raw volumes, like a disk</td><td>EBS, attached SSD</td><td>Databases, low-level I/O</td></tr>
   <tr><td>File storage</td><td>Hierarchical files/dirs</td><td>NFS, EFS</td><td>Shared filesystems</td></tr>
   <tr><td>Object storage</td><td>Flat key → blob + metadata</td><td>S3, GCS, Azure Blob</td><td>Media, backups, static assets</td></tr>
@@ -1058,7 +1077,7 @@ Storage (5 years of tweets):
   transactions undo the prior steps. Eventually consistent.</div>
 
 <table>
-  <tr><th>Orchestration saga</th><th>Choreography saga</th></tr>
+  <tr><th scope="col">Orchestration saga</th><th scope="col">Choreography saga</th></tr>
   <tr><td>Central coordinator directs each step</td><td>Services react to each other's events</td></tr>
   <tr><td>Easier to monitor &amp; debug</td><td>More decoupled, no central point</td></tr>
   <tr><td>Coordinator is a focal point</td><td>Hard to track the overall flow</td></tr>
@@ -1124,7 +1143,7 @@ Storage (5 years of tweets):
   Together they answer: is it broken, why, and where.</div>
 
 <table>
-  <tr><th>Pillar</th><th>Answers</th><th>Tools</th></tr>
+  <tr><th scope="col">Pillar</th><th scope="col">Answers</th><th scope="col">Tools</th></tr>
   <tr><td>Metrics</td><td>Is something wrong? (alerting)</td><td>Prometheus, CloudWatch, Datadog</td></tr>
   <tr><td>Logs</td><td>What exactly happened?</td><td>ELK, Loki, CloudWatch Logs</td></tr>
   <tr><td>Traces</td><td>Where in the call chain?</td><td>Jaeger, X-Ray, OpenTelemetry</td></tr>
@@ -1152,7 +1171,7 @@ Storage (5 years of tweets):
 
 <h3>Tokens &amp; sessions</h3>
 <table>
-  <tr><th>Session-based</th><th>Token-based (JWT)</th></tr>
+  <tr><th scope="col">Session-based</th><th scope="col">Token-based (JWT)</th></tr>
   <tr><td>Server stores session; client holds session ID</td><td>Self-contained signed token; server stores nothing</td></tr>
   <tr><td>Easy to revoke (delete session)</td><td>Hard to revoke before expiry</td></tr>
   <tr><td>Needs shared session store to scale</td><td>Stateless, scales horizontally</td></tr>
@@ -1170,7 +1189,7 @@ Storage (5 years of tweets):
 <h3>Rate limiting algorithms</h3>
 <p>Rate limiting protects against abuse, runaway clients, and cascading overload. Four common algorithms:</p>
 <table>
-  <tr><th>Algorithm</th><th>Idea</th><th>Note</th></tr>
+  <tr><th scope="col">Algorithm</th><th scope="col">Idea</th><th scope="col">Note</th></tr>
   <tr><td>Token bucket</td><td>Tokens refill at a rate; each request spends one</td><td>Allows bursts up to bucket size. Most popular.</td></tr>
   <tr><td>Leaky bucket</td><td>Requests queue and drain at a fixed rate</td><td>Smooths bursts into a steady flow</td></tr>
   <tr><td>Fixed window</td><td>Count per time window (e.g., 100/min)</td><td>Simple but allows 2x burst at window edges</td></tr>
@@ -1197,7 +1216,7 @@ Storage (5 years of tweets):
 
 <h3>The building blocks and what each solves</h3>
 <table>
-  <tr><th>Building block</th><th>Solves</th><th>When to add it</th></tr>
+  <tr><th scope="col">Building block</th><th scope="col">Solves</th><th scope="col">When to add it</th></tr>
   <tr><td>Load balancer</td><td>Distribute traffic, remove SPOF</td><td>More than one server</td></tr>
   <tr><td>Cache (Redis)</td><td>Slow repeated reads</td><td>Read-heavy, hot keys</td></tr>
   <tr><td>CDN</td><td>High-latency static content</td><td>Global users, media/assets</td></tr>
@@ -1513,7 +1532,7 @@ Table urls:
 
 <h3>Numbers worth memorizing</h3>
 <table>
-  <tr><th>Quantity</th><th>Value</th></tr>
+  <tr><th scope="col">Quantity</th><th scope="col">Value</th></tr>
   <tr><td>Memory reference</td><td>~100 ns</td></tr>
   <tr><td>SSD random read</td><td>~16 µs</td></tr>
   <tr><td>Same-DC round trip</td><td>~0.5 ms</td></tr>
@@ -1544,6 +1563,8 @@ Table urls:
 
 <hr>
 <div class="meta">End of system design guide. Pair this with practice: pick a well-known product, set a 45-minute timer, and design it end-to-end out loud. Review the numbers and the framework the morning of your interview.</div>
+</main>
+
 
 <script>
 (function() {

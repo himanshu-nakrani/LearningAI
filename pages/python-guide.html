@@ -286,10 +286,24 @@
   
   /* focus states for accessibility */
   a:focus-visible, button:focus-visible {
-    outline: 2px solid var(--accent);
+    outline: 3px solid var(--accent);
     outline-offset: 2px;
   }
   
+  .skip-link {
+    position: absolute;
+    top: -40px;
+    left: 8px;
+    background: var(--accent);
+    color: #fff;
+    padding: 8px 16px;
+    z-index: 9999;
+    text-decoration: none;
+    border-radius: 0 0 4px 4px;
+    font-weight: 600;
+  }
+  .skip-link:focus { top: 0; }
+
   html.dark {
     --fg: #e8e8e8;
     --muted: #b8b8b8;
@@ -339,6 +353,9 @@
 </head>
 <body>
 
+<a class="skip-link" href="#main">Skip to main content</a>
+
+
 <div class="reading-progress" id="reading-progress"></div>
 
 <nav class="booknav">
@@ -356,6 +373,8 @@
   <a href="interview-prep.html">Interview Prep</a>
   <button class="theme-toggle-inline" id="theme-toggle" aria-label="Toggle dark mode">🌙</button>
 </nav>
+
+<main id="main" tabindex="-1">
 
 <h1>Python Guide — Basic to Advanced</h1>
 <div class="meta">
@@ -436,7 +455,7 @@ print(x)         # [1, 2, 3, 4]  -- both names see it
                                 (same object mutated)</div>
 
 <table>
-  <tr><th>Immutable</th><th>Mutable</th></tr>
+  <tr><th scope="col">Immutable</th><th scope="col">Mutable</th></tr>
   <tr><td>int, float, bool, complex</td><td>list</td></tr>
   <tr><td>str, bytes</td><td>dict</td></tr>
   <tr><td>tuple, frozenset</td><td>set</td></tr>
@@ -454,7 +473,7 @@ print(x)         # [1, 2, 3, 4]  -- both names see it
 
 <h3>Built-in scalar types</h3>
 <table>
-  <tr><th>Type</th><th>Example</th><th>Notes</th></tr>
+  <tr><th scope="col">Type</th><th scope="col">Example</th><th scope="col">Notes</th></tr>
   <tr><td><code>int</code></td><td><code>42</code></td><td>Unbounded precision</td></tr>
   <tr><td><code>float</code></td><td><code>3.14</code></td><td>64-bit, has rounding error</td></tr>
   <tr><td><code>bool</code></td><td><code>True</code></td><td>Subclass of int (True == 1)</td></tr>
@@ -535,7 +554,7 @@ s[::2]      # 'ace'    every other char</code></pre>
 
 <h3>The four core containers</h3>
 <table>
-  <tr><th>Type</th><th>Ordered</th><th>Mutable</th><th>Use for</th></tr>
+  <tr><th scope="col">Type</th><th scope="col">Ordered</th><th scope="col">Mutable</th><th scope="col">Use for</th></tr>
   <tr><td><code>list</code></td><td>Yes</td><td>Yes</td><td>Ordered sequence, may change</td></tr>
   <tr><td><code>tuple</code></td><td>Yes</td><td>No</td><td>Fixed record, dict key</td></tr>
   <tr><td><code>set</code></td><td>No</td><td>Yes</td><td>Uniqueness, fast membership</td></tr>
@@ -1221,7 +1240,7 @@ def flaky():
 <p>"Batteries included" — the stdlib covers most needs. Know these modules by name so you reach for them instead of reinventing.</p>
 
 <table>
-  <tr><th>Module</th><th>For</th></tr>
+  <tr><th scope="col">Module</th><th scope="col">For</th></tr>
   <tr><td><code>collections</code></td><td><code>Counter</code>, <code>defaultdict</code>, <code>deque</code>, <code>namedtuple</code></td></tr>
   <tr><td><code>itertools</code></td><td>Lazy iteration combinators</td></tr>
   <tr><td><code>functools</code></td><td><code>reduce</code>, <code>lru_cache</code>, <code>partial</code>, <code>wraps</code></td></tr>
@@ -1319,7 +1338,7 @@ CPU-BOUND (computing dominates):
 <p>CPython has a Global Interpreter Lock: only one thread executes Python bytecode at a time. So threads give no speedup for CPU-bound work, but they're great for I/O-bound work because the GIL is released while waiting. For CPU parallelism, use multiple processes. (Free-threaded builds removing the GIL are emerging in 3.13+, but the GIL is still the default model to reason about.)</p>
 
 <table>
-  <tr><th>Workload</th><th>Use</th></tr>
+  <tr><th scope="col">Workload</th><th scope="col">Use</th></tr>
   <tr><td>I/O-bound, many tasks</td><td><code>asyncio</code> or threads</td></tr>
   <tr><td>CPU-bound</td><td><code>multiprocessing</code> / <code>ProcessPoolExecutor</code></td></tr>
   <tr><td>Mixed / simple parallel calls</td><td><code>concurrent.futures</code></td></tr>
@@ -1395,7 +1414,7 @@ def test_query(db):
 
 <h3>The modern toolchain</h3>
 <table>
-  <tr><th>Tool</th><th>Purpose</th></tr>
+  <tr><th scope="col">Tool</th><th scope="col">Purpose</th></tr>
   <tr><td><code>ruff</code></td><td>Fast linter + formatter (replaces flake8/isort/black)</td></tr>
   <tr><td><code>black</code></td><td>Opinionated formatter</td></tr>
   <tr><td><code>mypy</code> / <code>pyright</code></td><td>Static type checking</td></tr>
@@ -1470,7 +1489,7 @@ flat = [x for row in matrix for x in row]</code></pre>
 
 <h3>Common gotchas (interview &amp; real-world)</h3>
 <table>
-  <tr><th>Gotcha</th><th>Reality</th></tr>
+  <tr><th scope="col">Gotcha</th><th scope="col">Reality</th></tr>
   <tr><td>Mutable default arg</td><td>Shared across calls — use <code>None</code> sentinel</td></tr>
   <tr><td><code>a = b = []</code></td><td>Both names share one list</td></tr>
   <tr><td>Modifying a list while iterating</td><td>Skips/repeats items — iterate a copy</td></tr>
@@ -1496,6 +1515,8 @@ flat = [x for row in matrix for x in row]</code></pre>
 
 <hr>
 <div class="meta">End of Python guide. Keep this open while you code — the gotchas table and idioms section reward repeat reading.</div>
+</main>
+
 
 <script>
 (function() {

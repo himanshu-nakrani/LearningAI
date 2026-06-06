@@ -97,6 +97,20 @@
     color: var(--muted);
     font-size: 0.9em;
   }
+  .skip-link {
+    position: absolute;
+    top: -40px;
+    left: 8px;
+    background: var(--accent);
+    color: #fff;
+    padding: 8px 16px;
+    z-index: 9999;
+    text-decoration: none;
+    border-radius: 0 0 4px 4px;
+    font-weight: 600;
+  }
+  .skip-link:focus { top: 0; }
+
   html.dark {
     --fg: #e8e8e8;
     --muted: #b8b8b8;
@@ -180,7 +194,7 @@
   
   /* focus states for accessibility */
   a:focus-visible, button:focus-visible {
-    outline: 2px solid var(--accent);
+    outline: 3px solid var(--accent);
     outline-offset: 2px;
   }
   @media (max-width: 480px) {
@@ -200,9 +214,14 @@
 </head>
 <body>
 
+<a class="skip-link" href="#main">Skip to main content</a>
+
+
 <div class="reading-progress" id="reading-progress"></div>
 
 <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">🌙</button>
+
+<main id="main" tabindex="-1">
 
 <h1>Learning AI — Guides</h1>
 <p class="tagline">A consolidated index of long-form study notes covering AI engineering, cloud platforms, and core software fundamentals.</p>
@@ -265,7 +284,9 @@
 
 <footer>
   Part of the <a href="../" style="color: var(--accent);">LearningAI</a> repository.
-</footer>
+</footer></main>
+
+
 <script>
 (function() {
   const html = document.documentElement;

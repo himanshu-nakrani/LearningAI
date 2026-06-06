@@ -286,10 +286,24 @@
   
   /* focus states for accessibility */
   a:focus-visible, button:focus-visible {
-    outline: 2px solid var(--accent);
+    outline: 3px solid var(--accent);
     outline-offset: 2px;
   }
   
+  .skip-link {
+    position: absolute;
+    top: -40px;
+    left: 8px;
+    background: var(--accent);
+    color: #fff;
+    padding: 8px 16px;
+    z-index: 9999;
+    text-decoration: none;
+    border-radius: 0 0 4px 4px;
+    font-weight: 600;
+  }
+  .skip-link:focus { top: 0; }
+
   html.dark {
     --fg: #e8e8e8;
     --muted: #b8b8b8;
@@ -339,6 +353,9 @@
 </head>
 <body>
 
+<a class="skip-link" href="#main">Skip to main content</a>
+
+
 <div class="reading-progress" id="reading-progress"></div>
 
 <nav class="booknav">
@@ -356,6 +373,8 @@
   <a href="interview-prep.html">Interview Prep</a>
   <button class="theme-toggle-inline" id="theme-toggle" aria-label="Toggle dark mode">🌙</button>
 </nav>
+
+<main id="main" tabindex="-1">
 
 <h1>Amazon Web Services Guide — Complete</h1>
 <div class="meta">
@@ -408,7 +427,7 @@
   Edge locations cache content close to users globally.</div>
 
 <table>
-  <tr><th>Concept</th><th>What it is</th><th>Protects against</th></tr>
+  <tr><th scope="col">Concept</th><th scope="col">What it is</th><th scope="col">Protects against</th></tr>
   <tr><td>Availability Zone (AZ)</td><td>One or more discrete DCs with independent power/network</td><td>Datacenter failure</td></tr>
   <tr><td>Region</td><td>A cluster of AZs in one geography</td><td>(multi-region) regional outage</td></tr>
   <tr><td>Edge location</td><td>CDN/DNS PoP near users</td><td>(latency — not a failure domain)</td></tr>
@@ -454,7 +473,7 @@ aws ec2 run-instances \
   OU/account level — they LIMIT what even admins can do.</div>
 
 <table>
-  <tr><th>Tool</th><th>Purpose</th></tr>
+  <tr><th scope="col">Tool</th><th scope="col">Purpose</th></tr>
   <tr><td>AWS Organizations</td><td>Manage many accounts, consolidated billing</td></tr>
   <tr><td>Service Control Policies (SCPs)</td><td>Org-wide permission guardrails (max allowed)</td></tr>
   <tr><td>AWS Control Tower</td><td>Set up &amp; govern a secure multi-account landing zone</td></tr>
@@ -475,7 +494,7 @@ aws ec2 run-instances \
 
 <h3>The IAM building blocks</h3>
 <table>
-  <tr><th>Entity</th><th>What it is</th></tr>
+  <tr><th scope="col">Entity</th><th scope="col">What it is</th></tr>
   <tr><td>User</td><td>A person or app with long-term credentials (avoid for apps)</td></tr>
   <tr><td>Group</td><td>A collection of users sharing policies</td></tr>
   <tr><td>Role</td><td>An identity assumed temporarily; no long-term keys</td></tr>
@@ -550,7 +569,7 @@ aws ec2 run-instances \
 <h3>EC2 (Elastic Compute Cloud)</h3>
 <p>Resizable virtual servers. You pick an AMI (machine image), an instance type, storage, and networking. Instance families target different workloads:</p>
 <table>
-  <tr><th>Family</th><th>Optimized for</th><th>Examples</th></tr>
+  <tr><th scope="col">Family</th><th scope="col">Optimized for</th><th scope="col">Examples</th></tr>
   <tr><td>T (burstable)</td><td>General, bursty, low-cost</td><td>t3, t4g</td></tr>
   <tr><td>M (general)</td><td>Balanced CPU/RAM</td><td>m6i, m7g</td></tr>
   <tr><td>C (compute)</td><td>High CPU</td><td>c7g, c6i</td></tr>
@@ -569,7 +588,7 @@ aws ec2 run-instances \
 
 <h3>EC2 pricing models</h3>
 <table>
-  <tr><th>Model</th><th>Best for</th><th>Savings</th></tr>
+  <tr><th scope="col">Model</th><th scope="col">Best for</th><th scope="col">Savings</th></tr>
   <tr><td>On-Demand</td><td>Short-term, unpredictable</td><td>—</td></tr>
   <tr><td>Savings Plans</td><td>Commit to $/hr for 1–3 yr (flexible)</td><td>up to ~72%</td></tr>
   <tr><td>Reserved Instances</td><td>Commit to specific instance for 1–3 yr</td><td>up to ~72%</td></tr>
@@ -586,7 +605,7 @@ aws ec2 run-instances \
 <h2 id="part-4">Part 4 — Containers &amp; Kubernetes <span class="tag tag-core">★ CORE</span></h2>
 
 <table>
-  <tr><th>Service</th><th>What it is</th></tr>
+  <tr><th scope="col">Service</th><th scope="col">What it is</th></tr>
   <tr><td>ECR (Elastic Container Registry)</td><td>Private Docker image registry</td></tr>
   <tr><td>ECS (Elastic Container Service)</td><td>AWS-native container orchestration (simpler than K8s)</td></tr>
   <tr><td>EKS (Elastic Kubernetes Service)</td><td>Managed Kubernetes</td></tr>
@@ -634,7 +653,7 @@ aws ec2 run-instances \
 
 <h3>The serverless application stack</h3>
 <table>
-  <tr><th>Service</th><th>Role</th></tr>
+  <tr><th scope="col">Service</th><th scope="col">Role</th></tr>
   <tr><td>Lambda</td><td>Run function code on events</td></tr>
   <tr><td>API Gateway</td><td>Managed REST/HTTP/WebSocket APIs in front of Lambda</td></tr>
   <tr><td>Step Functions</td><td>Orchestrate multi-step workflows (state machine)</td></tr>
@@ -663,7 +682,7 @@ aws ec2 run-instances \
 <h2 id="part-6">Part 6 — Storage (S3 &amp; friends) <span class="tag tag-core">★ CORE</span></h2>
 
 <table>
-  <tr><th>Service</th><th>Model</th><th>Use for</th></tr>
+  <tr><th scope="col">Service</th><th scope="col">Model</th><th scope="col">Use for</th></tr>
   <tr><td>S3 (Simple Storage Service)</td><td>Object storage (buckets → objects)</td><td>Files, media, backups, data lakes, static sites</td></tr>
   <tr><td>EBS (Elastic Block Store)</td><td>Block storage for EC2</td><td>VM disks, databases</td></tr>
   <tr><td>EFS</td><td>Managed elastic NFS file system</td><td>Shared Linux filesystems</td></tr>
@@ -708,7 +727,7 @@ aws ec2 run-instances \
 
 <h3>Relational</h3>
 <table>
-  <tr><th>Service</th><th>What it is</th></tr>
+  <tr><th scope="col">Service</th><th scope="col">What it is</th></tr>
   <tr><td>RDS</td><td>Managed relational DB: PostgreSQL, MySQL, MariaDB, Oracle, SQL Server</td></tr>
   <tr><td>Aurora</td><td>AWS's cloud-native MySQL/Postgres-compatible DB — faster, auto-scaling storage, multi-AZ</td></tr>
   <tr><td>Aurora Serverless v2</td><td>Aurora that auto-scales capacity (incl. near zero) by load</td></tr>
@@ -730,7 +749,7 @@ aws ec2 run-instances \
 
 <h3>NoSQL &amp; specialized</h3>
 <table>
-  <tr><th>Service</th><th>Model</th><th>Use for</th></tr>
+  <tr><th scope="col">Service</th><th scope="col">Model</th><th scope="col">Use for</th></tr>
   <tr><td>DynamoDB</td><td>Serverless key-value / document, single-digit-ms</td><td>High-scale apps, serverless, gaming, IoT</td></tr>
   <tr><td>ElastiCache</td><td>Managed Redis / Memcached</td><td>Caching, sessions, leaderboards</td></tr>
   <tr><td>DocumentDB</td><td>MongoDB-compatible document DB</td><td>Document workloads</td></tr>
@@ -766,7 +785,7 @@ aws ec2 run-instances \
 
 <h3>Core networking services</h3>
 <table>
-  <tr><th>Service</th><th>Role</th></tr>
+  <tr><th scope="col">Service</th><th scope="col">Role</th></tr>
   <tr><td>Security Group</td><td>Stateful instance-level firewall (allow rules)</td></tr>
   <tr><td>Network ACL</td><td>Stateless subnet-level firewall (allow + deny)</td></tr>
   <tr><td>Internet Gateway</td><td>Public internet access for a VPC</td></tr>
@@ -799,7 +818,7 @@ aws ec2 run-instances \
 <h2 id="part-9">Part 9 — Messaging &amp; integration <span class="tag tag-concept">◆ CONCEPT</span></h2>
 
 <table>
-  <tr><th>Service</th><th>Pattern</th><th>Use for</th></tr>
+  <tr><th scope="col">Service</th><th scope="col">Pattern</th><th scope="col">Use for</th></tr>
   <tr><td>SQS (Simple Queue Service)</td><td>Message queue (point-to-point)</td><td>Decouple, buffer, background jobs</td></tr>
   <tr><td>SNS (Simple Notification Service)</td><td>Pub/sub fan-out</td><td>Broadcast to many subscribers</td></tr>
   <tr><td>EventBridge</td><td>Event bus + routing + scheduling</td><td>Event-driven architectures, SaaS events</td></tr>
@@ -844,7 +863,7 @@ aws ec2 run-instances \
                                                      (BI)</div>
 
 <table>
-  <tr><th>Service</th><th>Role</th></tr>
+  <tr><th scope="col">Service</th><th scope="col">Role</th></tr>
   <tr><td>S3</td><td>The data lake foundation</td></tr>
   <tr><td>AWS Glue</td><td>Serverless ETL + data catalog</td></tr>
   <tr><td>Athena</td><td>Serverless SQL queries directly over S3 (Presto/Trino)</td></tr>
@@ -888,7 +907,7 @@ aws ec2 run-instances \
      feature store, model registry, endpoints.</div>
 
 <table>
-  <tr><th>Service</th><th>Use for</th></tr>
+  <tr><th scope="col">Service</th><th scope="col">Use for</th></tr>
   <tr><td>Amazon Bedrock</td><td>Access many foundation models (Claude, Llama, Nova, etc.) via one managed API</td></tr>
   <tr><td>Bedrock Knowledge Bases</td><td>Managed RAG: ingest, embed, retrieve, ground — minimal plumbing</td></tr>
   <tr><td>Bedrock Agents / AgentCore</td><td>Build, deploy &amp; operate agents that reason &amp; call tools/APIs</td></tr>
@@ -936,7 +955,7 @@ aws ec2 run-instances \
 
 <h3>Infrastructure as Code</h3>
 <table>
-  <tr><th>Tool</th><th>Notes</th></tr>
+  <tr><th scope="col">Tool</th><th scope="col">Notes</th></tr>
   <tr><td>CloudFormation</td><td>Native IaC (YAML/JSON templates)</td></tr>
   <tr><td>AWS CDK</td><td>Define infra in real code (TS, Python, Java) → synthesizes CloudFormation</td></tr>
   <tr><td>AWS SAM</td><td>Simplified IaC for serverless apps</td></tr>
@@ -984,7 +1003,7 @@ class MyStack(Stack):
 
 <h3>Security services</h3>
 <table>
-  <tr><th>Service</th><th>Role</th></tr>
+  <tr><th scope="col">Service</th><th scope="col">Role</th></tr>
   <tr><td>IAM + IAM Identity Center</td><td>Access control &amp; SSO</td></tr>
   <tr><td>KMS</td><td>Managed encryption keys</td></tr>
   <tr><td>Secrets Manager</td><td>Store/rotate secrets (DB creds, API keys)</td></tr>
@@ -1046,7 +1065,7 @@ class MyStack(Stack):
 
 <h3>The Well-Architected Framework (6 pillars)</h3>
 <table>
-  <tr><th>Pillar</th><th>Focus</th></tr>
+  <tr><th scope="col">Pillar</th><th scope="col">Focus</th></tr>
   <tr><td>Operational Excellence</td><td>Run &amp; monitor; automate (IaC, CI/CD)</td></tr>
   <tr><td>Security</td><td>Protect data &amp; systems (IAM, encryption)</td></tr>
   <tr><td>Reliability</td><td>Recover from failure (Multi-AZ, retries)</td></tr>
@@ -1057,7 +1076,7 @@ class MyStack(Stack):
 
 <h3>Service selection cheat sheet</h3>
 <table>
-  <tr><th>Need</th><th>Reach for</th></tr>
+  <tr><th scope="col">Need</th><th scope="col">Reach for</th></tr>
   <tr><td>Virtual servers</td><td>EC2</td></tr>
   <tr><td>Serverless functions</td><td>Lambda</td></tr>
   <tr><td>Serverless containers</td><td>ECS + Fargate</td></tr>
@@ -1085,6 +1104,8 @@ class MyStack(Stack):
 
 <hr>
 <div class="meta">End of AWS guide. Service names and limits change frequently — always confirm current details in the official AWS documentation.</div>
+</main>
+
 
 <script>
 (function() {

@@ -286,10 +286,24 @@
   
   /* focus states for accessibility */
   a:focus-visible, button:focus-visible {
-    outline: 2px solid var(--accent);
+    outline: 3px solid var(--accent);
     outline-offset: 2px;
   }
   
+  .skip-link {
+    position: absolute;
+    top: -40px;
+    left: 8px;
+    background: var(--accent);
+    color: #fff;
+    padding: 8px 16px;
+    z-index: 9999;
+    text-decoration: none;
+    border-radius: 0 0 4px 4px;
+    font-weight: 600;
+  }
+  .skip-link:focus { top: 0; }
+
   html.dark {
     --fg: #e8e8e8;
     --muted: #b8b8b8;
@@ -339,6 +353,9 @@
 </head>
 <body>
 
+<a class="skip-link" href="#main">Skip to main content</a>
+
+
 <div class="reading-progress" id="reading-progress"></div>
 
 <nav class="booknav">
@@ -356,6 +373,8 @@
   <a href="interview-prep.html">Interview Prep</a>
   <button class="theme-toggle-inline" id="theme-toggle" aria-label="Toggle dark mode">🌙</button>
 </nav>
+
+<main id="main" tabindex="-1">
 
 <h1>AI Engineering Guide — Complete</h1>
 <div class="meta">
@@ -399,7 +418,7 @@
 
 <h3>How it differs from classic ML</h3>
 <table>
-  <tr><th>Traditional ML</th><th>AI engineering (LLM era)</th></tr>
+  <tr><th scope="col">Traditional ML</th><th scope="col">AI engineering (LLM era)</th></tr>
   <tr><td>Train a model on your data</td><td>Adapt a pre-trained foundation model</td></tr>
   <tr><td>Feature engineering</td><td>Prompt &amp; context engineering</td></tr>
   <tr><td>Model is the product</td><td>Model is one component in a system</td></tr>
@@ -511,7 +530,7 @@
 
 <h3>The decoding parameters you'll actually tune</h3>
 <table>
-  <tr><th>Parameter</th><th>What it does</th><th>Typical</th></tr>
+  <tr><th scope="col">Parameter</th><th scope="col">What it does</th><th scope="col">Typical</th></tr>
   <tr><td><code>temperature</code></td><td>Randomness. 0 = deterministic/focused, high = creative/diverse</td><td>0–0.3 factual, 0.7–1.0 creative</td></tr>
   <tr><td><code>top_p</code></td><td>Nucleus sampling: consider only tokens in the top P probability mass</td><td>0.9–1.0</td></tr>
   <tr><td><code>top_k</code></td><td>Only consider the K most likely tokens</td><td>40 (when used)</td></tr>
@@ -604,7 +623,7 @@ Review: 'The food was cold' ->
 
 <h3>Prompting techniques worth knowing</h3>
 <table>
-  <tr><th>Technique</th><th>Idea</th></tr>
+  <tr><th scope="col">Technique</th><th scope="col">Idea</th></tr>
   <tr><td>Chain-of-thought</td><td>Reason step by step before answering</td></tr>
   <tr><td>Few-shot</td><td>Provide examples of desired behavior</td></tr>
   <tr><td>Self-consistency</td><td>Sample multiple reasoning paths, take majority vote</td></tr>
@@ -714,7 +733,7 @@ data = Extraction.model_validate_json(llm_response)</code></pre>
 <h3>Vector databases &amp; ANN</h3>
 <p>Comparing a query against millions of vectors exactly is too slow. Vector databases use <strong>Approximate Nearest Neighbor (ANN)</strong> indexes (HNSW, IVF) that trade a tiny bit of accuracy for massive speed — sub-millisecond search over billions of vectors.</p>
 <table>
-  <tr><th>Option</th><th>Notes</th></tr>
+  <tr><th scope="col">Option</th><th scope="col">Notes</th></tr>
   <tr><td>pgvector (Postgres)</td><td>Add vectors to your existing DB; great default</td></tr>
   <tr><td>Pinecone / Weaviate / Qdrant / Milvus</td><td>Purpose-built vector DBs, scale &amp; features</td></tr>
   <tr><td>FAISS</td><td>In-process library, fast, self-managed</td></tr>
@@ -809,7 +828,7 @@ Question: {question}"""
 
 <h3>Why RAG over fine-tuning for knowledge</h3>
 <table>
-  <tr><th>RAG</th><th>Fine-tuning</th></tr>
+  <tr><th scope="col">RAG</th><th scope="col">Fine-tuning</th></tr>
   <tr><td>Update data instantly (re-index)</td><td>Retrain to update knowledge</td></tr>
   <tr><td>Citations / provenance</td><td>No source attribution</td></tr>
   <tr><td>Cheap to start</td><td>Costly data prep + training</td></tr>
@@ -839,7 +858,7 @@ Question: {question}"""
 
 <h3>Chunking strategies</h3>
 <table>
-  <tr><th>Strategy</th><th>How</th><th>Good for</th></tr>
+  <tr><th scope="col">Strategy</th><th scope="col">How</th><th scope="col">Good for</th></tr>
   <tr><td>Fixed-size</td><td>N tokens with overlap</td><td>Simple, uniform text</td></tr>
   <tr><td>Recursive</td><td>Split on paragraphs → sentences as needed</td><td>General documents</td></tr>
   <tr><td>Semantic</td><td>Split where meaning shifts (embedding distance)</td><td>Mixed-topic docs</td></tr>
@@ -925,7 +944,7 @@ Question: {question}"""
 
 <h3>The four ingredients of an agent</h3>
 <table>
-  <tr><th>Component</th><th>Role</th></tr>
+  <tr><th scope="col">Component</th><th scope="col">Role</th></tr>
   <tr><td>Model (the brain)</td><td>Reasons, plans, decides actions</td></tr>
   <tr><td>Tools</td><td>Functions/APIs it can call to act &amp; observe</td></tr>
   <tr><td>Memory</td><td>Short-term (context) + long-term (persisted)</td></tr>
@@ -972,7 +991,7 @@ Question: {question}"""
   specialization and parallelism.</div>
 
 <table>
-  <tr><th>Pattern</th><th>When to use</th></tr>
+  <tr><th scope="col">Pattern</th><th scope="col">When to use</th></tr>
   <tr><td>Single agent</td><td>Default. One role, a handful of tools.</td></tr>
   <tr><td>Supervisor / orchestrator</td><td>Distinct sub-skills; central coordinator delegates</td></tr>
   <tr><td>Pipeline</td><td>Fixed sequential stages with handoffs</td></tr>
@@ -981,7 +1000,7 @@ Question: {question}"""
 
 <h3>Orchestration frameworks</h3>
 <table>
-  <tr><th>Framework</th><th>Style</th></tr>
+  <tr><th scope="col">Framework</th><th scope="col">Style</th></tr>
   <tr><td>LangGraph</td><td>Graph/state-machine control of agent flows</td></tr>
   <tr><td>CrewAI</td><td>Role-based collaborating agents</td></tr>
   <tr><td>AutoGen</td><td>Conversational multi-agent</td></tr>
@@ -1017,7 +1036,7 @@ Question: {question}"""
 
 <h3>Managing a growing conversation</h3>
 <table>
-  <tr><th>Strategy</th><th>How</th><th>Trade-off</th></tr>
+  <tr><th scope="col">Strategy</th><th scope="col">How</th><th scope="col">Trade-off</th></tr>
   <tr><td>Sliding window</td><td>Keep last N turns</td><td>Simple; forgets older context</td></tr>
   <tr><td>Summarization</td><td>Compress old turns into a summary</td><td>Saves tokens; loses detail</td></tr>
   <tr><td>Retrieval (RAG memory)</td><td>Store all, fetch relevant bits</td><td>Scales; retrieval can miss</td></tr>
@@ -1052,7 +1071,7 @@ Question: {question}"""
 
 <h3>When fine-tuning makes sense</h3>
 <table>
-  <tr><th>Good fit</th><th>Poor fit</th></tr>
+  <tr><th scope="col">Good fit</th><th scope="col">Poor fit</th></tr>
   <tr><td>Consistent output format/structure</td><td>Adding facts/knowledge (use RAG)</td></tr>
   <tr><td>Specific tone, style, persona</td><td>Frequently changing information</td></tr>
   <tr><td>A narrow, repeated task</td><td>One-off or broad tasks</td></tr>
@@ -1109,7 +1128,7 @@ Question: {question}"""
 
 <h3>Evaluation methods</h3>
 <table>
-  <tr><th>Method</th><th>How</th><th>Use for</th></tr>
+  <tr><th scope="col">Method</th><th scope="col">How</th><th scope="col">Use for</th></tr>
   <tr><td>Reference-based</td><td>Compare to a gold answer (exact, F1, semantic similarity)</td><td>Tasks with known answers</td></tr>
   <tr><td>LLM-as-judge</td><td>A strong model scores outputs on a rubric</td><td>Open-ended quality, at scale</td></tr>
   <tr><td>Human eval</td><td>People rate / rank outputs</td><td>Ground truth, gold standard</td></tr>
@@ -1196,7 +1215,7 @@ Question: {question}"""
 
 <h3>The broader risk checklist</h3>
 <table>
-  <tr><th>Risk</th><th>Mitigation</th></tr>
+  <tr><th scope="col">Risk</th><th scope="col">Mitigation</th></tr>
   <tr><td>Prompt injection</td><td>Untrusted-content handling, least privilege</td></tr>
   <tr><td>Hallucination</td><td>RAG grounding, citations, "say I don't know"</td></tr>
   <tr><td>PII / data leakage</td><td>Input/output redaction, access controls</td></tr>
@@ -1219,7 +1238,7 @@ Question: {question}"""
 
 <h3>Hosted API vs self-hosted</h3>
 <table>
-  <tr><th>Hosted API (OpenAI, Anthropic, Bedrock)</th><th>Self-hosted (open models)</th></tr>
+  <tr><th scope="col">Hosted API (OpenAI, Anthropic, Bedrock)</th><th scope="col">Self-hosted (open models)</th></tr>
   <tr><td>No infra; best models; fast to ship</td><td>Full control, data stays in-house</td></tr>
   <tr><td>Pay per token; data leaves your network</td><td>Fixed GPU cost; you run the infra</td></tr>
   <tr><td>Rate limits, vendor lock-in</td><td>Predictable cost at high volume; ops burden</td></tr>
@@ -1283,7 +1302,7 @@ Question: {question}"""
 
 <h3>Modalities &amp; uses</h3>
 <table>
-  <tr><th>Modality</th><th>Capabilities</th><th>Example uses</th></tr>
+  <tr><th scope="col">Modality</th><th scope="col">Capabilities</th><th scope="col">Example uses</th></tr>
   <tr><td>Vision (image in)</td><td>Describe, OCR, reason over images, charts</td><td>Document parsing, accessibility, QA</td></tr>
   <tr><td>Image generation</td><td>Create/edit images from text</td><td>Design, marketing assets</td></tr>
   <tr><td>Audio / speech</td><td>Transcribe (STT), synthesize (TTS), understand</td><td>Voice agents, captions, dictation</td></tr>
@@ -1343,7 +1362,7 @@ Question: {question}"""
 
 <h3>3. Key decisions</h3>
 <table>
-  <tr><th>Decision</th><th>Choice &amp; why</th></tr>
+  <tr><th scope="col">Decision</th><th scope="col">Choice &amp; why</th></tr>
   <tr><td>RAG vs fine-tune</td><td>RAG — docs change, need citations &amp; freshness</td></tr>
   <tr><td>Chunking</td><td>Structure-aware (by heading) + overlap; ~300 tokens</td></tr>
   <tr><td>Retrieval</td><td>Hybrid (vector + keyword) + reranker for precision</td></tr>
@@ -1399,7 +1418,7 @@ Question: {question}"""
 
 <h3>3. Key decisions</h3>
 <table>
-  <tr><th>Decision</th><th>Choice &amp; why</th></tr>
+  <tr><th scope="col">Decision</th><th scope="col">Choice &amp; why</th></tr>
   <tr><td>Agent vs workflow</td><td>Workflow for known steps; agent only where the path depends on intermediate results</td></tr>
   <tr><td>Planning</td><td>Plan-and-execute for predictability; ReAct for flexible steps</td></tr>
   <tr><td>Tool safety</td><td>Read tools open; write/send tools require validation + human approval</td></tr>
@@ -1443,7 +1462,7 @@ Question: {question}"""
 
 <h3>Glossary of essential terms</h3>
 <table>
-  <tr><th>Term</th><th>Meaning</th></tr>
+  <tr><th scope="col">Term</th><th scope="col">Meaning</th></tr>
   <tr><td>Token</td><td>Sub-word unit; the billing/context unit</td></tr>
   <tr><td>Context window</td><td>Max tokens (input + output) per call</td></tr>
   <tr><td>Embedding</td><td>Vector representation of meaning</td></tr>
@@ -1485,6 +1504,8 @@ Question: {question}"""
 
 <hr>
 <div class="meta">End of AI engineering guide. The field moves fast — model names and limits change, but the patterns here (grounding, evals, guardrails, the capability ladder) endure. Build something small end to end, measure it, and iterate.</div>
+</main>
+
 
 <script>
 (function() {

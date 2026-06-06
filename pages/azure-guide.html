@@ -286,10 +286,24 @@
   
   /* focus states for accessibility */
   a:focus-visible, button:focus-visible {
-    outline: 2px solid var(--accent);
+    outline: 3px solid var(--accent);
     outline-offset: 2px;
   }
   
+  .skip-link {
+    position: absolute;
+    top: -40px;
+    left: 8px;
+    background: var(--accent);
+    color: #fff;
+    padding: 8px 16px;
+    z-index: 9999;
+    text-decoration: none;
+    border-radius: 0 0 4px 4px;
+    font-weight: 600;
+  }
+  .skip-link:focus { top: 0; }
+
   html.dark {
     --fg: #e8e8e8;
     --muted: #b8b8b8;
@@ -339,6 +353,9 @@
 </head>
 <body>
 
+<a class="skip-link" href="#main">Skip to main content</a>
+
+
 <div class="reading-progress" id="reading-progress"></div>
 
 <nav class="booknav">
@@ -356,6 +373,8 @@
   <a href="interview-prep.html">Interview Prep</a>
   <button class="theme-toggle-inline" id="theme-toggle" aria-label="Toggle dark mode">🌙</button>
 </nav>
+
+<main id="main" tabindex="-1">
 
 <h1>Microsoft Azure Guide — Complete</h1>
 <div class="meta">
@@ -409,7 +428,7 @@
   Deploy across REGIONS to survive a regional disaster.</div>
 
 <table>
-  <tr><th>Concept</th><th>What it is</th><th>Protects against</th></tr>
+  <tr><th scope="col">Concept</th><th scope="col">What it is</th><th scope="col">Protects against</th></tr>
   <tr><td>Availability Zone</td><td>Physically separate DC within a region</td><td>DC-level failure</td></tr>
   <tr><td>Region</td><td>A set of DCs in one geography</td><td>(deploy multi-region) regional outage</td></tr>
   <tr><td>Region pair</td><td>Two regions linked for replication/DR</td><td>Disaster, sequential updates</td></tr>
@@ -455,7 +474,7 @@ az vm create --resource-group myRG --name myVM \
   INHERITED downward -> govern many resources at once.</div>
 
 <table>
-  <tr><th>Level</th><th>Purpose</th></tr>
+  <tr><th scope="col">Level</th><th scope="col">Purpose</th></tr>
   <tr><td>Management group</td><td>Apply governance across many subscriptions</td></tr>
   <tr><td>Subscription</td><td>Billing unit + quota + access boundary</td></tr>
   <tr><td>Resource group</td><td>Group resources sharing a lifecycle/region</td></tr>
@@ -510,7 +529,7 @@ az vm create --resource-group myRG --name myVM \
   assignment = principal + role + scope (inherited down)</div>
 
 <table>
-  <tr><th>Built-in role</th><th>Can do</th></tr>
+  <tr><th scope="col">Built-in role</th><th scope="col">Can do</th></tr>
   <tr><td>Owner</td><td>Full access including granting access</td></tr>
   <tr><td>Contributor</td><td>Manage resources, but not grant access</td></tr>
   <tr><td>Reader</td><td>View only</td></tr>
@@ -551,7 +570,7 @@ az vm create --resource-group myRG --name myVM \
 <h3>Virtual Machines (IaaS)</h3>
 <p>Full control over a virtual server — choose OS, size, disks. You manage patching, scaling, and availability. VM families are optimized for different workloads:</p>
 <table>
-  <tr><th>Series</th><th>Optimized for</th></tr>
+  <tr><th scope="col">Series</th><th scope="col">Optimized for</th></tr>
   <tr><td>B / Av2</td><td>Burstable, general / entry-level</td></tr>
   <tr><td>D / Dv5</td><td>General purpose, balanced CPU/RAM</td></tr>
   <tr><td>E / Ev5</td><td>Memory-optimized (databases, caches)</td></tr>
@@ -574,7 +593,7 @@ az vm create --resource-group myRG --name myVM \
 
 <h3>Pricing models</h3>
 <table>
-  <tr><th>Model</th><th>Best for</th><th>Savings</th></tr>
+  <tr><th scope="col">Model</th><th scope="col">Best for</th><th scope="col">Savings</th></tr>
   <tr><td>Pay-as-you-go</td><td>Variable / short-term</td><td>—</td></tr>
   <tr><td>Reserved Instances (1–3 yr)</td><td>Steady, predictable workloads</td><td>up to ~70%</td></tr>
   <tr><td>Savings Plans</td><td>Flexible commitment to hourly spend</td><td>significant</td></tr>
@@ -586,7 +605,7 @@ az vm create --resource-group myRG --name myVM \
 <h2 id="part-4">Part 4 — Containers &amp; Kubernetes <span class="tag tag-core">★ CORE</span></h2>
 
 <table>
-  <tr><th>Service</th><th>What it is</th><th>Use when</th></tr>
+  <tr><th scope="col">Service</th><th scope="col">What it is</th><th scope="col">Use when</th></tr>
   <tr><td>Azure Container Registry (ACR)</td><td>Private Docker image registry</td><td>Store/build images</td></tr>
   <tr><td>Azure Container Instances (ACI)</td><td>Run a single container, no orchestration</td><td>Simple, short jobs</td></tr>
   <tr><td>Azure Container Apps (ACA)</td><td>Serverless containers w/ scale-to-zero, on K8s+KEDA</td><td>Microservices without managing K8s</td></tr>
@@ -631,7 +650,7 @@ az vm create --resource-group myRG --name myVM \
 
 <h3>Hosting plans</h3>
 <table>
-  <tr><th>Plan</th><th>Behavior</th></tr>
+  <tr><th scope="col">Plan</th><th scope="col">Behavior</th></tr>
   <tr><td>Consumption</td><td>True serverless, scale to zero, pay per use (cold starts)</td></tr>
   <tr><td>Premium</td><td>Pre-warmed instances (no cold start), VNet, longer runs</td></tr>
   <tr><td>Dedicated (App Service)</td><td>Runs on your App Service plan, predictable cost</td></tr>
@@ -655,7 +674,7 @@ az vm create --resource-group myRG --name myVM \
 <p>The Azure Storage account is the umbrella for several data services. Pick the type that matches your access pattern.</p>
 
 <table>
-  <tr><th>Service</th><th>Model</th><th>Use for</th></tr>
+  <tr><th scope="col">Service</th><th scope="col">Model</th><th scope="col">Use for</th></tr>
   <tr><td>Blob Storage</td><td>Object storage (key → blob)</td><td>Files, media, backups, data lakes, static sites</td></tr>
   <tr><td>Azure Files</td><td>Managed SMB/NFS file shares</td><td>Lift-and-shift, shared filesystems</td></tr>
   <tr><td>Queue Storage</td><td>Simple message queue</td><td>Basic async decoupling</td></tr>
@@ -677,7 +696,7 @@ az vm create --resource-group myRG --name myVM \
 
 <h3>Redundancy options</h3>
 <table>
-  <tr><th>Option</th><th>Copies</th><th>Survives</th></tr>
+  <tr><th scope="col">Option</th><th scope="col">Copies</th><th scope="col">Survives</th></tr>
   <tr><td>LRS (locally redundant)</td><td>3 copies in one DC</td><td>Disk/rack failure</td></tr>
   <tr><td>ZRS (zone redundant)</td><td>3 copies across zones</td><td>Datacenter/zone failure</td></tr>
   <tr><td>GRS (geo redundant)</td><td>LRS + copy to paired region</td><td>Regional disaster</td></tr>
@@ -695,7 +714,7 @@ az vm create --resource-group myRG --name myVM \
 
 <h3>Relational (SQL)</h3>
 <table>
-  <tr><th>Service</th><th>What it is</th></tr>
+  <tr><th scope="col">Service</th><th scope="col">What it is</th></tr>
   <tr><td>Azure SQL Database</td><td>Fully managed SQL Server (PaaS); auto patch/backup/scale</td></tr>
   <tr><td>SQL Managed Instance</td><td>Near-100% SQL Server compatibility for lift-and-shift</td></tr>
   <tr><td>Azure Database for PostgreSQL</td><td>Managed Postgres (Flexible Server)</td></tr>
@@ -753,7 +772,7 @@ az vm create --resource-group myRG --name myVM \
 
 <h3>Core networking services</h3>
 <table>
-  <tr><th>Service</th><th>Role</th></tr>
+  <tr><th scope="col">Service</th><th scope="col">Role</th></tr>
   <tr><td>Network Security Group (NSG)</td><td>Allow/deny traffic rules (stateful firewall)</td></tr>
   <tr><td>Azure Load Balancer</td><td>L4 (TCP/UDP) load balancing</td></tr>
   <tr><td>Application Gateway</td><td>L7 (HTTP) LB + WAF + routing</td></tr>
@@ -784,7 +803,7 @@ az vm create --resource-group myRG --name myVM \
 <p>Messaging decouples components so they can scale and fail independently. Azure has distinct services for different patterns — choosing the right one is a common design question.</p>
 
 <table>
-  <tr><th>Service</th><th>Pattern</th><th>Use for</th></tr>
+  <tr><th scope="col">Service</th><th scope="col">Pattern</th><th scope="col">Use for</th></tr>
   <tr><td>Service Bus</td><td>Enterprise message broker (queues + topics)</td><td>Ordered, transactional, pub/sub messaging</td></tr>
   <tr><td>Event Grid</td><td>Event routing (pub/sub, reactive)</td><td>React to discrete events (blob created, etc.)</td></tr>
   <tr><td>Event Hubs</td><td>High-throughput event streaming</td><td>Telemetry, logs, IoT, big data pipelines (Kafka-like)</td></tr>
@@ -831,7 +850,7 @@ az vm create --resource-group myRG --name myVM \
   Power BI = BI / visualization</div>
 
 <table>
-  <tr><th>Service</th><th>Role</th></tr>
+  <tr><th scope="col">Service</th><th scope="col">Role</th></tr>
   <tr><td>Data Factory</td><td>ETL/ELT pipeline orchestration (150+ connectors)</td></tr>
   <tr><td>Synapse Analytics</td><td>Enterprise data warehouse + big-data analytics</td></tr>
   <tr><td>Azure Databricks</td><td>Spark-based lakehouse, ETL, ML at scale</td></tr>
@@ -868,7 +887,7 @@ az vm create --resource-group myRG --name myVM \
        (train, tune, deploy, monitor, pipelines)</div>
 
 <table>
-  <tr><th>Service</th><th>Use for</th></tr>
+  <tr><th scope="col">Service</th><th scope="col">Use for</th></tr>
   <tr><td>Azure OpenAI Service</td><td>GPT / o-series / DALL-E / embeddings in your tenant with enterprise controls</td></tr>
   <tr><td>Azure AI Foundry</td><td>Build, evaluate, deploy &amp; govern GenAI apps and agents (model catalog, prompt flow)</td></tr>
   <tr><td>Azure AI Search</td><td>Hybrid (vector + keyword) retrieval — the backbone of RAG on Azure</td></tr>
@@ -900,7 +919,7 @@ az vm create --resource-group myRG --name myVM \
 
 <h3>Infrastructure as Code (IaC)</h3>
 <table>
-  <tr><th>Tool</th><th>Notes</th></tr>
+  <tr><th scope="col">Tool</th><th scope="col">Notes</th></tr>
   <tr><td>ARM templates</td><td>Native JSON; verbose, foundational</td></tr>
   <tr><td>Bicep</td><td>Cleaner DSL that compiles to ARM; Azure-native, recommended</td></tr>
   <tr><td>Terraform</td><td>Multi-cloud, huge ecosystem; popular for Azure too</td></tr>
@@ -944,7 +963,7 @@ resource sa 'Microsoft.Storage/storageAccounts@2023-01-01' = {
 
 <h3>Security services</h3>
 <table>
-  <tr><th>Service</th><th>Role</th></tr>
+  <tr><th scope="col">Service</th><th scope="col">Role</th></tr>
   <tr><td>Microsoft Defender for Cloud</td><td>Posture management + workload threat protection (CSPM/CWPP)</td></tr>
   <tr><td>Microsoft Sentinel</td><td>Cloud-native SIEM/SOAR (security analytics)</td></tr>
   <tr><td>Azure Key Vault</td><td>Store secrets, keys, certificates securely</td></tr>
@@ -1001,7 +1020,7 @@ resource sa 'Microsoft.Storage/storageAccounts@2023-01-01' = {
 
 <h3>The Well-Architected Framework (5 pillars)</h3>
 <table>
-  <tr><th>Pillar</th><th>Question it answers</th></tr>
+  <tr><th scope="col">Pillar</th><th scope="col">Question it answers</th></tr>
   <tr><td>Reliability</td><td>Does it recover from failure? (zones, regions, retries)</td></tr>
   <tr><td>Security</td><td>Is it protected? (identity, encryption, network)</td></tr>
   <tr><td>Cost Optimization</td><td>Are we spending efficiently?</td></tr>
@@ -1011,7 +1030,7 @@ resource sa 'Microsoft.Storage/storageAccounts@2023-01-01' = {
 
 <h3>Service selection cheat sheet</h3>
 <table>
-  <tr><th>Need</th><th>Reach for</th></tr>
+  <tr><th scope="col">Need</th><th scope="col">Reach for</th></tr>
   <tr><td>Run a web app without servers</td><td>App Service / Container Apps</td></tr>
   <tr><td>Event-driven function</td><td>Azure Functions</td></tr>
   <tr><td>Full Kubernetes</td><td>AKS</td></tr>
@@ -1035,6 +1054,8 @@ resource sa 'Microsoft.Storage/storageAccounts@2023-01-01' = {
 
 <hr>
 <div class="meta">End of Azure guide. Service names and limits change frequently — always confirm current details in the official Azure documentation.</div>
+</main>
+
 
 <script>
 (function() {

@@ -111,6 +111,22 @@
   .refs li { font-size: 14px; color: var(--muted); overflow-wrap: anywhere; }
   .matrix td:first-child { color: var(--ink); font-weight: 650; }
   @media print {
+  @media (max-width: 480px) {
+    .shell { padding: 14px; }
+    .hero { padding: 22px; border-radius: 22px; }
+    h1 { font-size: clamp(28px, 9vw, 44px); }
+    h2 { font-size: 26px; }
+    .card { padding: 18px; }
+    .toc a { padding: 10px 12px; font-size: 14px; }
+    .pill { padding: 6px 10px; font-size: 13px; }
+  }
+  @media (max-width: 375px) {
+    .shell { padding: 12px; }
+    .hero { padding: 18px; }
+    h1 { font-size: clamp(26px, 9vw, 36px); }
+    h2 { font-size: 22px; }
+    .card { padding: 14px; }
+  }
     body { background: white; color: var(--paperInk); }
     .shell { max-width: none; padding: 0; }
     .hero, .card { background: white; color: var(--paperInk); border-color: var(--paperLine); box-shadow: none; break-inside: avoid; }

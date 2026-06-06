@@ -211,6 +211,8 @@
     font-weight: 600;
   }
   @media (max-width: 700px) {
+    .booknav { margin: -40px -20px 24px; padding: 7px 16px; font-size: 0.72em; }
+  }
   @media (max-width: 480px) {
     body { padding: 30px 18px 60px; font-size: 17px; }
     h1 { font-size: 1.8em; }
@@ -228,8 +230,6 @@
     h2 { font-size: 1.25em; }
     pre { padding: 8px 10px; font-size: 0.78em; }
     th, td { padding: 5px 6px; }
-  }
-    .booknav { margin: -40px -20px 24px; padding: 7px 16px; font-size: 0.72em; }
   }
   /* /booknav */
   
@@ -443,7 +443,7 @@
 
 <h3>The one-line positioning</h3>
 <table>
-  <tr><th class="aws">AWS</th><th class="azure">Azure</th><th class="gcp">GCP</th></tr>
+  <tr><th scope="col" class="aws">AWS</th><th scope="col" class="azure">Azure</th><th scope="col" class="gcp">GCP</th></tr>
   <tr>
     <td>Broadest model <strong>choice</strong> via Bedrock; deepest overall service catalog; strong for agentic on AWS infra.</td>
     <td>Privileged <strong>OpenAI</strong> access (GPT, o-series) + best enterprise/Microsoft 365 integration.</td>

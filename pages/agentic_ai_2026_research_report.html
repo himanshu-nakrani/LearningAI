@@ -13,6 +13,54 @@
 <title>Agentic AI in 2026: Research Landscape, Industry Adoption, Gaps, and Paper Ideas</title>
 <style>
   :root {
+    --bg: #f8fafc;
+    --panel: #eef1f5;
+    --panel2: #e2e6eb;
+    --ink: #172033;
+    --muted: #4b5563;
+    --faint: #94a3b8;
+    --line: rgba(0,0,0,.10);
+    --accent: #0369a1;
+    --accent2: #7c3aed;
+    --good: #16a34a;
+    --warn: #ca8a04;
+    --bad: #dc2626;
+    --paper: #f8fafc;
+    --paperInk: #172033;
+    --paperMuted: #526079;
+    --paperLine: #d8deea;
+    --surface-subtle: rgba(0,0,0,.04);
+    --panel-alpha: rgba(238,241,245,.82);
+    --hero-from: rgba(238,241,245,.94);
+    --hero-to: rgba(226,230,235,.82);
+    --glow-accent: rgba(3,105,161,.06);
+    --glow-accent2: rgba(124,58,237,.05);
+    --hero-glow: rgba(3,105,161,.08);
+    --link: #0369a1;
+    --heading-bright: #0f172a;
+    --hero-shadow: 0 24px 80px rgba(0,0,0,.05);
+    --card-shadow: 0 12px 36px rgba(0,0,0,.04);
+    --tag-bg: rgba(3,105,161,.10);
+    --tag-fg: #0369a1;
+    --tag-bd: rgba(3,105,161,.18);
+    --tag-purple-bg: rgba(124,58,237,.10);
+    --tag-purple-fg: #7c3aed;
+    --tag-purple-bd: rgba(124,58,237,.18);
+    --tag-green-bg: rgba(22,163,74,.10);
+    --tag-green-fg: #16a34a;
+    --tag-green-bd: rgba(22,163,74,.18);
+    --tag-yellow-bg: rgba(202,138,4,.10);
+    --tag-yellow-fg: #92400e;
+    --tag-yellow-bd: rgba(202,138,4,.18);
+    --th-bg: rgba(0,0,0,.04);
+    --th-fg: #0f172a;
+    --quote-bg: rgba(3,105,161,.05);
+    --quote-fg: #334155;
+    --paper-item-bg: rgba(0,0,0,.025);
+    --paper-num-bg: rgba(3,105,161,.10);
+    --dot-off: rgba(0,0,0,.10);
+  }
+  html.dark {
     --bg: #0b1020;
     --panel: #11182d;
     --panel2: #151f3a;
@@ -25,45 +73,73 @@
     --good: #86efac;
     --warn: #fde68a;
     --bad: #fca5a5;
-    --paper: #f8fafc;
-    --paperInk: #172033;
-    --paperMuted: #526079;
-    --paperLine: #d8deea;
+    --surface-subtle: rgba(255,255,255,.045);
+    --panel-alpha: rgba(17,24,45,.82);
+    --hero-from: rgba(17,24,45,.94);
+    --hero-to: rgba(21,31,58,.82);
+    --glow-accent: rgba(125,211,252,.16);
+    --glow-accent2: rgba(167,139,250,.14);
+    --hero-glow: rgba(125,211,252,.17);
+    --link: #a5d8ff;
+    --heading-bright: #dce7ff;
+    --hero-shadow: 0 24px 80px rgba(0,0,0,.35);
+    --card-shadow: 0 12px 36px rgba(0,0,0,.18);
+    --tag-bg: rgba(125,211,252,.14);
+    --tag-fg: #c7eeff;
+    --tag-bd: rgba(125,211,252,.22);
+    --tag-purple-bg: rgba(167,139,250,.14);
+    --tag-purple-fg: #e0d3ff;
+    --tag-purple-bd: rgba(167,139,250,.22);
+    --tag-green-bg: rgba(134,239,172,.12);
+    --tag-green-fg: #d1fadf;
+    --tag-green-bd: rgba(134,239,172,.22);
+    --tag-yellow-bg: rgba(253,230,138,.12);
+    --tag-yellow-fg: #fff1ad;
+    --tag-yellow-bd: rgba(253,230,138,.22);
+    --th-bg: rgba(255,255,255,.06);
+    --th-fg: #dfeaff;
+    --quote-bg: rgba(125,211,252,.07);
+    --quote-fg: #dce7ff;
+    --paper-item-bg: rgba(255,255,255,.035);
+    --paper-num-bg: rgba(125,211,252,.18);
+    --dot-off: rgba(255,255,255,.15);
   }
   * { box-sizing: border-box; }
   html { scroll-behavior: smooth; }
   body {
     margin: 0;
-    background: radial-gradient(circle at top left, rgba(125,211,252,.16), transparent 30%), radial-gradient(circle at top right, rgba(167,139,250,.14), transparent 32%), var(--bg);
+    background: radial-gradient(circle at top left, var(--glow-accent), transparent 30%), radial-gradient(circle at top right, var(--glow-accent2), transparent 32%), var(--bg);
     color: var(--ink);
     font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     line-height: 1.55;
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
-  a { color: #a5d8ff; text-decoration: none; }
+  a { color: var(--link); text-decoration: none; }
   a:hover { text-decoration: underline; }
   .shell { max-width: 1240px; margin: 0 auto; padding: 28px; }
   .hero {
     border: 1px solid var(--line);
     border-radius: 28px;
     padding: 42px;
-    background: linear-gradient(135deg, rgba(17,24,45,.94), rgba(21,31,58,.82));
-    box-shadow: 0 24px 80px rgba(0,0,0,.35);
+    background: linear-gradient(135deg, var(--hero-from), var(--hero-to));
+    box-shadow: var(--hero-shadow);
     position: relative;
     overflow: hidden;
+    transition: background 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
   }
   .hero:after {
     content: "";
     position: absolute;
     width: 420px; height: 420px;
     right: -160px; top: -160px;
-    background: radial-gradient(circle, rgba(125,211,252,.17), transparent 65%);
+    background: radial-gradient(circle, var(--hero-glow), transparent 65%);
     pointer-events: none;
   }
   .eyebrow { color: var(--accent); font-weight: 700; letter-spacing: .09em; text-transform: uppercase; font-size: 13px; }
   h1 { margin: 12px 0 16px; font-size: clamp(36px, 5vw, 68px); line-height: .95; letter-spacing: -0.055em; max-width: 980px; }
   .subtitle { max-width: 920px; color: var(--muted); font-size: 20px; }
   .meta { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 24px; }
-  .pill { border: 1px solid var(--line); border-radius: 999px; padding: 8px 12px; color: var(--muted); background: rgba(255,255,255,.045); font-size: 14px; }
+  .pill { border: 1px solid var(--line); border-radius: 999px; padding: 8px 12px; color: var(--muted); background: var(--surface-subtle); font-size: 14px; }
   .grid { display: grid; gap: 18px; }
   .grid.cols-3 { grid-template-columns: repeat(3, minmax(0,1fr)); }
   .grid.cols-2 { grid-template-columns: repeat(2, minmax(0,1fr)); }
@@ -74,18 +150,19 @@
     grid-template-columns: repeat(auto-fit, minmax(220px,1fr));
     gap: 10px;
   }
-  .toc a { border: 1px solid var(--line); background: rgba(255,255,255,.045); border-radius: 14px; padding: 12px 14px; color: var(--ink); }
+  .toc a { border: 1px solid var(--line); background: var(--surface-subtle); border-radius: 14px; padding: 12px 14px; color: var(--ink); }
   section { margin: 26px 0; }
   .card {
     border: 1px solid var(--line);
     border-radius: 22px;
     padding: 24px;
-    background: rgba(17,24,45,.82);
-    box-shadow: 0 12px 36px rgba(0,0,0,.18);
+    background: var(--panel-alpha);
+    box-shadow: var(--card-shadow);
+    transition: background 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
   }
   h2 { font-size: 34px; line-height: 1.05; letter-spacing: -.035em; margin: 0 0 14px; }
   h3 { font-size: 22px; margin: 22px 0 8px; letter-spacing: -.02em; }
-  h4 { font-size: 17px; margin: 18px 0 6px; color: #dce7ff; }
+  h4 { font-size: 17px; margin: 18px 0 6px; color: var(--heading-bright); }
   p { margin: 9px 0; }
   ul, ol { margin-top: 8px; padding-left: 23px; }
   li { margin: 7px 0; }
@@ -94,22 +171,22 @@
   .kpi .num { font-size: 34px; font-weight: 800; letter-spacing: -.04em; color: var(--accent); }
   .kpi .label { color: var(--ink); font-weight: 650; }
   .kpi .note { color: var(--muted); font-size: 14px; }
-  .tag { display: inline-block; border-radius: 999px; padding: 4px 9px; font-size: 12px; font-weight: 700; background: rgba(125,211,252,.14); color: #c7eeff; border: 1px solid rgba(125,211,252,.22); margin: 2px 4px 2px 0; }
-  .tag.purple { background: rgba(167,139,250,.14); color: #e0d3ff; border-color: rgba(167,139,250,.22); }
-  .tag.green { background: rgba(134,239,172,.12); color: #d1fadf; border-color: rgba(134,239,172,.22); }
-  .tag.yellow { background: rgba(253,230,138,.12); color: #fff1ad; border-color: rgba(253,230,138,.22); }
+  .tag { display: inline-block; border-radius: 999px; padding: 4px 9px; font-size: 12px; font-weight: 700; background: var(--tag-bg); color: var(--tag-fg); border: 1px solid var(--tag-bd); margin: 2px 4px 2px 0; }
+  .tag.purple { background: var(--tag-purple-bg); color: var(--tag-purple-fg); border-color: var(--tag-purple-bd); }
+  .tag.green { background: var(--tag-green-bg); color: var(--tag-green-fg); border-color: var(--tag-green-bd); }
+  .tag.yellow { background: var(--tag-yellow-bg); color: var(--tag-yellow-fg); border-color: var(--tag-yellow-bd); }
   table { width: 100%; border-collapse: collapse; margin: 14px 0; overflow: hidden; border-radius: 14px; }
   th, td { border-bottom: 1px solid var(--line); padding: 12px 12px; vertical-align: top; text-align: left; }
-  th { color: #dfeaff; background: rgba(255,255,255,.06); font-size: 13px; text-transform: uppercase; letter-spacing: .05em; }
+  th { color: var(--th-fg); background: var(--th-bg); font-size: 13px; text-transform: uppercase; letter-spacing: .05em; }
   td { color: var(--muted); }
-  .quote { border-left: 4px solid var(--accent); padding: 10px 16px; color: #dce7ff; background: rgba(125,211,252,.07); border-radius: 0 14px 14px 0; margin: 14px 0; }
+  .quote { border-left: 4px solid var(--accent); padding: 10px 16px; color: var(--quote-fg); background: var(--quote-bg); border-radius: 0 14px 14px 0; margin: 14px 0; }
   .paper-list { counter-reset: paper; }
-  .paper-item { padding: 16px; border: 1px solid var(--line); border-radius: 16px; background: rgba(255,255,255,.035); margin: 12px 0; }
-  .paper-item:before { counter-increment: paper; content: counter(paper); display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: rgba(125,211,252,.18); color: var(--accent); font-weight: 800; margin-right: 8px; }
+  .paper-item { padding: 16px; border: 1px solid var(--line); border-radius: 16px; background: var(--paper-item-bg); margin: 12px 0; }
+  .paper-item:before { counter-increment: paper; content: counter(paper); display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--paper-num-bg); color: var(--accent); font-weight: 800; margin-right: 8px; }
   .paper-item strong { color: var(--ink); }
   .idea { border-left: 5px solid var(--accent2); }
   .score { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin-top: 8px; max-width: 340px; }
-  .dot { height: 8px; border-radius: 999px; background: rgba(255,255,255,.15); }
+  .dot { height: 8px; border-radius: 999px; background: var(--dot-off); }
   .dot.on { background: linear-gradient(90deg, var(--accent), var(--accent2)); }
   .small { font-size: 13px; color: var(--faint); }
   .two-col { columns: 2; column-gap: 28px; }
@@ -162,11 +239,36 @@
     h1, h2, h3, h4, .kpi .label, .paper-item strong { color: var(--paperInk); }
     section { break-inside: auto; }
   }
+
+  .theme-toggle-inline {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    background: var(--panel-alpha);
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1rem;
+    line-height: 1;
+    color: var(--ink);
+    padding: 0;
+    z-index: 1000;
+    box-shadow: var(--card-shadow);
+    transition: background 0.15s ease, transform 0.15s ease;
+  }
+  .theme-toggle-inline:hover { transform: scale(1.08); }
 </style>
 </head>
 <body>
 
 <a class="skip-link" href="#main">Skip to main content</a>
+
+<button class="theme-toggle-inline" id="theme-toggle" aria-label="Toggle dark mode">☀️</button>
 
 <div class="shell">
 <main id="main" tabindex="-1">
@@ -542,5 +644,38 @@
   </section>
 </main>
 </div>
+<script>
+(function() {
+  const html = document.documentElement;
+  const btn = document.getElementById('theme-toggle');
+  const STORAGE_KEY = 'theme';
+
+  function setTheme(theme) {
+    if (theme === 'dark') {
+      html.classList.add('dark');
+      btn.textContent = '☀️';
+      btn.setAttribute('aria-label', 'Toggle light mode');
+    } else {
+      html.classList.remove('dark');
+      btn.textContent = '🌙';
+      btn.setAttribute('aria-label', 'Toggle dark mode');
+    }
+    localStorage.setItem(STORAGE_KEY, theme);
+  }
+
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    setTheme(saved);
+  } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    setTheme('dark');
+  }
+
+  btn.addEventListener('click', () => {
+    const isDark = html.classList.contains('dark');
+    setTheme(isDark ? 'light' : 'dark');
+  });
+})();
+</script>
+
 </body>
 </html>

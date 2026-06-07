@@ -501,8 +501,8 @@
   +----------------------------------------------------------+
   | CUSTOM ML    SageMaker  |  Azure ML      |  Vertex AI     |
   +----------------------------------------------------------+
-  | PRE-BUILT    Rekognition|  AI Services   |  Vision/Speech |
-  | AI APIs      Transcribe  |  (Cognitive)   |  /NL/Doc AI    |
+  | PRE-BUILT    Rekognition|  Azure AI      |  Vision/Speech |
+  | AI APIs      Transcribe  |  Services      |  /NL/Doc AI    |
   +----------------------------------------------------------+
   | INFRA        Trainium/   |  ND/NC GPU VMs |  TPUs + GPUs   |
   |              Inferentia + GPU |          |                |
@@ -550,11 +550,11 @@
   <tr><td>Custom AI silicon</td><td>Trainium / Inferentia</td><td>(NVIDIA + Maia)</td><td>TPU</td></tr>
   <tr><td>Coding assistant</td><td>Amazon Q Developer</td><td>GitHub Copilot</td><td>Gemini Code Assist</td></tr>
   <tr><td>Business AI assistant</td><td>Amazon Q Business</td><td>Microsoft 365 Copilot</td><td>Gemini for Workspace</td></tr>
-  <tr><td>Recommendations</td><td>Amazon Personalize</td><td>(Azure ML / Personalizer*)</td><td>Recommendations AI</td></tr>
-  <tr><td>Forecasting</td><td>(SageMaker / Forecast*)</td><td>Azure ML (AutoML)</td><td>Vertex AI Forecasting / BQML</td></tr>
-  <tr><td>AI in the data warehouse</td><td>Redshift ML</td><td>Fabric / Synapse + AI</td><td>BigQuery ML</td></tr>
+  <tr><td>Recommendations</td><td>Amazon Personalize</td><td>(Azure ML; Personalizer retires Oct 1 2026)</td><td>Recommendations AI</td></tr>
+  <tr><td>Forecasting</td><td>SageMaker (Amazon Forecast closed to new customers Jul 2024; existing supported)</td><td>Azure ML (AutoML)</td><td>Vertex AI Forecasting / BQML</td></tr>
+  <tr><td>AI in the data warehouse</td><td>Redshift ML</td><td>Microsoft Fabric (Synapse folding in)</td><td>BigQuery ML</td></tr>
 </table>
-<p style="font-size:0.85em;color:var(--muted)">* Some legacy stand-alone services have been folded into the broader ML platform; check current availability.</p>
+<p style="font-size:0.85em;color:var(--muted)">Notes: Azure Personalizer retires Oct 1 2026. Amazon Forecast closed to new customers in Jul 2024 (existing customers supported, no announced EOL); forecasting now lives in SageMaker.</p>
 
 <div class="callout callout-warn">
   <strong>Equivalence is approximate</strong>
@@ -565,12 +565,12 @@
 
 <h2 id="part-2">Part 2 — Foundation models &amp; generative AI</h2>
 
-<p>This is the layer everyone cares about today. The key question per cloud: <em>which models can I run, and how are they delivered?</em></p>
+<p>This is the layer everyone cares about today. The key question per cloud: <em>which models can I run, and how are they delivered?</em> (For prompt engineering, RAG, and the application-layer view that sits on top of any of these APIs, see the <a href="ai-engineering-guide.html">AI Engineering Guide</a>; for the serving / cost / latency tradeoffs when self-hosting these models, see the <a href="llm-inference-guide.html">LLM Inference Guide</a>.)</p>
 
 <table>
   <tr><th scope="col">Aspect</th><th class="aws">AWS — Bedrock</th><th class="azure">Azure — OpenAI / Foundry</th><th class="gcp">GCP — Vertex / Gemini</th></tr>
   <tr><td>Delivery</td><td>One managed API across many model providers</td><td>OpenAI models hosted in your Azure tenant + a broader catalog</td><td>Vertex AI API; Gemini + Model Garden</td></tr>
-  <tr><td>Headline models</td><td>Anthropic Claude, Meta Llama, Mistral, Cohere, Amazon Nova, Stability</td><td>OpenAI GPT-4o/4.1, o-series (reasoning), DALL·E, + Llama, Mistral, etc.</td><td>Gemini (flagship, multimodal), + Llama, Claude, Mistral, Gemma (open)</td></tr>
+  <tr><td>Headline models</td><td>Anthropic Claude (Opus 4.7, Sonnet 4.6, Haiku 4.5), Amazon Nova (Pro/Lite/Micro/Canvas/Reel), Meta Llama, Mistral, Cohere, DeepSeek, AI21, Stability AI</td><td>OpenAI GPT-5 family, o3/o4 reasoning, embeddings; Phi-3/3.5/4; Llama, Mistral, DeepSeek (via Foundry catalog)</td><td>Gemini 2.5 (Flash, Pro), Gemini 3, Gemma 2/3, Imagen 3, Veo 2/3, Claude (via partnership), Llama</td></tr>
   <tr><td>Unique strength</td><td>Model <strong>breadth/choice</strong> + Claude availability</td><td>Privileged <strong>OpenAI</strong> models with enterprise controls</td><td>Best-in-class <strong>own</strong> models + long context + multimodal</td></tr>
   <tr><td>Fine-tuning</td><td>Yes (per supported model)</td><td>Yes (OpenAI fine-tuning, plus others)</td><td>Yes (Gemini tuning, distillation)</td></tr>
   <tr><td>Data privacy</td><td>Stays in your AWS account; not used to train base models</td><td>Stays in your tenant; not used to train OpenAI base models</td><td>Stays in your project; not used to train base models</td></tr>
@@ -600,7 +600,7 @@
 
 <h2 id="part-3">Part 3 — Managed RAG &amp; vector search</h2>
 
-<p>RAG (retrieve your data, then generate a grounded answer) is the most common GenAI pattern. Each cloud offers a managed path so you don't hand-build the pipeline.</p>
+<p>RAG (retrieve your data, then generate a grounded answer) is the most common GenAI pattern. Each cloud offers a managed path so you don't hand-build the pipeline. (For the underlying RAG concepts — chunking, embeddings, hybrid search, eval — see the <a href="ai-engineering-guide.html">AI Engineering Guide</a>.)</p>
 
 <table>
   <tr><th scope="col">Piece</th><th class="aws">AWS</th><th class="azure">Azure</th><th class="gcp">GCP</th></tr>
@@ -631,20 +631,20 @@
 
 <h2 id="part-4">Part 4 — AI agents &amp; orchestration</h2>
 
-<p>Agents (LLMs that reason, call tools, and act in a loop) are the current frontier. All three now offer managed ways to build and run them.</p>
+<p>Agents (LLMs that reason, call tools, and act in a loop) are the current frontier. All three now offer managed ways to build and run them. (For the agent-architecture concepts these services implement — ReAct, planning, MCP, multi-agent, eval — see the <a href="agentic-ai-guide.html">Agentic AI Guide</a>.)</p>
 
 <table>
   <tr><th scope="col">Aspect</th><th class="aws">AWS</th><th class="azure">Azure</th><th class="gcp">GCP</th></tr>
   <tr><td>Agent service</td><td>Bedrock Agents + AgentCore</td><td>Azure AI Foundry Agent Service</td><td>Vertex AI Agent Builder</td></tr>
-  <tr><td>Framework stance</td><td>Framework-agnostic runtime (LangGraph, CrewAI, Strands, custom)</td><td>Integrates Semantic Kernel, AutoGen, OpenAI Agents</td><td>Supports ADK (Agent Dev Kit), LangChain/LangGraph</td></tr>
+  <tr><td>Framework stance</td><td>Framework-agnostic runtime; <strong>Strands Agents SDK</strong> is AWS's first-party open-source agent framework (also supports LangGraph, CrewAI, custom)</td><td>Integrates Semantic Kernel, AutoGen, OpenAI Agents</td><td>Supports ADK (Agent Development Kit), LangChain/LangGraph; A2A protocol</td></tr>
   <tr><td>Tool calling</td><td>Action groups; AgentCore Gateway turns APIs/Lambdas into tools (MCP)</td><td>Tools, function calling, connectors, Logic Apps</td><td>Tools, extensions, function calling, connectors</td></tr>
   <tr><td>Managed extras</td><td>AgentCore: Runtime, Memory, Identity, Browser, Code Interpreter, Observability</td><td>Threads, memory, tracing, content safety, Entra identity</td><td>Memory, grounding (Search/Maps), tracing, eval</td></tr>
   <tr><td>Standout</td><td>Modular, framework-agnostic, deep AWS integration</td><td>Enterprise identity + Microsoft ecosystem connectors</td><td>Grounding with Google Search/Maps; ADK + A2A protocol</td></tr>
 </table>
 
 <h3>AWS AgentCore in a bit more depth</h3>
-<div class="ascii">  AgentCore = "managed infrastructure for agents"
-  (bring any framework + any model):
+<div class="ascii">  AgentCore (GA Oct 13 2025) = "managed infrastructure
+  for agents" (bring any framework + any model):
 
     Runtime     -> serverless, secure agent hosting/scaling
     Gateway     -> expose APIs/Lambdas as agent tools (MCP)
@@ -653,10 +653,17 @@
     Browser     -> managed headless browser tool
     Code Interp.-> sandboxed code execution
     Observability -> trace every reason/act/observe step
+    A2A         -> Agent-to-Agent protocol support
 
   Relevant if you're building production agents on AWS:
   it removes undifferentiated plumbing while keeping you
-  free to use LangGraph/CrewAI/Strands and any model.</div>
+  free to use Strands/LangGraph/CrewAI and any model.</div>
+
+<h3>Azure AI Foundry Agent Service</h3>
+<p>Microsoft's canonical agent runtime since the AI Studio → AI Foundry rename (Nov 2024). Provides threads, persistent memory, tool/function calling, connectors (Logic Apps, M365), Entra-based identity, integrated Content Safety, and tracing — tightly fused with the Foundry model catalog and Semantic Kernel / AutoGen / OpenAI Agents frameworks.</p>
+
+<h3>GCP Vertex AI Agent Builder + ADK + A2A</h3>
+<p>Google's agent stack pairs the managed Vertex AI Agent Builder (memory, grounding via Google Search/Maps, evaluation, tracing) with the open-source <strong>Agent Development Kit (ADK)</strong> for authoring multi-agent systems and the <strong>A2A (Agent-to-Agent) protocol</strong> for interoperability between agents across vendors.</p>
 
 <div class="callout callout-warn">
   <strong>Agent tooling is young and moving fast</strong>
@@ -667,7 +674,7 @@
 
 <h2 id="part-5">Part 5 — ML platforms (custom models / MLOps)</h2>
 
-<p>When you build, train, and operate your <em>own</em> models (not just call foundation models), you use the full ML platform. These are broadly at parity — all cover the end-to-end lifecycle.</p>
+<p>When you build, train, and operate your <em>own</em> models (not just call foundation models), you use the full ML platform. These are broadly at parity — all cover the end-to-end lifecycle. (For per-cloud depth, see the <a href="aws-guide.html">AWS</a>, <a href="azure-guide.html">Azure</a>, and <a href="gcp-guide.html">GCP</a> guides.)</p>
 
 <table>
   <tr><th scope="col">Capability</th><th class="aws">SageMaker</th><th class="azure">Azure ML</th><th class="gcp">Vertex AI</th></tr>
@@ -714,12 +721,14 @@
 
 <h2 id="part-7">Part 7 — AI infrastructure (chips, GPUs, training)</h2>
 
-<p>For training large models or high-volume inference, the underlying accelerators and networking matter — for both performance and cost.</p>
+<p>For training large models or high-volume inference, the underlying accelerators and networking matter — for both performance and cost. (For per-cloud infra detail — instance families, networking, capacity — see the <a href="aws-guide.html">AWS</a>, <a href="azure-guide.html">Azure</a>, and <a href="gcp-guide.html">GCP</a> guides.)</p>
 
 <table>
   <tr><th scope="col">Aspect</th><th class="aws">AWS</th><th class="azure">Azure</th><th class="gcp">GCP</th></tr>
-  <tr><td>NVIDIA GPUs</td><td>P5 (H100), P6, G6 (L4)</td><td>ND/NC series (H100, A100)</td><td>A3 (H100), G2 (L4)</td></tr>
-  <tr><td>Custom AI silicon</td><td>Trainium (train), Inferentia (inference)</td><td>Maia (emerging)</td><td>TPU v5e/v5p/v6 (mature, widely used)</td></tr>
+  <tr><td>NVIDIA GPUs (datacenter)</td><td>P5/P5e/P5en (H100/H200), P6 (Blackwell B200), G6 (L4)</td><td>ND series (H100/H200, B200), NC series</td><td>A3 (H100), A3 Ultra (H200), A4 (B200), G2 (L4)</td></tr>
+  <tr><td>Custom AI silicon</td><td>Trainium2 + Trn2 UltraServers, Inferentia2</td><td>Maia 100 (in production for OpenAI workloads)</td><td>TPU v5e/v5p, Trillium (v6e), <strong>Ironwood (v7, GA Nov 2025, 192GB HBM3e, FP8 native)</strong></td></tr>
+  <tr><td>Training accelerators (axis)</td><td>Trn2 UltraServers (Trainium2)</td><td>Mostly NVIDIA; Maia 100 captive to OpenAI/Microsoft</td><td>TPU v6e Trillium / TPU v7 Ironwood</td></tr>
+  <tr><td>Serverless GPU inference</td><td>Bedrock on-demand / SageMaker Serverless Inference</td><td>Azure Container Apps Serverless GPU (GA Apr 2025), NIM microservices</td><td>Cloud Run GPU (GA Jun 2025)</td></tr>
   <tr><td>Why it matters</td><td>Trainium/Inferentia can cut cost vs GPUs for supported workloads</td><td>Massive GPU capacity tied to OpenAI scale</td><td>TPUs power Google's own models; strong price/perf at scale</td></tr>
   <tr><td>High-speed interconnect</td><td>EFA + UltraClusters</td><td>InfiniBand-based clusters</td><td>Jupiter network + TPU pods</td></tr>
 </table>
@@ -754,7 +763,7 @@
 
 <table>
   <tr><th scope="col">Type</th><th class="aws">AWS</th><th class="azure">Azure / Microsoft</th><th class="gcp">GCP / Google</th></tr>
-  <tr><td>Coding assistant</td><td>Amazon Q Developer (in IDE, CLI, AWS console)</td><td>GitHub Copilot (the market leader)</td><td>Gemini Code Assist</td></tr>
+  <tr><td>Coding assistant</td><td>Amazon Q Developer (in IDE, CLI, AWS console)</td><td>GitHub Copilot (widely adopted; Cursor and Claude Code are significant alternatives)</td><td>Gemini Code Assist</td></tr>
   <tr><td>Enterprise/business assistant</td><td>Amazon Q Business (chat over your company data)</td><td>Microsoft 365 Copilot (Word, Excel, Teams, Outlook)</td><td>Gemini for Google Workspace (Docs, Gmail, Sheets)</td></tr>
   <tr><td>Strength</td><td>Deep AWS-aware help (cost, infra, debugging)</td><td>Ubiquity in dev + Office workflows</td><td>Strong in Workspace + grounding in Google data</td></tr>
 </table>
@@ -788,7 +797,7 @@
   <tr><th scope="col">Lever</th><th class="aws">AWS</th><th class="azure">Azure</th><th class="gcp">GCP</th></tr>
   <tr><td>On-demand tokens</td><td>Bedrock per-token</td><td>Azure OpenAI per-token</td><td>Vertex per-token (per 1K chars/tokens)</td></tr>
   <tr><td>Reserved capacity</td><td>Provisioned Throughput</td><td>PTUs</td><td>Provisioned throughput</td></tr>
-  <tr><td>Prompt caching</td><td>Supported (cuts cost/latency)</td><td>Supported</td><td>Context caching</td></tr>
+  <tr><td>Prompt caching</td><td>Supported (Anthropic ~90% discount on cached tokens)</td><td>Supported (OpenAI implicit caching, ~50% discount)</td><td>Context caching (Gemini implicit + explicit)</td></tr>
   <tr><td>Batch discount</td><td>Batch inference (lower price)</td><td>Batch API</td><td>Batch prediction</td></tr>
   <tr><td>Compute commitments</td><td>Savings Plans / RIs / Spot</td><td>Reservations / Savings Plans / Spot</td><td>CUDs / sustained-use / Spot</td></tr>
 </table>
@@ -837,6 +846,8 @@
   Multi-cloud / avoid lock-in?
      -> keep app logic portable; use open models, MCP/A2A,
         and abstract the model provider behind an interface.</div>
+
+<p>Once you've picked a cloud, the next step is the per-cloud deep dive: <a href="aws-guide.html">AWS Guide</a>, <a href="azure-guide.html">Azure Guide</a>, or <a href="gcp-guide.html">GCP Guide</a>.</p>
 
 <div class="callout callout-warn">
   <strong>Data gravity and egress usually decide</strong>

@@ -661,8 +661,11 @@ Storage (5 years of tweets):
 
   CP choice (consistency): refuse writes on the minority
      side so data never diverges. -> some requests fail.
-     Examples: traditional RDBMS, HBase, MongoDB(default),
+     Examples: traditional RDBMS, HBase, MongoDB(default*),
                ZooKeeper, etcd.
+     * MongoDB is CP only with default read/write concern
+       "majority"; with lower concerns it can return stale
+       reads and approach AP behavior.
 
   AP choice (availability): accept writes on both sides,
      reconcile later. -> always answers, may serve stale.
@@ -811,6 +814,12 @@ Storage (5 years of tweets):
   "There are only two hard things in computer science: cache invalidation and naming things." Stale data is the cost of caching. Decide your tolerance: a likes counter can be seconds stale; a bank balance cannot. Use TTLs for bounded staleness and explicit invalidation on writes for correctness.
 </div>
 
+<h3>Two strategies worth naming</h3>
+<ul>
+  <li><strong>Stale-while-revalidate (SWR)</strong> — when a cached entry expires, serve the stale value <em>immediately</em> while asynchronously fetching a fresh one in the background. Tail latency stays flat across expiries; users never wait for a recompute. Standardized in the HTTP <code>Cache-Control: stale-while-revalidate=N</code> directive, supported by CDNs (Cloudflare, Vercel, Fastly) and popularized by the SWR/React Query libraries. Combine with a short <code>max-age</code> for nearly-fresh-with-no-stampedes behavior.</li>
+  <li><strong>Negative caching</strong> — explicitly cache "not found" results (with a short TTL) so repeated misses for non-existent keys don't hammer the DB. The principled fix to cache penetration, alongside bloom filters. Used by DNS resolvers (negative TTL on NXDOMAIN) and any read-heavy lookup service.</li>
+</ul>
+
 <hr>
 
 <h2 id="part-6">Part 6 — Databases: SQL vs NoSQL <span class="tag tag-core">★ CORE</span></h2>
@@ -818,7 +827,12 @@ Storage (5 years of tweets):
 <p>Choosing the right datastore is often the most consequential design decision. There's no universally "better" option — it depends on your access patterns, consistency needs, and scale.</p>
 
 <h3>SQL (relational)</h3>
-<p>Data in tables with fixed schemas and relationships. Strong consistency, powerful queries via joins, and <strong>ACID</strong> transactions. Scales <em>up</em> (bigger machine) more easily than <em>out</em>. Examples: PostgreSQL, MySQL.</p>
+<p>Data in tables with fixed schemas and relationships. Strong consistency, powerful queries via joins, and <strong>ACID</strong> transactions. Traditionally scales <em>up</em> (bigger machine) more easily than <em>out</em>. Examples: PostgreSQL, MySQL.</p>
+
+<div class="callout callout-tip">
+  <strong>Distributed SQL / NewSQL closes the gap</strong>
+  Modern <strong>distributed SQL</strong> systems give you horizontal scale without giving up SQL or transactions. <strong>Google Spanner</strong>, <strong>CockroachDB</strong>, <strong>YugabyteDB</strong>, and <strong>TiDB</strong> shard storage automatically while preserving ACID; <strong>Vitess</strong> shards MySQL behind a single endpoint (powers YouTube, Slack); <strong>PlanetScale</strong> productizes Vitess; <strong>Neon</strong> offers serverless Postgres with storage/compute separation. "SQL doesn't scale" is outdated as a default.
+</div>
 
 <h3>NoSQL (non-relational)</h3>
 <p>Flexible schema, designed to scale <em>out</em> horizontally. Trades joins and strong consistency for throughput and availability. Four main families:</p>
@@ -976,7 +990,7 @@ Storage (5 years of tweets):
                        +-> subscriber 3 (audit log)</div>
 
 <h3>Event streaming (Kafka model)</h3>
-<p>A log-based stream like Kafka keeps an ordered, durable, replayable record of events. Unlike a traditional queue that deletes a message once consumed, the log retains events so multiple consumers can read independently and replay history.</p>
+<p>A log-based stream like Kafka keeps an ordered, durable, replayable record of events. Unlike a traditional queue that deletes a message once consumed, the log retains events so multiple consumers can read independently and replay history. Managed equivalents per cloud: <a href="aws-guide.html">Kinesis / MSK on AWS</a>, <a href="gcp-guide.html">Pub/Sub on GCP</a>, <a href="azure-guide.html">Event Hubs on Azure</a>.</p>
 <div class="ascii">  Kafka topic = an append-only log, split into partitions:
 
   partition 0: [e0][e1][e2][e3][e4]...   (ordered)
@@ -1004,6 +1018,18 @@ Storage (5 years of tweets):
   <strong>Dead letter queues</strong>
   A message that repeatedly fails processing shouldn't block the queue forever. After N retries, route it to a Dead Letter Queue (DLQ) for inspection. This isolates "poison" messages and keeps the main pipeline flowing.
 </div>
+
+<h3>Kafka exactly-once &amp; stream processing</h3>
+<p>"Exactly-once" used to be considered impossible at the broker level. Kafka achieves it (within Kafka, end-to-end requires care) via:</p>
+<ul>
+  <li><strong>Idempotent producers</strong> — each producer has a session ID + per-partition sequence number; duplicates from retries are de-duplicated on the broker.</li>
+  <li><strong>Transactions</strong> — a producer can atomically write to multiple partitions/topics and commit consumer offsets in the same transaction (the "read-process-write" pattern). Either everything commits or nothing does.</li>
+  <li>End-to-end exactly-once still requires the consumer's downstream write to participate in (or be idempotent toward) the transaction.</li>
+</ul>
+<p><strong>Stream processing</strong> frameworks layer on top: <strong>Kafka Streams</strong> (library, Java/Scala) and <strong>Apache Flink</strong> (distributed engine, richer windowing &amp; state) compute aggregations, joins, and enrichments on flowing data with exactly-once semantics and event-time windowing. Use these instead of hand-rolled consumer loops when you need stateful, ordered, fault-tolerant processing.</p>
+
+<h3>CDC as the messaging glue</h3>
+<p>Change Data Capture (covered in Part 11) often <em>is</em> your event stream: Debezium reads the DB log and produces a Kafka topic per table. Downstream consumers update caches, search indexes, analytics warehouses, and read models — without the source service knowing about them. Many "event-driven" architectures are really CDC pipelines in disguise.</p>
 
 <hr>
 
@@ -1041,7 +1067,14 @@ Storage (5 years of tweets):
   <tr><td>GraphQL</td><td>Client picks exactly the fields it needs</td><td>Complex, nested data; mobile</td></tr>
   <tr><td>gRPC</td><td>Fast binary (protobuf), streaming</td><td>Internal service-to-service</td></tr>
   <tr><td>WebSocket</td><td>Bidirectional, persistent</td><td>Chat, live updates, gaming</td></tr>
+  <tr><td>SSE (Server-Sent Events)</td><td>One-way server→client stream over HTTP</td><td>LLM token streaming, live dashboards, notifications</td></tr>
 </table>
+
+<div class="callout callout-tip">
+  <strong>SSE, HTTP/3, QUIC</strong>
+  <strong>SSE</strong> is the underrated middle ground: simpler than WebSocket (plain HTTP, automatic reconnect, works through most proxies) when you only need server→client streaming. It powers most LLM streaming APIs (OpenAI, Anthropic) and is ideal when the client doesn't push back over the same channel.
+  <strong>HTTP/3</strong> runs over <strong>QUIC</strong> (UDP-based) instead of TCP. Benefits: 0-RTT connection setup, no head-of-line blocking across streams, faster recovery on mobile/lossy networks. Most major CDNs and browsers support it; enable at the edge for measurable mobile latency wins.
+</div>
 
 <h3>The API Gateway</h3>
 <p>A single entry point in front of many microservices. It handles cross-cutting concerns so each service doesn't have to: authentication, rate limiting, routing, request aggregation, SSL termination, and logging.</p>
@@ -1106,6 +1139,9 @@ Storage (5 years of tweets):
   <strong>Static vs dynamic content</strong>
   Serve static assets from a CDN and object storage. Keep dynamic, personalized content (your feed, your cart) on application servers, but cache the static shell. Many designs win latency just by correctly separating these two.
 </div>
+
+<h3>Edge compute (beyond the CDN)</h3>
+<p>Modern CDNs run <em>code</em>, not just cache files, at hundreds of points of presence near users. <strong>Cloudflare Workers</strong>, <strong>Vercel Edge Functions</strong>, <strong>AWS Lambda@Edge / CloudFront Functions</strong>, <strong>Fastly Compute@Edge</strong>, and <strong>Deno Deploy</strong> let you execute JavaScript/WASM with sub-millisecond cold starts on V8 isolates (Workers) or short-lived containers. Useful for: auth/JWT verification at the edge, A/B test routing, request rewrites, personalization, geo-aware redirects, light HTML rendering. Constraints: short execution budgets (e.g., 50 ms CPU on Workers), no persistent local disk, regionally distributed data via edge KV / Durable Objects / D1. Use for what's cheap to do close to the user; keep heavy logic at the origin.</p>
 
 <h3>Designing a blob upload flow (pre-signed URLs)</h3>
 <p>Don't proxy large uploads through your app servers — it wastes bandwidth and ties up workers. Instead, issue a <strong>pre-signed URL</strong> so the client uploads directly to object storage.</p>
@@ -1173,6 +1209,23 @@ Storage (5 years of tweets):
   <strong>CQRS</strong> separates the write model from the read model — you write to one optimized store and serve reads from another (often denormalized) view. <strong>Event sourcing</strong> stores the full sequence of state-changing events as the source of truth, rebuilding current state by replaying them. Powerful for audit trails and complex domains, but adds significant complexity — mention them, don't reach for them by default.
 </div>
 
+<h3>Idempotency keys (first-class)</h3>
+<p>Any non-trivial distributed system must handle duplicate requests — clients retry on timeout, networks lose ACKs, queues redeliver. Treat <strong>idempotency keys</strong> as a primary API concept, not an afterthought:</p>
+<ul>
+  <li>Client generates a UUID per logical operation (<code>Idempotency-Key</code> header — Stripe pioneered this pattern).</li>
+  <li>Server records the key + outcome; a repeat with the same key returns the original response without re-executing.</li>
+  <li>Storage is typically a Redis or DB table with TTL (24h–7d is common).</li>
+  <li>Without this, "charge card", "send message", and "create order" all risk silent duplication on retry.</li>
+</ul>
+
+<h3>CDC &amp; the outbox in practice</h3>
+<p>Change Data Capture (CDC) reads the database's commit log (Postgres WAL, MySQL binlog) and emits each row change as an event. <strong>Debezium</strong> is the de facto open-source CDC tool, usually paired with Kafka Connect. CDC is the modern, production-grade implementation of the outbox pattern: instead of writing both a row and an outbox entry, you just write the row — Debezium streams the change to Kafka. Eliminates the relay you'd otherwise build by hand, and powers data replication, search index sync, and cache invalidation.</p>
+
+<div class="callout callout-warn">
+  <strong>FLP impossibility (one-liner to know)</strong>
+  The Fischer–Lynch–Paterson result (1985) proves no deterministic consensus protocol can guarantee progress in an asynchronous network where even one node may crash. In practice, real systems (Raft, Paxos) sidestep this with timeouts and randomized leader election — they remain <em>safe</em> always but only <em>live</em> when the network behaves. Worth knowing exists; not worth dwelling on in interview answers.
+</div>
+
 <hr>
 
 <h2 id="part-12">Part 12 — Reliability, observability &amp; failure handling <span class="tag tag-core">★ CORE</span></h2>
@@ -1221,6 +1274,17 @@ Storage (5 years of tweets):
   <tr><td>Logs</td><td>What exactly happened?</td><td>ELK, Loki, CloudWatch Logs</td></tr>
   <tr><td>Traces</td><td>Where in the call chain?</td><td>Jaeger, X-Ray, OpenTelemetry</td></tr>
 </table>
+
+<h3>Modern observability practice</h3>
+<p>The "three pillars" framing is now table stakes. Today's practice layers concrete standards on top (for LLM-specific tracing — spans per tool call, token-level cost attribution, prompt/response capture — see the <a href="ai-engineering-guide.html">AI engineering guide</a>'s observability section):</p>
+<ul>
+  <li><strong>OpenTelemetry (OTel)</strong> — the de facto standard SDK + wire protocol (OTLP) for emitting metrics, logs, and traces from any language. Decouples instrumentation from your backend choice (Datadog, Honeycomb, Jaeger, Tempo, etc.).</li>
+  <li><strong>W3C Trace Context</strong> (<code>traceparent</code> header) — the standard for propagating trace IDs across services so a single request stitches into one trace end-to-end.</li>
+  <li><strong>Structured logging</strong> (JSON, key=value) — every log line carries fields (<code>request_id</code>, <code>user_id</code>, <code>trace_id</code>) so you can query and join. Plaintext logs don't scale.</li>
+  <li><strong>RED method</strong> (for request-driven services): <strong>R</strong>ate, <strong>E</strong>rrors, <strong>D</strong>uration. <strong>USE method</strong> (for resources): <strong>U</strong>tilization, <strong>S</strong>aturation, <strong>E</strong>rrors. Together they give a consistent dashboarding language.</li>
+  <li><strong>SLOs &amp; error budgets</strong> — pick a target (e.g., 99.9% of requests &lt; 300 ms over 30 days). The remaining 0.1% is your <em>error budget</em>; teams trade reliability against shipping speed by spending it. Alert on burn rate, not raw thresholds.</li>
+  <li><strong>Exemplars</strong> — attach a trace ID to a metric data point so a latency spike in a Prometheus chart links directly to an example slow trace. Closes the metrics-to-traces gap.</li>
+</ul>
 
 <div class="callout callout-warn">
   <strong>Health checks &amp; heartbeats</strong>
@@ -1283,6 +1347,13 @@ Storage (5 years of tweets):
   Apply limits at the API gateway / edge so abusive traffic is rejected before consuming backend resources. In a distributed setup, store counters in a shared fast store (Redis) so the limit is enforced globally, not per-server. Return HTTP 429 with a <code>Retry-After</code> header.
 </div>
 
+<h3>Beyond fixed-rate limiting</h3>
+<ul>
+  <li><strong>GCRA</strong> (Generic Cell Rate Algorithm) — a mathematically equivalent, single-value alternative to token bucket from ATM networking. Stores only the next-allowed-time per key instead of a bucket count; one atomic compare-and-set per request. Used by <strong>Stripe</strong> and <strong>redis-cell</strong>; cheaper to implement correctly in Redis than token bucket.</li>
+  <li><strong>Adaptive concurrency limiting (AIMD)</strong> — additive-increase, multiplicative-decrease (the same idea as TCP congestion control). Instead of a fixed N req/s, the limiter probes for the server's actual capacity: increase concurrency limit by 1 while latency is healthy, halve it on errors or latency spikes. Netflix's <em>concurrency-limits</em> library and Envoy's adaptive concurrency filter implement this. Self-tuning — survives capacity changes without reconfiguration.</li>
+  <li><strong>Load shedding</strong> is distinct from rate limiting: rate limiting caps a <em>client's</em> rate; load shedding drops <em>some</em> requests when the <em>server</em> is overloaded, regardless of client. Common policies: drop lowest-priority traffic first (CoDel-style, priority queues), reject when queue depth exceeds a threshold, or fail fast at the gateway when downstream health degrades. Pairs with circuit breakers.</li>
+</ul>
+
 <hr>
 
 <h2 id="part-14">Part 14 — Design patterns &amp; building blocks cheat sheet</h2>
@@ -1327,6 +1398,64 @@ Storage (5 years of tweets):
   <li>Normalization (less duplication) vs denormalization (faster reads)</li>
   <li>Push (precompute) vs pull (compute on read)</li>
   <li>Cost vs performance vs complexity</li>
+</ul>
+
+<h3>Serverless &amp; FaaS</h3>
+<p>Serverless platforms (<strong>AWS Lambda</strong>, <strong>Google Cloud Run</strong>, <strong>Azure Container Apps</strong>, <strong>Cloudflare Workers</strong>) run your code without you managing servers. You're billed per request and per ms of CPU; idle costs nothing. Two flavors: pure FaaS (Lambda — function per event) and container-on-demand (Cloud Run, ACA — your image, scaled by traffic). Per-cloud detail: <a href="aws-guide.html">AWS Lambda</a>, <a href="gcp-guide.html">GCP Cloud Run</a>, <a href="azure-guide.html">Azure Container Apps</a>.</p>
+<ul>
+  <li><strong>Use when</strong>: spiky or unpredictable traffic, event-driven glue (S3 → Lambda → DynamoDB), low-volume background jobs, prototypes. Scale-to-zero saves money for &lt; ~30% utilization workloads.</li>
+  <li><strong>Cold starts</strong>: first request after idle pays initialization cost — ~50–500 ms for Node/Python, multi-second for JVM/heavy images. Mitigate with provisioned concurrency, lighter runtimes, or stay-warm pings.</li>
+  <li><strong>Avoid for</strong>: sustained high QPS (you'll pay more than EC2/Kubernetes), long-lived connections (WebSocket), low-latency real-time (cold starts), or anything needing local state.</li>
+</ul>
+
+<h3>Kubernetes &amp; orchestration</h3>
+<p>Kubernetes is the standard for running containerized workloads at scale. You declare desired state (3 replicas of this image, exposed on port 80, autoscale 5–50) and the control plane reconciles toward it. Managed flavors: <a href="aws-guide.html">EKS on AWS</a>, <a href="azure-guide.html">AKS on Azure</a>, <a href="gcp-guide.html">GKE on GCP</a>.</p>
+<ul>
+  <li><strong>Control plane</strong>: API server, etcd (state store), scheduler, controller manager. Workers run the kubelet + container runtime.</li>
+  <li><strong>Autoscaling</strong>: <strong>HPA</strong> (Horizontal Pod Autoscaler) scales pod count on CPU/memory/custom metrics; <strong>VPA</strong> tunes per-pod resource requests; <strong>KEDA</strong> scales on external signals (Kafka lag, SQS depth, Prometheus queries) — including down to zero.</li>
+  <li><strong>Ingress &amp; gateway</strong>: an Ingress controller (NGINX, Traefik) or the newer <strong>Gateway API</strong> exposes HTTP routes into the cluster, handling TLS and path/host routing.</li>
+  <li><strong>Service mesh</strong> (Istio, Linkerd, Cilium): sidecar or eBPF-based data plane that adds mTLS, retries, circuit breaking, and traces between services without app changes. Worth it past ~20 services; overkill before.</li>
+</ul>
+
+<h3>Consensus &amp; coordination (Raft, Paxos)</h3>
+<p>How do N machines agree on a single value (a leader, a config, the next log entry) despite crashes and delays? That's <strong>consensus</strong>, and it underpins every reliable distributed system.</p>
+<ul>
+  <li><strong>Raft</strong> is the modern default — designed for understandability. A leader is elected by majority vote; the leader appends entries to a replicated log; an entry is committed once a majority has it. Powers <strong>etcd</strong> (Kubernetes' state store), Consul, TiKV, CockroachDB, MongoDB replica sets.</li>
+  <li><strong>Multi-Paxos</strong> is the original — equivalent in power, more subtle in practice. Used inside Google Chubby and Spanner.</li>
+  <li><strong>ZooKeeper</strong> uses <strong>Zab</strong> (Paxos-flavored) and provides a hierarchical namespace for distributed locks, leader election, and config — still widely used (Kafka pre-KRaft, HBase, legacy Hadoop).</li>
+  <li>All consensus protocols require a <strong>majority quorum</strong> (N/2 + 1) to make progress — so a 3-node cluster tolerates 1 failure, 5 tolerates 2. Don't run an even number of nodes.</li>
+  <li>Use a consensus service when you need linearizable config, leader election, or coordination — don't roll your own.</li>
+</ul>
+
+<h3>AI inference serving</h3>
+<p>Serving LLMs and other large models has its own architectural shape: GPUs are expensive, model weights are huge, and requests are bursty and long-running. The <a href="llm-inference-guide.html">LLM inference guide</a> goes deep on engines, batching, and KV-cache math.</p>
+<ul>
+  <li><strong>Inference engines</strong>: <strong>vLLM</strong> (continuous batching, PagedAttention — the open default), <strong>TensorRT-LLM</strong> (NVIDIA-optimized), <strong>SGLang</strong> (structured/agentic workloads), <strong>Triton Inference Server</strong> (multi-framework). They batch incoming requests dynamically to keep the GPU saturated.</li>
+  <li><strong>KV cache</strong> dominates GPU memory at inference time — it stores attention keys/values for the prompt so each new token doesn't recompute history. Sizing the KV cache vs model weights drives how many concurrent requests fit per GPU.</li>
+  <li><strong>Prefix / prompt caching</strong>: shared prompt prefixes (system prompt, RAG context) reuse cached KV across requests — large speedup and cost reduction for chat and agent workloads.</li>
+  <li><strong>Streaming output</strong> via <strong>Server-Sent Events (SSE)</strong> so users see tokens as they're generated rather than waiting for the full response.</li>
+  <li><strong>Batch vs streaming inference</strong>: batch jobs (embeddings over a corpus, offline scoring) maximize throughput; streaming/interactive APIs optimize TTFT (time-to-first-token) and inter-token latency.</li>
+  <li><strong>GPU pooling &amp; scheduling</strong>: route requests to warm replicas, pack small models together (Triton model ensembles), or offload to spot GPUs for batch.</li>
+  <li><strong>Semantic caching</strong>: hash by embedding similarity (e.g., GPTCache) to return a cached LLM response for near-duplicate queries — huge cost lever for FAQ-style traffic.</li>
+</ul>
+
+<h3>Agent orchestration &amp; durable execution</h3>
+<p>Long-running agent flows (multi-step LLM calls, tool use, human approvals) are hard to express as plain request/response — a process crash mid-flow shouldn't lose state. <strong>Durable execution</strong> frameworks persist every step so the workflow resumes exactly where it left off. See the <a href="agentic-ai-guide.html">agentic AI guide</a> for the agent-side patterns (planner/executor loops, tool calling, memory).</p>
+<ul>
+  <li><strong>Temporal</strong> — the leading workflow engine; you write code that looks synchronous, the engine checkpoints each step's result so retries and replays are automatic. Used by Stripe, Snap, Datadog.</li>
+  <li><strong>Restate</strong> — newer, lightweight durable-execution + virtual-actor model, focused on low operational overhead.</li>
+  <li><strong>Inngest</strong> — serverless durable workflows triggered by events; popular for SaaS background jobs and agents.</li>
+  <li>Pattern fits anywhere you have multi-step processes with external calls: agent loops, payment orchestration, onboarding flows, ETL with retries.</li>
+</ul>
+
+<h3>Vector databases (for RAG)</h3>
+<p>Vector DBs store high-dimensional embeddings and do approximate-nearest-neighbor (ANN) search — the substrate for retrieval-augmented generation (RAG) and semantic search. The <a href="ai-engineering-guide.html">AI engineering guide</a> covers the full RAG pipeline (chunking, embeddings, retrieval, reranking, eval).</p>
+<ul>
+  <li><strong>pgvector</strong> — Postgres extension; great default when you already run Postgres and want vectors alongside relational data.</li>
+  <li><strong>Pinecone</strong> — managed, serverless; minimal ops, pay-per-use.</li>
+  <li><strong>Weaviate</strong>, <strong>Qdrant</strong>, <strong>Milvus</strong> — open-source dedicated vector DBs with rich filtering and hybrid (vector + keyword) search.</li>
+  <li>Index types (HNSW, IVF, ScaNN) trade build time, memory, and recall. Most workloads run HNSW.</li>
+  <li>Pair with a reranker (cross-encoder) for higher precision; pure vector recall is rarely enough alone.</li>
 </ul>
 
 <div class="callout callout-tip">
@@ -1609,12 +1738,12 @@ Table urls:
   <tr><td>Memory reference</td><td>~100 ns</td></tr>
   <tr><td>SSD random read</td><td>~16 µs</td></tr>
   <tr><td>Same-DC round trip</td><td>~0.5 ms</td></tr>
-  <tr><td>Disk (HDD) seek</td><td>~2–10 ms</td></tr>
+  <tr><td>Disk (HDD) seek (random)</td><td>~2–10 ms; sequential 1 MB read ~2 ms</td></tr>
   <tr><td>Cross-region round trip</td><td>~70–150 ms</td></tr>
   <tr><td>Seconds in a day</td><td>~86,400 (≈100k)</td></tr>
   <tr><td>Char (ASCII)</td><td>1 byte</td></tr>
   <tr><td>Typical small record</td><td>~100 bytes – 1 KB</td></tr>
-  <tr><td>1 server modern QPS</td><td>~1k–10k (varies hugely)</td></tr>
+  <tr><td>1 server modern QPS</td><td>Go/Rust/async ~50k–200k; Python/Node async ~20k–50k</td></tr>
   <tr><td>99.9% availability</td><td>~8.7 hrs downtime/year</td></tr>
 </table>
 
@@ -1631,7 +1760,7 @@ Table urls:
 
 <div class="callout callout-tip">
   <strong>Final advice</strong>
-  There's no single correct answer in system design — interviewers want to see structured thinking, sensible trade-offs, and the ability to go deep when probed. Drive the conversation with the framework, justify every choice with requirements and numbers, and proactively name the weaknesses of your own design. That self-awareness is what separates senior candidates.
+  There's no single correct answer in system design — interviewers want to see structured thinking, sensible trade-offs, and the ability to go deep when probed. Drive the conversation with the framework, justify every choice with requirements and numbers, and proactively name the weaknesses of your own design. That self-awareness is what separates senior candidates. For the broader interview context — behavioral, ML system design, take-homes — see the <a href="interview-prep.html">interview prep guide</a>.
 </div>
 
 <hr>

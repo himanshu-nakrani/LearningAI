@@ -553,6 +553,7 @@
 
 <h3>Embeddings: meaning as vectors</h3>
 <p>Each token (and whole texts) can be mapped to a high-dimensional vector where <em>distance encodes meaning</em>. Similar concepts land near each other. This is the foundation of semantic search and RAG.</p>
+<p>Note the two distinct kinds of "embedding" you'll encounter: <strong>token embeddings</strong> are internal, contextual vectors the transformer computes as it processes input (they shift with surrounding tokens); <strong>sentence / document embeddings</strong> are fixed vectors produced by a dedicated embedding model (e.g. for RAG and search) representing a whole piece of text. They share the underlying idea but are different artifacts used for different purposes.</p>
 <div class="ascii">  Words placed in vector space (simplified to 2D):
 
         cat o   o dog        (animals cluster)
@@ -626,7 +627,8 @@
 
 <h3>The context window</h3>
 <p>The context window is the model's working memory — the maximum tokens it can consider at once, covering <em>both</em> your input and its output. Everything must fit: system prompt + history + retrieved docs + the answer.</p>
-<div class="ascii">  context window (e.g. 128K tokens) =
+<p>Frontier models now commonly support 1M+ tokens (Gemini 2.5/3, Claude with extended context, GPT-5), so the older 128K ceiling is no longer the norm — but bigger windows still cost more and can dilute attention.</p>
+<div class="ascii">  context window (e.g. 1M tokens) =
   +----------------------------------------------------+
   | system | chat history | RAG docs | user msg | OUTPUT|
   +----------------------------------------------------+
@@ -690,9 +692,11 @@ Review: 'The food was cold' ->
       on hard arithmetic)          = 340 + 68 = 408"
                                -> correct, and inspectable
   
-  Reasoning models (o-series, thinking modes) do this
-  internally. For others, prompt "think step by step"
-  or give a worked example.</div>
+  Reasoning models (GPT-5 thinking, Claude extended
+  thinking on Opus 4.7 / Sonnet 4.6, Gemini thinking
+  models, plus dedicated reasoning models like o3/o4)
+  do this internally. For others, prompt "think step
+  by step" or give a worked example.</div>
 
 <h3>Prompting techniques worth knowing</h3>
 <table>
@@ -723,7 +727,7 @@ Review: 'The food was cold' ->
 <p>To integrate an LLM into software, you need reliable structured output (usually JSON) and the ability to let it call your code. This is what turns a chatbot into a system component.</p>
 
 <h3>Structured output</h3>
-<p>Free-form text is hard to parse. Constrain the model to emit JSON matching a schema, and validate it. Modern APIs support "JSON mode" or schema-constrained decoding that guarantees valid structure.</p>
+<p>Free-form text is hard to parse. Constrain the model to emit JSON matching a schema, and validate it. Modern APIs support "JSON mode" or schema-constrained decoding that guarantees valid structure. (Pydantic patterns are covered in depth in the <a href="python-guide.html">Python Guide</a>.)</p>
 <pre><code>from pydantic import BaseModel
 
 class Extraction(BaseModel):
@@ -775,6 +779,9 @@ data = Extraction.model_validate_json(llm_response)</code></pre>
   Treat a model's tool call like user input: validate arguments, enforce permissions, and sandbox side effects. An LLM (especially if prompt-injected) may request destructive or out-of-scope actions. Never wire a model directly to <code>rm</code>, raw SQL writes, or money movement without guardrails and confirmation.
 </div>
 
+<h3>MCP: the open standard for tools &amp; context</h3>
+<p>Since late 2024, <strong>MCP (Model Context Protocol)</strong> has become the de facto open standard for connecting LLMs to tools and data sources — introduced by Anthropic and now adopted by OpenAI, Google, Microsoft, and AWS, with 10K+ public servers and a 2025 donation to the Linux Foundation under the Agentic AI Foundation. Detail in <a href="agentic-ai-guide.html">Agentic AI Guide</a>.</p>
+
 <hr>
 
 <h2 id="part-5">Part 5 — Embeddings &amp; vector search <span class="tag tag-core">★ CORE</span></h2>
@@ -792,7 +799,7 @@ data = Extraction.model_validate_json(llm_response)</code></pre>
   Meaning matches even when words differ.</div>
 
 <h3>Measuring similarity</h3>
-<p>Cosine similarity (the angle between vectors) is the standard metric — it ignores magnitude and captures direction/meaning. 1.0 = identical meaning, 0 = unrelated.</p>
+<p>Cosine similarity (the angle between vectors) is the standard metric — it ignores magnitude and captures direction/meaning. It ranges from -1 to 1: 1 = identical direction (same meaning), 0 = orthogonal (unrelated), -1 = opposite direction. In practice, embedding models from the same family usually produce non-negative similarities, so most real-world scores fall in the 0–1 range.</p>
 <div class="ascii">           ^
            |    o doc A       small angle (theta)
     query  | . /              -> high cosine similarity
@@ -864,7 +871,7 @@ data = Extraction.model_validate_json(llm_response)</code></pre>
      +------------------+-------------------+
                         v
    prompt = "Answer using ONLY this context:
-             <chunk1> <chunk2> <chunk3> <chunk4>
+             &lt;chunk1&gt; &lt;chunk2&gt; &lt;chunk3&gt; &lt;chunk4&gt;
              Question: What's our refund policy?"
                         |
                         v
@@ -975,7 +982,7 @@ Question: {question}"""
 
 <h2 id="part-8">Part 8 — AI agents: the core loop <span class="tag tag-core">★ CORE</span></h2>
 
-<p>An agent is an LLM that can <strong>reason, act, observe, and repeat</strong> to accomplish a goal — instead of producing a single response. The model decides which tools to call, looks at the results, and keeps going until the task is done. The dominant pattern is <strong>ReAct</strong> (Reason + Act).</p>
+<p>An agent is an LLM that can <strong>reason, act, observe, and repeat</strong> to accomplish a goal — instead of producing a single response. The model decides which tools to call, looks at the results, and keeps going until the task is done. The dominant pattern is <strong>ReAct</strong> (Reason + Act). For a deeper treatment of planning patterns, MCP, multi-agent topologies, and production agent infra, see the <a href="agentic-ai-guide.html">Agentic AI Guide</a>.</p>
 
 <h3>The agent loop</h3>
 <div class="ascii">                  +-----------------------------+
@@ -1046,7 +1053,7 @@ Question: {question}"""
 
 <h2 id="part-9">Part 9 — Multi-agent systems &amp; orchestration <span class="tag tag-concept">◆ CONCEPT</span></h2>
 
-<p>When one agent's prompt gets overloaded with tools and responsibilities, split the work across specialized agents that collaborate. Each agent has a focused role, fewer tools, and a clearer prompt.</p>
+<p>When one agent's prompt gets overloaded with tools and responsibilities, split the work across specialized agents that collaborate. Each agent has a focused role, fewer tools, and a clearer prompt. (See the <a href="agentic-ai-guide.html">Agentic AI Guide</a> for in-depth topology, A2A, and orchestration coverage.)</p>
 
 <h3>Common topologies</h3>
 <div class="ascii">  SUPERVISOR (orchestrator-worker):
@@ -1311,12 +1318,16 @@ Question: {question}"""
 
 <h3>Hosted API vs self-hosted</h3>
 <table>
-  <tr><th scope="col">Hosted API (OpenAI, Anthropic, Bedrock)</th><th scope="col">Self-hosted (open models)</th></tr>
+  <tr><th scope="col">Hosted API (OpenAI, Anthropic, Google, Bedrock)</th><th scope="col">Self-hosted (open models)</th></tr>
   <tr><td>No infra; best models; fast to ship</td><td>Full control, data stays in-house</td></tr>
   <tr><td>Pay per token; data leaves your network</td><td>Fixed GPU cost; you run the infra</td></tr>
   <tr><td>Rate limits, vendor lock-in</td><td>Predictable cost at high volume; ops burden</td></tr>
   <tr><td>Great default to start</td><td>Wins at scale / strict privacy / customization</td></tr>
 </table>
+
+<p>For a deep dive into the self-hosted side (KV cache, batching, quantization, vLLM/TensorRT-LLM, autoscaling) see the <a href="llm-inference-guide.html">LLM Inference Guide</a>. For a side-by-side of the hosted offerings across AWS, Azure, and GCP, see the <a href="cloud-ai-comparison.html">Cloud AI Comparison</a>.</p>
+
+<p>Hosted providers all offer prompt caching to cut cost on repeated prefixes: Anthropic's explicit <code>cache_control</code> gives up to ~90% discount on cached tokens; OpenAI's implicit caching gives ~50% discount; Gemini offers both implicit and explicit context caching. Structure prompts to maximize prefix reuse.</p>
 
 <h3>The cost &amp; latency levers</h3>
 <div class="ascii">  COST drivers:  tokens_in + tokens_out, model size,

@@ -520,7 +520,7 @@
 az login
 az group create --name myRG --location eastus
 az vm create --resource-group myRG --name myVM \
-   --image Ubuntu2204 --admin-username azureuser \
+   --image Ubuntu2404 --admin-username azureuser \
    --generate-ssh-keys</code></pre>
 
 <div class="callout callout-tip">
@@ -702,6 +702,26 @@ az vm create --resource-group myRG --name myVM \
   <strong>Default to Container Apps for new microservices</strong>
   AKS is powerful but you own upgrades, node pools, networking, and scaling config. Azure Container Apps gives you containers, autoscaling (including to zero), revisions, and Dapr integration without managing the cluster. Reach for AKS only when you need raw Kubernetes control.
 </div>
+
+<h3>AKS Automatic (GA Sep 2025)</h3>
+<p>A new "easy mode" SKU for AKS: Microsoft manages the control plane and applies opinionated production defaults so teams can ship without becoming Kubernetes operators. Key traits:</p>
+<ul>
+  <li><strong>Networking</strong>: Azure CNI Overlay with Cilium dataplane by default (eBPF policy/observability).</li>
+  <li><strong>Autoscaling</strong>: node-level scaling via <strong>Karpenter</strong> (NAP — Node Auto Provisioning), no manual node-pool tuning.</li>
+  <li><strong>Defaults</strong>: hardened cluster posture (Defender, Policy, image cleaner, deployment safeguards) on by default; pod-readiness SLA of 5 minutes.</li>
+  <li>Billing transition for existing preview clusters landed Oct 19, 2025. Positioned as a middle ground between Container Apps and full Standard AKS.</li>
+</ul>
+
+<h3>ACA Serverless GPU (GA Apr 2025)</h3>
+<p>Container Apps now offers serverless GPU workloads — bring a GPU container, scale to zero, pay per second of use. Useful for inference, fine-tuning steps, and batch ML without standing up an AKS GPU pool. See the <a href="llm-inference-guide.html">LLM inference guide</a> for sizing GPU serving (batching, KV cache, throughput vs latency).</p>
+<ul>
+  <li>Hardware: NVIDIA <strong>A100</strong> and <strong>T4</strong> SKUs.</li>
+  <li>Supports <strong>NVIDIA NIM</strong> microservices out of the box.</li>
+  <li>Build 2025 added <strong>Dedicated GPU</strong> profiles (GA); Ignite 2025 expanded to 11 additional regions.</li>
+</ul>
+
+<h3>Container Apps Flex Consumption (GA 2024)</h3>
+<p>The recommended successor to the original Consumption plan: keeps scale-to-zero and per-second billing but largely eliminates cold starts through always-ready / pre-provisioned instances and faster startup paths. Prefer Flex Consumption for new ACA workloads where cold-start latency matters.</p>
 
 <hr>
 
@@ -919,7 +939,7 @@ az vm create --resource-group myRG --name myVM \
   Data Factory = managed ETL/ELT orchestration (pipelines)
   Synapse = unified analytics (SQL pools + Spark + pipelines)
   Databricks = premier Spark platform (lakehouse, ML)
-  Microsoft Fabric = newer all-in-one SaaS analytics
+  Microsoft Fabric = unified SaaS analytics (GA Nov 2023)
   Power BI = BI / visualization</div>
 
 <table>
@@ -933,8 +953,8 @@ az vm create --resource-group myRG --name myVM \
 </table>
 
 <div class="callout callout-tip">
-  <strong>Fabric is Microsoft's strategic bet</strong>
-  Microsoft Fabric unifies Data Factory, Synapse, and Power BI into one SaaS experience over a shared lake (OneLake). For greenfield analytics, evaluate Fabric. For existing estates, Synapse + Databricks + Data Factory remain widely used.
+  <strong>Fabric is Microsoft's strategic analytics platform</strong>
+  GA'd in November 2023, Microsoft Fabric unifies Data Factory, Synapse, and Power BI into one SaaS experience over a shared lake (<strong>OneLake</strong>). Key capabilities: <strong>OneLake shortcuts</strong> (zero-copy references to data in ADLS/S3/GCS), <strong>Direct Lake mode</strong> in Power BI (query Parquet/Delta in OneLake without import or DirectQuery overhead), <strong>Real-Time Intelligence</strong> for streaming/KQL workloads, and <strong>Fabric Data Agents</strong> (natural-language agents grounded in your lakehouse/warehouse). For greenfield analytics, evaluate Fabric first; existing estates still run Synapse + Databricks + Data Factory.
 </div>
 
 <hr>
@@ -950,40 +970,82 @@ az vm create --resource-group myRG --name myVM \
        Document Intelligence, Content Safety
 
   2. GENERATIVE AI (foundation models)
-     Azure OpenAI Service: GPT-4o, GPT-4, o-series,
-       embeddings, DALL-E -- enterprise-grade, in your tenant
-     Azure AI Foundry: build/deploy/govern AI apps & agents
-     Azure AI Search: vector + keyword search for RAG
+     Azure AI Foundry: the umbrella for AI app/agent dev
+       (replaced AI Studio in Nov 2024)
+     Azure OpenAI (under Foundry / AI model inference):
+       GPT-5 family, o3/o4 reasoning, embeddings,
+       GPT-image-1, Sora -- in your tenant
+     Azure AI Search: vector + keyword + agentic retrieval
 
   3. CUSTOM ML (build your own models)
      Azure Machine Learning: full MLOps platform
        (train, tune, deploy, monitor, pipelines)</div>
 
+<h3>Azure AI Foundry (the umbrella)</h3>
+<p>Azure AI Foundry replaced Azure AI Studio in November 2024 and is now the canonical place to build, evaluate, deploy, and govern generative AI applications and agents on Azure. See the <a href="ai-engineering-guide.html">AI engineering guide</a> for cloud-agnostic RAG/eval patterns and the <a href="agentic-ai-guide.html">agentic AI guide</a> for the agent frameworks that plug into the Agents Service. It bundles:</p>
+<ul>
+  <li><strong>Model catalog</strong> — Azure OpenAI plus first/third-party models: Llama, Mistral, <strong>Phi</strong>, DeepSeek, and more, deployable as Standard (PAYG) or Provisioned (PTU) endpoints.</li>
+  <li><strong>AI Foundry Agents Service</strong> — the canonical agent runtime on Azure (tools, threads, memory, file search, code interpreter, function calling). Successor to the preview Assistants/Agents APIs.</li>
+  <li><strong>Prompt flow</strong> — author, version, and trace prompt/RAG pipelines.</li>
+  <li><strong>Evaluation &amp; tracing</strong> — built-in safety + quality evaluators, OpenTelemetry-style traces for debugging agents.</li>
+  <li><strong>Content Safety integration</strong> — prompt shields, groundedness detection, protected-material checks wired in by default.</li>
+</ul>
+
+<h3>Azure OpenAI: current model lineup (2026)</h3>
+<table>
+  <tr><th scope="col">Family</th><th scope="col">Notes</th></tr>
+  <tr><td>GPT-5, GPT-5 mini, GPT-5 nano</td><td>Current flagship general-purpose chat/completion family</td></tr>
+  <tr><td>o3, o4 reasoning models</td><td>Deliberate reasoning for math/code/planning</td></tr>
+  <tr><td>text-embedding-3-large</td><td>Embeddings for retrieval/RAG</td></tr>
+  <tr><td>GPT-image-1</td><td>Image generation (DALL-E successor)</td></tr>
+  <tr><td>Sora</td><td>Video generation</td></tr>
+</table>
+<p><strong>Retired:</strong> GPT-4 (non-turbo) is retired in Azure OpenAI. GPT-4o remains available in some regions but new builds should target GPT-5 / o-series.</p>
+
+<h3>Microsoft Phi (small language models)</h3>
+<p>The <strong>Phi family</strong> (Phi-3, Phi-3.5, Phi-4) is Microsoft's flagship open-weight SLM line: strong reasoning per parameter, small enough for edge / on-device / CPU inference, and available in the AI Foundry model catalog as managed deployments. Common picks when you need cheap latency-sensitive inference or fine-tuning on a small base.</p>
+
 <table>
   <tr><th scope="col">Service</th><th scope="col">Use for</th></tr>
-  <tr><td>Azure OpenAI Service</td><td>GPT / o-series / DALL-E / embeddings in your tenant with enterprise controls</td></tr>
-  <tr><td>Azure AI Foundry</td><td>Build, evaluate, deploy &amp; govern GenAI apps and agents (model catalog, prompt flow)</td></tr>
-  <tr><td>Azure AI Search</td><td>Hybrid (vector + keyword) retrieval — the backbone of RAG on Azure</td></tr>
+  <tr><td>Azure AI Foundry</td><td>Umbrella for GenAI apps + agents: model catalog, Agents Service, prompt flow, evals, tracing</td></tr>
+  <tr><td>Azure OpenAI (under Foundry)</td><td>GPT-5 / o-series / embeddings / GPT-image-1 / Sora with enterprise controls</td></tr>
+  <tr><td>Azure AI Search</td><td>Hybrid (vector + keyword) retrieval, semantic reranker, integrated vectorization, agentic retrieval — backbone of RAG on Azure</td></tr>
   <tr><td>Azure AI Services</td><td>Pre-built APIs: vision, speech, language, doc intelligence</td></tr>
   <tr><td>Azure Machine Learning</td><td>Custom model training &amp; full MLOps lifecycle</td></tr>
-  <tr><td>Azure AI Content Safety</td><td>Moderate text/image for harmful content; prompt-shield</td></tr>
+  <tr><td>Azure AI Content Safety</td><td>Moderate text/image; prompt shields, groundedness, protected material</td></tr>
+  <tr><td>Microsoft Copilot Studio</td><td>Low-code builder for custom Copilots / agents that ground in your data and call tools (M365 + Azure)</td></tr>
 </table>
+
+<h3>Azure AI Search — what's worth knowing</h3>
+<ul>
+  <li>Renamed from Azure Cognitive Search; now the primary retrieval engine for RAG and agentic apps.</li>
+  <li><strong>Integrated vectorization</strong>: indexer can chunk + embed documents end-to-end using a configured embedding model (no separate pipeline needed).</li>
+  <li><strong>Agentic retrieval</strong> (GA 2025): a query planner decomposes a user question into sub-queries, runs hybrid search per sub-query, and merges results — designed for LLM agents.</li>
+  <li><strong>Vector indexes</strong>: HNSW (approximate, fast, default) vs exhaustive KNN (exact, small corpora / ground truth eval).</li>
+  <li><strong>Hybrid + semantic reranker</strong>: combine BM25 keyword + vector recall, then re-rank top-k with a cross-encoder for relevance gains.</li>
+</ul>
 
 <h3>A typical RAG architecture on Azure</h3>
 <div class="ascii">  docs -> Document Intelligence (extract) -> chunk
-        -> Azure OpenAI (embeddings) -> Azure AI Search
-                                          (vector index)
-  
+        -> Azure AI Search (integrated vectorization
+                            calls embeddings model)
+        -> vector + keyword hybrid index
+
   user question
-     -> embed (Azure OpenAI)
-     -> Azure AI Search (hybrid retrieve + semantic rank)
-     -> Azure OpenAI (GPT-4o) with retrieved context
+     -> Azure AI Search (hybrid retrieve + semantic
+                         rerank, or agentic retrieval)
+     -> Azure OpenAI (GPT-5 / o-series) with context
      -> grounded answer + citations
      -> Content Safety checks in/out</div>
 
 <div class="callout callout-tip">
   <strong>Azure OpenAI vs OpenAI direct</strong>
-  Azure OpenAI runs the same models inside your Azure tenant with enterprise features: VNet/Private Link, Entra ID auth, regional data residency, content filtering, and SLAs. Enterprises choose it for governance and compliance. The API is largely compatible with OpenAI's, so porting is straightforward.
+  Azure OpenAI runs the same models inside your Azure tenant with enterprise features: VNet/Private Link, Entra ID auth, regional data residency, content filtering, and SLAs. Enterprises choose it for governance and compliance. The API is largely compatible with OpenAI's, so porting is straightforward. In 2026 Azure OpenAI sits underneath the broader <strong>Azure AI Foundry / AI model inference</strong> umbrella alongside the wider model catalog. For how this compares to <a href="aws-guide.html">AWS Bedrock</a> and <a href="gcp-guide.html">GCP Vertex AI</a>, see the <a href="cloud-ai-comparison.html">cloud AI comparison</a>.
+</div>
+
+<div class="callout callout-warn">
+  <strong>Personalizer retires Oct 1, 2026</strong>
+  Azure AI <strong>Personalizer</strong> (contextual-bandit ranking service) is being retired on <strong>October 1, 2026</strong>; no new resources have been creatable since Sep 20, 2023. Migrate existing usage to a custom RL/bandit pipeline (e.g., on Azure ML) or rule/embedding-based personalization.
 </div>
 
 <hr>
@@ -999,11 +1061,15 @@ az vm create --resource-group myRG --name myVM \
 </table>
 
 <pre><code>// Bicep — declare a storage account
-resource sa 'Microsoft.Storage/storageAccounts@2023-01-01' = {
+resource sa 'Microsoft.Storage/storageAccounts@2024-01-01' = {
   name: 'mystorage${uniqueString(resourceGroup().id)}'
   location: resourceGroup().location
   sku: { name: 'Standard_LRS' }
   kind: 'StorageV2'
+  properties: {
+    minimumTlsVersion: 'TLS1_2'
+    allowBlobPublicAccess: false
+  }
 }</code></pre>
 
 <h3>CI/CD</h3>
@@ -1022,7 +1088,7 @@ resource sa 'Microsoft.Storage/storageAccounts@2023-01-01' = {
     +-- Dashboards / Workbooks   visualize
 
   KQL (Kusto Query Language) is how you query logs:
-    requests | where resultCode == 500
+    requests | where resultCode == "500"
              | summarize count() by bin(timestamp, 5m)</div>
 
 <div class="callout callout-tip">
@@ -1073,6 +1139,8 @@ resource sa 'Microsoft.Storage/storageAccounts@2023-01-01' = {
 
 <h2 id="part-14">Part 14 — Architecture patterns &amp; cheat sheet</h2>
 
+<p>For cloud-agnostic distributed-systems patterns (load balancing, caching, queues, consistency) behind the architectures below, see the <a href="system-design-guide.html">system design guide</a>.</p>
+
 <h3>Reference: a typical 3-tier web app on Azure</h3>
 <div class="ascii">          Azure Front Door (global LB + CDN + WAF)
                         |
@@ -1114,7 +1182,7 @@ resource sa 'Microsoft.Storage/storageAccounts@2023-01-01' = {
   <tr><td>Enterprise messaging</td><td>Service Bus</td></tr>
   <tr><td>Event streaming</td><td>Event Hubs</td></tr>
   <tr><td>Secrets/keys</td><td>Key Vault</td></tr>
-  <tr><td>GenAI / LLMs</td><td>Azure OpenAI + AI Search + AI Foundry</td></tr>
+  <tr><td>GenAI / LLMs</td><td>Azure AI Foundry (+ Azure OpenAI + AI Search)</td></tr>
   <tr><td>ETL pipelines</td><td>Data Factory</td></tr>
   <tr><td>Big-data analytics</td><td>Synapse / Databricks / Fabric</td></tr>
   <tr><td>Monitoring</td><td>Azure Monitor + App Insights</td></tr>

@@ -545,14 +545,19 @@
   <li>STAR stories are drafted from your actual resume bullets — edit them to match reality before the interview.</li>
 </ul>
 
+<div class="callout callout-tip">
+  <strong>Companion guides</strong>
+  This page is the synthesis layer. When a section gets too dense, branch to the dedicated guide: <a href="python-guide.html">Python</a>, <a href="dsa-guide.html">DSA</a>, <a href="system-design-guide.html">system design</a>, <a href="ai-engineering-guide.html">AI engineering</a>, <a href="agentic-ai-guide.html">agentic AI</a>, <a href="llm-inference-guide.html">LLM inference</a>, and the cloud guides (<a href="aws-guide.html">AWS</a>, <a href="azure-guide.html">Azure</a>, <a href="gcp-guide.html">GCP</a>, <a href="cloud-ai-comparison.html">cloud AI comparison</a>).
+</div>
+
 <hr>
 
 <h2 id="part-1">Part 1 — AWS AgentCore <span class="tag tag-core">★ CORE</span> <span class="tag tag-gap">GAP</span></h2>
 
-<p>This is named explicitly in the JD. If you walk in not knowing what AgentCore is, you lose the interview. Spend 4 hours on this minimum.</p>
+<p>This is named explicitly in the JD. If you walk in not knowing what AgentCore is, you lose the interview. Spend 4 hours on this minimum. (For the broader agent design patterns and frameworks, see the <a href="agentic-ai-guide.html">agentic AI guide</a>; for the surrounding AWS services it composes with, see the <a href="aws-guide.html">AWS guide</a>.)</p>
 
 <h3>1.1 What is AWS Bedrock AgentCore?</h3>
-<p>AgentCore is AWS's framework (announced 2024, GA mid-2025) for building, deploying, and operating production AI agents. It is <strong>framework-agnostic</strong> — you can use LangGraph, CrewAI, Strands, or your own code; AgentCore provides the runtime and the supporting services.</p>
+<p>AgentCore is AWS's framework for building, deploying, and operating production AI agents. It was announced in <strong>preview on July 16 2025</strong> and went <strong>GA on October 13 2025</strong>. As of 2026 it is available in <strong>9 regions</strong> and ships <strong>7 services</strong> (Runtime, Memory, Identity, Gateway, Code Interpreter, Browser, Observability). It is <strong>framework-agnostic</strong> — you can use LangGraph, CrewAI, Strands, or your own code; AgentCore provides the runtime and the supporting services.</p>
 
 <p>Think of it as <em>"managed infra for agents"</em>, the way ECS/Fargate is managed infra for containers. It is not a single product — it's a collection of services under the AgentCore umbrella.</p>
 
@@ -628,8 +633,8 @@ from langgraph.graph import StateGraph
 graph = StateGraph(...)  # your agent logic
 
 # 2. Wrap as Runtime-compatible handler
-from bedrock_agentcore import RuntimeApp
-app = RuntimeApp()
+from bedrock_agentcore.runtime import BedrockAgentCoreApp
+app = BedrockAgentCoreApp()
 
 @app.entrypoint
 def invoke(payload):
@@ -710,7 +715,7 @@ def invoke(payload):
 
 <h2 id="part-2">Part 2 — AWS data engineering stack <span class="tag tag-core">★ CORE</span> <span class="tag tag-gap">GAP</span></h2>
 
-<p>The JD lists: S3, Glue, Lambda, DynamoDB, EventBridge, MSK/SQS. You must speak fluently and quickly. Each subsection below is structured: <em>what it is → key features → gotchas → when to use vs. not → interview Q&amp;A.</em></p>
+<p>The JD lists: S3, Glue, Lambda, DynamoDB, EventBridge, MSK/SQS. You must speak fluently and quickly. Each subsection below is structured: <em>what it is → key features → gotchas → when to use vs. not → interview Q&amp;A.</em> For deeper reference on any of these, see the <a href="aws-guide.html">AWS guide</a>.</p>
 
 <h3>2.1 Amazon S3</h3>
 <h4>Core concepts</h4>
@@ -832,7 +837,7 @@ def invoke(payload):
 <ul>
   <li><strong>Partition key (PK)</strong> — hashed to a partition. <strong>Sort key (SK)</strong> — optional, orders items within a partition.</li>
   <li>An item is up to 400 KB.</li>
-  <li><strong>RCU/WCU</strong>: 1 RCU = 1 strongly-consistent read of 4 KB/s (or 2 eventually-consistent). 1 WCU = 1 write of 1 KB/s.</li>
+  <li><strong>RCU/WCU</strong>: 1 RCU = 1 strongly-consistent read per second for items up to 4 KB (or 2 eventually-consistent reads per second). 1 WCU = 1 write per second for items up to 1 KB. Larger items consume proportionally more units (a 12 KB strongly-consistent read = 3 RCU).</li>
   <li><strong>On-demand</strong> billing: pay per request, no capacity planning. Default for unpredictable workloads.</li>
   <li><strong>Provisioned</strong> with auto-scaling: cheaper for steady high traffic.</li>
 </ul>
@@ -1054,7 +1059,7 @@ ORDER#999       ITEM#1              Item    sku, qty
 
 <h2 id="part-3">Part 3 — PySpark &amp; distributed processing <span class="tag tag-core">★ CORE</span> <span class="tag tag-gap">GAP</span></h2>
 
-<p>You don't list PySpark on your resume. The JD requires it. You don't need to be an expert — you need to demonstrate that you understand the model deeply enough to be productive in weeks.</p>
+<p>You don't list PySpark on your resume. The JD requires it. You don't need to be an expert — you need to demonstrate that you understand the model deeply enough to be productive in weeks. (PySpark is a Python API — sharpen up the Python fundamentals in the <a href="python-guide.html">Python guide</a> alongside this.)</p>
 
 <div class="callout callout-tip">
   <strong>Honesty pivot</strong>
@@ -1166,22 +1171,35 @@ ORDER#999       ITEM#1              Item    sku, qty
 
 <pre><code>from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, to_date, broadcast
+from pyspark.sql.types import StructType, StructField, StringType, DoubleType, TimestampType
 
 spark = SparkSession.builder.appName("ingest-vendor-data").getOrCreate()
+
+# Define schema explicitly in prod — see gotcha note below
+schema = StructType([
+    StructField("txn_id", StringType(), nullable=False),
+    StructField("customer_id", StringType(), nullable=False),
+    StructField("amount", DoubleType(), nullable=True),
+    StructField("ts", TimestampType(), nullable=True),
+])
 
 # Read raw
 raw = (spark.read
        .option("header", "true")
-       .option("inferSchema", "false")  # define schema explicitly in prod
+       .schema(schema)   # explicit schema beats inferSchema in prod
        .csv("s3://lake-raw/vendor=acme/year=2025/month=11/"))
 
 # Clean
 clean = (raw
          .withColumn("event_date", to_date(col("ts")))
          .filter(col("amount").isNotNull() &amp; (col("amount") &gt; 0))
-         .dropDuplicates(["txn_id"]))
+         .dropDuplicates(["txn_id"]))</code></pre>
 
-# Enrich with broadcast lookup
+<div class="callout callout-tip">
+  <strong>Gotcha:</strong> If you use <code>inferSchema=false</code> without supplying an explicit <code>.schema(...)</code>, every column comes through as <code>StringType</code>. A predicate like <code>col("amount") &gt; 0</code> then performs a <em>lexicographic string compare</em>, not numeric — silently dropping/keeping wrong rows. Either pass a <code>StructType</code> (preferred in prod) or set <code>inferSchema=true</code> (cheap dev). Never rely on implicit string-to-numeric coercion in PySpark filters.
+</div>
+
+<pre><code># Enrich with broadcast lookup
 lookup = spark.read.parquet("s3://lake-curated/customer_dim/")
 enriched = clean.join(broadcast(lookup), "customer_id", "left")
 
@@ -1323,7 +1341,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
 
 <h2 id="part-5">Part 5 — Agentic AI deep dive <span class="tag tag-core">★ CORE</span></h2>
 
-<p>This is the core technical theme of the JD. You have direct experience (Agent Forge) — your job is to articulate it at <em>architect</em> level, not just <em>builder</em> level.</p>
+<p>This is the core technical theme of the JD. You have direct experience (Agent Forge) — your job is to articulate it at <em>architect</em> level, not just <em>builder</em> level. The <a href="agentic-ai-guide.html">agentic AI guide</a> is the deep reference for patterns and frameworks; the <a href="ai-engineering-guide.html">AI engineering guide</a> covers the production scaffolding (eval, RAG, structured outputs, observability) every agent sits on top of.</p>
 
 <h3>5.1 What makes a system "agentic"</h3>
 <p>An agent is an LLM-driven system where the model dynamically decides:</p>
@@ -1429,9 +1447,9 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
 </tr>
 <tr>
   <td><strong>CrewAI</strong></td>
-  <td>Role-based, easy multi-agent setup</td>
-  <td>Less mature, opinionated</td>
-  <td>Quick multi-agent POCs</td>
+  <td>Role-based, easy multi-agent setup; widely deployed in production by 2026</td>
+  <td>Opinionated abstractions; less explicit control flow than LangGraph</td>
+  <td>Multi-agent systems where role/persona decomposition fits</td>
 </tr>
 <tr>
   <td><strong>AutoGen</strong></td>
@@ -1507,10 +1525,12 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
 
 <h3>5.7 Production concerns for agents</h3>
 
+<p class="meta">For the inference-stack side of these (KV cache sizing, prefix caching, continuous batching, streaming), see the <a href="llm-inference-guide.html">LLM inference guide</a>.</p>
+
 <h4>Cost control</h4>
 <ul>
   <li><strong>Prompt caching</strong> — Anthropic supports it; cache the system prompt + tool definitions. Cuts cost 90%+ on repeat invocations.</li>
-  <li><strong>Model routing</strong> — Haiku for simple, Sonnet for default, Opus for hard. A router model classifies first.</li>
+  <li><strong>Model routing</strong> — Haiku 4.5 for simple, Sonnet 4.6 for default, Opus 4.7 for hard. A router model classifies first.</li>
   <li><strong>Token budgets per agent</strong> — fail fast if exceeded.</li>
   <li><strong>Context compression</strong> — summarize old turns instead of keeping verbatim.</li>
 </ul>
@@ -1520,7 +1540,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
   <li><strong>Parallel tool calls</strong> — Anthropic supports emitting multiple tool calls in one turn; execute them concurrently.</li>
   <li><strong>Streaming</strong> — start UI updates before full response.</li>
   <li><strong>Speculative execution</strong> — start likely-next steps before model confirms.</li>
-  <li><strong>Smaller models for sub-tasks</strong> — Haiku for routing, Sonnet for reasoning.</li>
+  <li><strong>Smaller models for sub-tasks</strong> — Haiku 4.5 for routing, Sonnet 4.6 for reasoning.</li>
 </ul>
 
 <h4>Safety &amp; guardrails</h4>
@@ -1566,15 +1586,15 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
 
 <h2 id="part-6">Part 6 — LLM fundamentals <span class="tag tag-likely">LIKELY</span></h2>
 
-<p>You know most of this. This section is a refresher and a checklist of terms you might be asked to define.</p>
+<p>You know most of this. This section is a refresher and a checklist of terms you might be asked to define. For depth, the <a href="llm-inference-guide.html">LLM inference guide</a> covers the runtime/serving side (attention, KV cache, batching, decoding) and the <a href="ai-engineering-guide.html">AI engineering guide</a> covers the application side (prompting, RAG, eval, structured output).</p>
 
 <h3>6.1 Transformer architecture</h3>
 <ul>
   <li><strong>Attention</strong> — Q, K, V matrices; <code>softmax(QK^T / sqrt(d_k)) V</code>. Each token attends to every other token weighted by similarity.</li>
   <li><strong>Multi-head attention (MHA)</strong> — multiple attention heads in parallel, concatenated.</li>
-  <li><strong>Grouped-query attention (GQA)</strong> — share K, V across head groups. Reduces KV cache size; used in Llama 2 70B, most modern open models.</li>
+  <li><strong>Grouped-query attention (GQA)</strong> — share K, V across head groups. Reduces KV cache size; standard in Llama 3.x / Llama 4 and most modern open models.</li>
   <li><strong>Multi-query attention (MQA)</strong> — extreme case, all heads share K, V. Fastest, slight quality cost.</li>
-  <li><strong>Mixture of Experts (MoE)</strong> — sparse activation, only a subset of experts per token. Mistral, DeepSeek, GPT-4 reportedly. More params, similar compute.</li>
+  <li><strong>Mixture of Experts (MoE)</strong> — sparse activation, only a subset of experts per token. Mistral, DeepSeek-V3/R1, GPT-4 / GPT-5. More params, similar compute.</li>
   <li><strong>RoPE</strong> — rotary positional embeddings. Standard now over absolute/learned positions.</li>
 </ul>
 
@@ -1669,7 +1689,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
 
 <div class="qa">
   <div class="qa-q">Q: Your Alpha Copilot Text-to-SQL went from 25-30s to 6-8s. Walk me through the optimizations.</div>
-  <div class="qa-a">Several layers stacked. (1) Prompt caching — system prompt with schema context was static, so caching cut TTFT by ~40%. (2) Schema retrieval — instead of stuffing the whole schema, we vector-retrieved only relevant tables based on the query. Smaller prompt = faster. (3) Few-shot example selection — pre-computed embeddings of canonical query patterns; semantic-search to pick 3-5 most relevant. (4) Async pipeline — SQL generation and visualization spec generation ran in parallel. (5) Streaming — started rendering before the full response. (6) Model routing — Haiku for simple lookups, Sonnet for complex multi-table joins. Combined, those took us from 25-30s to 6-8s.</div>
+  <div class="qa-a">Several layers stacked. (1) Prompt caching — system prompt with schema context was static, so caching cut TTFT by ~40%. (2) Schema retrieval — instead of stuffing the whole schema, we vector-retrieved only relevant tables based on the query. Smaller prompt = faster. (3) Few-shot example selection — pre-computed embeddings of canonical query patterns; semantic-search to pick 3-5 most relevant. (4) Async pipeline — SQL generation and visualization spec generation ran in parallel. (5) Streaming — started rendering before the full response. (6) Model routing — Haiku 4.5 for simple lookups, Sonnet 4.6 for complex multi-table joins. Combined, those took us from 25-30s to 6-8s.</div>
 </div>
 
 <hr>
@@ -1975,7 +1995,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
 
 <div class="qa">
   <div class="qa-q">Q: What's novel about GoT4SQL-DA?</div>
-  <div class="qa-a">The contribution is using Graph-of-Thoughts as a data augmentation engine for Text-to-SQL training. Existing augmentation methods produce simple paraphrases. We use GoT to generate multi-path reasoning over a query — the graph captures alternative SQL formulations, decomposition strategies, and intermediate reasoning. Each path produces a training example. The augmented dataset improved Text-to-SQL fine-tuning by [insert your specific number] points on the Spider benchmark over the same dataset without augmentation. The high-level idea is: structure your synthetic data the way you want your model to think.</div>
+  <div class="qa-a">The contribution is using Graph-of-Thoughts as a data augmentation engine for Text-to-SQL training. Existing augmentation methods produce simple paraphrases. We use GoT to generate multi-path reasoning over a query — the graph captures alternative SQL formulations, decomposition strategies, and intermediate reasoning. Each path produces a training example. The augmented dataset improved Text-to-SQL fine-tuning by [insert your specific number] points on the Spider benchmark over the same dataset without augmentation. The high-level idea is: structure your synthetic data the way you want your model to think. <strong>Note for 2026 interviews:</strong> Spider alone is now dated; the current Text-to-SQL benchmarks reviewers expect you to know are <strong>BIRD-SQL</strong> (large, realistic, includes external knowledge) and <strong>Spider 2.0</strong> (multi-step, real enterprise schemas). Be ready to discuss how your augmentation approach would generalize to those harder benchmarks.</div>
 </div>
 
 <div class="qa">
@@ -1996,7 +2016,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
 
 <h2 id="part-9">Part 9 — System design scenarios <span class="tag tag-core">★ CORE</span></h2>
 
-<p>Five worked walkthroughs. Practice drawing each on paper from memory. The framework: <em>(1) clarify, (2) estimate scale, (3) high-level architecture, (4) drill into 1-2 components, (5) failure modes and scaling, (6) explicit tradeoffs.</em></p>
+<p>Five worked walkthroughs. Practice drawing each on paper from memory. The framework: <em>(1) clarify, (2) estimate scale, (3) high-level architecture, (4) drill into 1-2 components, (5) failure modes and scaling, (6) explicit tradeoffs.</em> For the broader system design toolkit — back-of-envelope numbers, caching, sharding, consensus, worked classic designs — see the <a href="system-design-guide.html">system design guide</a>.</p>
 
 <h3>9.1 Framework for any system design answer</h3>
 <ol>
@@ -2008,6 +2028,96 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
   <li><strong>Scaling</strong> — what's the bottleneck at 10x scale? How do you address?</li>
   <li><strong>Tradeoffs</strong> — explicitly name choices and alternatives.</li>
 </ol>
+
+<h3>9.1a ML system design framework (the seven-stage template)</h3>
+
+<p>When the question is "design an ML system" (recommender, fraud detector, churn predictor, anything trained), walk through these seven stages out loud. Reviewers want to hear the structure as much as the answer.</p>
+
+<ol>
+  <li><strong>Problem framing</strong> — translate the business goal into an ML problem. Classification vs. regression vs. ranking vs. generation. What's the unit of prediction? What's the label, where does it come from, what's the labeling delay?</li>
+  <li><strong>Data</strong> — sources, volume, freshness, PII, sampling strategy, train/val/test split (random vs. time-based — almost always time-based in prod), class imbalance handling.</li>
+  <li><strong>Features</strong> — feature engineering, feature store (online vs. offline parity), leakage prevention, point-in-time correctness for time-series.</li>
+  <li><strong>Model</strong> — start with a baseline (logistic regression, gradient boosting). Justify any deep model. Tuning protocol, regularization, calibration.</li>
+  <li><strong>Serving</strong> — batch vs. real-time vs. streaming. Latency budget, model registry, A/B vs. shadow vs. canary, fallback when model is down.</li>
+  <li><strong>Monitoring</strong> — data drift, feature drift, prediction drift, label delay, model staleness. Alerting thresholds. Retraining cadence and trigger.</li>
+  <li><strong>Online vs. offline metrics</strong> — offline (AUC, NDCG, RMSE) is necessary but not sufficient. Tie to a business KPI (conversion, revenue, fraud loss). Pre-register the online experiment design.</li>
+</ol>
+
+<div class="callout callout-tip">
+  <strong>Memory hook:</strong> <em>"Problem → Data → Features → Model → Serving → Monitoring → Metrics."</em> Say each phase name aloud as you draw the boxes.
+</div>
+
+<h3>9.1b "Design ChatGPT / a coding copilot / an agent" — LLM-product template</h3>
+
+<p>This is the most common 2026 system-design question for a Lead AI role. The structure:</p>
+
+<ol>
+  <li><strong>Requirements clarification</strong> — Consumer or enterprise? Single-tenant or multi-tenant? Streaming responses? Conversation memory? Languages/modalities? Latency SLO (TTFT vs. total)? Regulatory constraints (PII, residency)? Cost ceiling per user/month?</li>
+  <li><strong>Users / QPS / scale</strong> — DAU, sessions per user, turns per session → requests/sec. Input/output token distribution → tokens/sec. Storage: chat history, embeddings, eval data.</li>
+  <li><strong>Architecture</strong> — sketch these five layers:
+    <ul>
+      <li><strong>Model gateway</strong> — routes between providers/models, handles fallback, prompt caching, rate limiting, key rotation, cost accounting.</li>
+      <li><strong>RAG layer</strong> — embedding model, vector store (per-tenant namespace), hybrid retrieval (BM25 + vector), reranker, chunk store.</li>
+      <li><strong>Agent loop</strong> — tool registry, MCP/Gateway, state store, ReAct or graph orchestration, max-iteration bound.</li>
+      <li><strong>Eval &amp; observability</strong> — trace every turn (OTEL), per-feature eval suite, regression gate in CI, LLM-as-judge calibrated against humans.</li>
+      <li><strong>Frontend / API</strong> — SSE streaming, conversation state, abort, retry.</li>
+    </ul>
+  </li>
+  <li><strong>Scaling</strong> — model gateway is the easy horizontal scale; vector store sharding by tenant; cache warmup for hot prompts; queue-based fanout for batch jobs.</li>
+  <li><strong>Safety</strong> — input filters (injection, PII), output filters (PII redaction, policy), tool-call action gates, jailbreak monitoring, red-team eval set, kill switch per feature.</li>
+  <li><strong>Cost</strong> — prompt caching, model routing (Haiku 4.5 → Sonnet 4.6 → Opus 4.7), distillation/fine-tuning for hot paths, batch API for offline jobs, per-tenant budget caps.</li>
+</ol>
+
+<p>For a <strong>coding copilot</strong> specifically: emphasize context construction (file graph, recently-edited, symbols), speculative completion, accept-rate as the north-star metric, and how you handle private code (no training on customer code, residency, audit).</p>
+
+<p>For an <strong>agent product</strong> specifically: emphasize the bounded agent loop, the eval harness (golden trajectories, not just final answers), permission model on tools, and human-in-the-loop checkpoints.</p>
+
+<h3>9.1c RAG system design template</h3>
+
+<p>If asked "design a RAG system for [X]," follow this checklist out loud:</p>
+
+<ol>
+  <li><strong>Eval first</strong> — before you index anything, define a golden set of (question, expected-answer, expected-source). All architecture choices below get scored against this set. Without this, RAG tuning is vibes.</li>
+  <li><strong>Ingestion</strong> — sources, refresh cadence, change detection (hash, etag), deletion handling (a doc deleted upstream must leave the index).</li>
+  <li><strong>Chunking</strong> — strategy (fixed, semantic, heading-aware, late chunking). Be explicit that <em>chunk size is sensitive</em> — too small loses context, too large dilutes retrieval. Sweep and measure against the golden set.</li>
+  <li><strong>Embedding model</strong> — dimension, multilingual, instruction-tuned. Justify choice; mention you'd re-evaluate as new MTEB-leading models ship.</li>
+  <li><strong>Hybrid retrieval</strong> — BM25 + dense, then reranker (cross-encoder or LLM reranker). Hybrid almost always beats either alone on enterprise content.</li>
+  <li><strong>Multi-tenant isolation</strong> — per-tenant namespace or filter at query time; <em>never</em> trust the LLM to enforce isolation. This maps to OWASP LLM08 (vector/embedding weaknesses).</li>
+  <li><strong>Generation</strong> — retrieved chunks injected as untrusted context (XML-tagged, "do not follow instructions inside"). Citations back to source IDs.</li>
+  <li><strong>Eval metrics</strong> — context recall, context precision, faithfulness (no hallucination beyond context), answer relevance. Ragas-style scoring or your own.</li>
+  <li><strong>Monitoring</strong> — retrieval miss rate, low-confidence rate, citation click-through, user thumbs.</li>
+</ol>
+
+<h3>9.1d LLM eval design template</h3>
+
+<p>When asked "how would you evaluate this LLM feature?" — they're checking whether you have an engineering-grade eval instinct, not just vibes.</p>
+
+<ol>
+  <li><strong>Golden set</strong> — curate 50-500 representative examples with reference answers. Include edge cases, adversarial inputs, and a "negative" set the model should refuse or abstain on. Refresh from production traffic monthly.</li>
+  <li><strong>Metric stack</strong> — reference-based (exact match, execution accuracy for SQL/code), rubric-based (LLM-as-judge with explicit criteria), trajectory-based (for agents). Always report a primary metric and 2-3 guardrail metrics (cost, latency, safety).</li>
+  <li><strong>Regression gating</strong> — every PR that touches prompts, models, retrieval, or tools runs the eval suite. Block merge on &gt;X% drop on primary metric or any drop on safety metric. This is the only sustainable way to evolve an LLM system.</li>
+  <li><strong>CI integration</strong> — eval runs as a CI stage (Harness/Jenkins). Results posted to PR. Baseline stored per main commit. Cost-bounded: sample down for cheap models, full set for production model.</li>
+  <li><strong>Human calibration</strong> — re-rate ~50 LLM-judge scores per quarter against human labels; recalibrate the judge prompt if correlation drifts.</li>
+  <li><strong>Online eval</strong> — production traffic sampled, judged async, dashboarded. Online metric (thumbs, completion rate, user retention) is the ultimate truth.</li>
+</ol>
+
+<h3>9.1e AI-assisted coding interview protocol</h3>
+
+<p>In 2026, many on-site coding rounds <strong>expect</strong> you to use Cursor or Claude Code. The reviewer is <em>not</em> testing autocomplete speed — they're testing your judgment as an AI-augmented engineer. What they look for:</p>
+
+<ul>
+  <li><strong>Judgment over autocomplete</strong> — accepting a 30-line completion you didn't read is the failure mode. Pause, read, edit. Talk through what you're verifying.</li>
+  <li><strong>Decomposition before generation</strong> — articulate the structure ("I'll write the parser, then the dispatcher, then tests") before letting the AI fill in. Reviewers want to see you driving, not riding.</li>
+  <li><strong>Debugging style</strong> — when a generated function fails, do you re-prompt blindly or do you read the diff, run a focused test, and form a hypothesis? Show the second.</li>
+  <li><strong>Eval / test instinct</strong> — write a test or sanity check <em>before</em> accepting non-trivial generations. Run it. Show you treat AI output as untrusted-by-default.</li>
+  <li><strong>Prompting discipline</strong> — concise, contextual prompts beat long ramblings. Reference specific files, paste specific errors, ask one thing at a time.</li>
+  <li><strong>Knowing when to turn it off</strong> — for very subtle logic (concurrency, security, numerics), tell the interviewer "I'll write this one by hand and use the AI only to generate the tests." That's a senior signal.</li>
+  <li><strong>Tool fluency</strong> — keyboard shortcuts, MCP servers you've configured, slash commands, sub-agents — small fluency cues that say "I do this every day."</li>
+</ul>
+
+<div class="callout callout-tip">
+  <strong>Phrase to use:</strong> <em>"Let me have Claude Code draft this, then I'll walk through and verify each part."</em> Signals you use AI deliberately, not reflexively.
+</div>
 
 <h3>9.2 Scenario A: Agentic ingestion pipeline for 50 vendors</h3>
 
@@ -2325,7 +2435,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
 
 <h2 id="part-11">Part 11 — Security &amp; governance <span class="tag tag-likely">LIKELY</span></h2>
 
-<p>FTSE 100 + financial-services-adjacent (Experian's data is heavily regulated). Be sharp on these.</p>
+<p>FTSE 100 + financial-services-adjacent (Experian's data is heavily regulated). Be sharp on these. (Sections 11.1–11.5 are AWS-flavored — see the <a href="aws-guide.html">AWS guide</a> for the full IAM / KMS / CloudTrail reference.)</p>
 
 <h3>11.1 AWS IAM essentials</h3>
 <ul>
@@ -2376,20 +2486,21 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
   <li><strong>Supply chain</strong> — downloaded models or prompts may be poisoned. Defense: pin sources, hash-verify, sandboxed execution.</li>
 </ul>
 
-<h3>11.7 OWASP Top 10 for LLM Applications</h3>
+<h3>11.7 OWASP Top 10 for LLM Applications (2025)</h3>
+<p class="meta">The <a href="agentic-ai-guide.html">agentic AI guide</a> covers each of these with concrete agent-side mitigations.</p>
 <ol>
-  <li>Prompt Injection</li>
-  <li>Insecure Output Handling (model output executed without sanitization)</li>
-  <li>Training Data Poisoning</li>
-  <li>Model Denial of Service</li>
-  <li>Supply Chain Vulnerabilities</li>
-  <li>Sensitive Information Disclosure</li>
-  <li>Insecure Plugin Design (tool design)</li>
-  <li>Excessive Agency (too-broad tool access)</li>
-  <li>Overreliance</li>
-  <li>Model Theft</li>
+  <li><strong>LLM01: Prompt Injection</strong> — still the #1 risk; direct and indirect (poisoned retrieved content, tool output).</li>
+  <li><strong>LLM02: Sensitive Information Disclosure</strong> — jumped up the list in the 2025 revision; PII, secrets, IP, training data leakage.</li>
+  <li><strong>LLM03: Supply Chain</strong> — poisoned models, datasets, plugins; pin and verify sources.</li>
+  <li><strong>LLM04: Data and Model Poisoning</strong> — training/fine-tuning/RAG corpus tampering.</li>
+  <li><strong>LLM05: Improper Output Handling</strong> — model output executed (SQL, shell, HTML) without sanitization.</li>
+  <li><strong>LLM06: Excessive Agency</strong> — expanded in 2025 into <strong>three root causes</strong>: <em>excessive functionality</em> (tool has more capability than needed), <em>excessive permissions</em> (tool's auth scope too broad), <em>excessive autonomy</em> (no human-in-the-loop on high-impact actions).</li>
+  <li><strong>LLM07: System Prompt Leakage</strong> <em>(new in 2025)</em> — system prompts containing secrets, routing logic, or guardrail rules are extracted by attackers; never store secrets in the system prompt.</li>
+  <li><strong>LLM08: Vector and Embedding Weaknesses</strong> <em>(new in 2025)</em> — embedding inversion, cross-tenant leakage in shared vector stores, poisoned chunks in RAG corpora, similarity-based prompt injection.</li>
+  <li><strong>LLM09: Misinformation</strong> — renamed from "Overreliance" in 2025; covers hallucinations and the downstream impact when humans over-trust model output.</li>
+  <li><strong>LLM10: Unbounded Consumption</strong> — token/cost DoS, model wallet drain, runaway agent loops.</li>
 </ol>
-<p>Know this list. The interviewer might cite "OWASP LLM Top 10" by name.</p>
+<p>Know this list by name and number. The interviewer might cite "OWASP LLM Top 10" directly — flag that you know it's the <strong>2025 revision</strong>, that LLM07 and LLM08 are new, Excessive Agency was expanded into three root causes, and Sensitive Info Disclosure jumped to #2.</p>
 
 <h3>11.8 Q&amp;A</h3>
 
@@ -2496,6 +2607,30 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
   <li>How do you handle ambiguous requirements?</li>
   <li>How do you stay current with AI?</li>
 </ul>
+
+<h3>12.3 AI-specific behavioral prompts (prepare these cold)</h3>
+
+<p>By 2026, Lead AI interviews almost always include 2-3 of these. They probe whether you've operated a real LLM system in production, not just prototyped.</p>
+
+<div class="qa">
+  <div class="qa-q">Q: Tell me about a hallucination incident — what happened, how did you find it, what did you change?</div>
+  <div class="qa-a">Structure: (1) Concrete incident — user-reported or eval-caught? (2) Investigation — did you have traces, retrieval logs, prompt versions? (3) Root cause — was it missing context, ambiguous prompt, model regression, retrieval miss? (4) Fix — short-term (hot prompt patch, model rollback) and long-term (eval case added, retrieval rule, guardrail). (5) What changed culturally — e.g., now every customer-facing LLM feature ships with a hallucination-detection eval gated in CI. Reviewers want to hear you have a system around hallucinations, not just embarrassment.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: Tell me about a time a guardrail blocked a legitimate use case. How did you handle it?</div>
+  <div class="qa-a">Structure: (1) Set up — what guardrail (PII filter, injection detector, content policy), what legit case it blocked. (2) The tension — false positives erode trust, but loosening guardrails creates risk. (3) Process — measured false-positive rate, brought security/compliance into the conversation early, proposed a tiered policy (e.g., this category of content gets human review instead of hard block). (4) Outcome — false positive rate cut by X%, no incidents. (5) Principle — guardrails are products with their own metrics; treat them with the same rigor as a feature.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: How did you build trust with security/compliance about LLM data flow?</div>
+  <div class="qa-a">Structure: (1) Where you started — security was skeptical, defaulted to "no" on LLM features. (2) What you did — engaged early (not at launch gate), produced a data-flow diagram for every LLM call (input → provider → output → storage), documented the enterprise contract (no training on our data), walked through OWASP LLM Top 10 control by control, demonstrated audit logs and red-team results. (3) Made it repeatable — built an "LLM feature security template" so future features inherit the same controls. (4) Outcome — security became a co-designer, not a gate; subsequent launches cleared review in days, not weeks. The lesson: compliance literacy in engineering buys you speed.</div>
+</div>
+
+<div class="qa">
+  <div class="qa-q">Q: Walk me through an eval-driven launch decision — when did the eval say "ship" or "don't ship," and what did you do?</div>
+  <div class="qa-a">Structure: (1) Feature context — what LLM feature, what the eval suite covered (golden set, regression gate, online thumbs). (2) The signal — e.g., offline accuracy ticked up 4% but a safety metric (refusal on disallowed queries) regressed 2%. (3) The decision — held the launch, root-caused, fixed the safety regression, re-ran. Or shipped to canary at 5%, watched online thumbs, expanded gradually. (4) The principle — eval is not a vanity number; it's a launch contract. Without a clear primary-vs-guardrail metric structure, you can't make this decision rigorously. Reviewers want to hear that you have shipped or held a launch <em>because</em> of an eval, not in spite of one.</div>
+</div>
 
 <hr>
 

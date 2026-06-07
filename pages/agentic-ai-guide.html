@@ -642,7 +642,7 @@
 
   More compute, higher quality on hard reasoning/planning.
   Graph-of-Thoughts generalizes this to a graph (reuse &amp;
-  merge partial results). Overkill for most agents.</code></pre>
+  merge partial results). Overkill for most agents.
 </div>
 
 <div class="callout callout-tip">
@@ -669,7 +669,7 @@
 
   The critic can be: the same model with a critic prompt,
   a different model, or an EXTERNAL signal (tests pass?
-  does the SQL execute? does output match a schema?).</code></pre>
+  does the SQL execute? does output match a schema?).
 </div>
 
 <h3>Reflection variants</h3>
@@ -705,7 +705,13 @@
   your runtime executes them. This boundary is critical
   for security (Part 13).</div>
 
-<pre><code>tools = [{
+<pre><code># NOTE: this is the legacy OpenAI Chat Completions wrapper
+# ({"type":"function","function":{...}}). The modern OpenAI
+# Responses API uses a flatter schema, and Anthropic's tool
+# format uses "input_schema" instead of "parameters". The
+# shape varies by provider; the mechanic (schema in, JSON
+# tool-call out) is the same.
+tools = [{
   "type": "function",
   "function": {
     "name": "query_warehouse",
@@ -736,6 +742,9 @@
   Too fine-grained (one tool per SQL clause) overwhelms the model with choices and steps. Too coarse ("do_everything") removes its ability to compose. Aim for tools that map to meaningful, reusable actions a competent human operator would recognize — <code>query_warehouse</code>, <code>validate_schema</code>, <code>run_pipeline</code>, <code>open_ticket</code>. Group related tools and hide irrelevant ones per task.
 </div>
 
+<h3>Computer use &amp; browser agents — a general primitive</h3>
+<p>By 2025–2026, "operate a computer or browser" has become a standard tool primitive offered directly by the model providers: Anthropic's Computer Use (screenshots + mouse/keyboard actions) and OpenAI's Operator (browser agent via the Responses API), with similar capabilities surfacing in Google and Microsoft stacks. Treat this as a generic action surface — your agent can drive a browser or desktop to fill in legacy systems that have no API. AgentCore's Browser is the AWS-managed flavour, but the pattern is provider-agnostic. The trade-offs are the same as any tool: it's powerful but slow, expensive, and high-blast-radius, so scope it tightly (sandboxed VM, allow-listed domains, approval gates for anything destructive).</p>
+
 <hr>
 
 <h2 id="part-5">Part 5 — Tool selection at scale &amp; MCP <span class="tag tag-core">★ CORE</span></h2>
@@ -757,8 +766,10 @@
    query -> embed -> retrieve top 8 relevant tools ->
             give those 8 to the model -> it picks one</div>
 
+<p>"RAG over tools" reuses the same embedding/vector-search machinery as document RAG — if those primitives are new to you, the <a href="ai-engineering-guide.html">AI Engineering Guide</a> covers embeddings, vector DBs, and RAG end-to-end.</p>
+
 <h3>MCP — the Model Context Protocol</h3>
-<p>MCP is an open standard (introduced by Anthropic, now broadly adopted) for connecting agents to tools and data sources. Think of it as "USB-C for AI tools": instead of bespoke integrations per app, a tool provider exposes an <strong>MCP server</strong> once, and any MCP-compatible agent (the <strong>client</strong>) can use it.</p>
+<p>MCP is an open standard (introduced by Anthropic in November 2024, then adopted by OpenAI in March 2025, Google in April 2025, Microsoft in May 2025, and AWS in November 2025) for connecting agents to tools and data sources. Think of it as "USB-C for AI tools": instead of bespoke integrations per app, a tool provider exposes an <strong>MCP server</strong> once, and any MCP-compatible agent (the <strong>client</strong>) can use it. In December 2025 MCP was donated to the Linux Foundation under the new Agentic AI Foundation, and the public-server ecosystem has grown past 10,000 servers.</p>
 <div class="ascii">  WITHOUT MCP: every agent re-implements every integration
      agent A -> custom code -> GitHub
      agent B -> custom code -> GitHub  (duplicated)
@@ -841,7 +852,7 @@
 
 <div class="callout callout-tip">
   <strong>Memory is just RAG pointed at the agent's own history</strong>
-  Long-term agent memory uses the same machinery as document RAG: embed and store memories, retrieve the relevant ones at the right moment, inject into context. The hard parts are <em>what</em> to store (not everything — extract durable facts and lessons), <em>when</em> to retrieve, and <em>forgetting</em> stale/contradictory memories. Frameworks like AgentCore Memory and Mem0 provide managed versions.
+  Long-term agent memory uses the same machinery as document RAG: embed and store memories, retrieve the relevant ones at the right moment, inject into context. The hard parts are <em>what</em> to store (not everything — extract durable facts and lessons), <em>when</em> to retrieve, and <em>forgetting</em> stale/contradictory memories. Frameworks like AgentCore Memory and Mem0 provide managed versions. By 2026, model providers also expose <em>native</em> memory primitives — Anthropic's memory tool (a model-native memory primitive for Claude) and OpenAI's Responses API stateful memory — so the agent can read and write memory through the model's own surface, not just an external store.
 </div>
 
 <hr>
@@ -940,6 +951,9 @@
   Each agent is more cost and latency, and coordination itself is a hard, error-prone problem (miscommunication, infinite hand-offs, diffused responsibility). Anthropic and others note multi-agent shines mainly for <em>parallelizable</em> work where subtasks are independent. Start single-agent; split only when a concrete limit forces it, and prefer a clear supervisor over free-for-all peer chatter.
 </div>
 
+<h3>Subagents — the lightweight variant</h3>
+<p><strong>Subagents</strong> — popularized by Anthropic's Claude Code in 2025 and now a first-class primitive in the Claude Agent SDK — are a lighter-weight version of the supervisor/worker pattern: the main agent spawns a short-lived child agent with its own clean context, a narrow toolset, and a specific sub-goal, then folds only the distilled result back into the parent's trace. This is the same context-isolation idea from Part 7, made explicit as a runtime primitive. Use subagents when a sub-task would otherwise pollute the main context (reading many files, exploring a code tree, running a noisy search) — they avoid the full overhead of a separately deployed agent while keeping the parent's working memory clean.</p>
+
 <hr>
 
 <h2 id="part-9">Part 9 — Agent communication &amp; protocols (A2A) <span class="tag tag-concept">◆ CONCEPT</span></h2>
@@ -986,7 +1000,8 @@
   <tr><td>LangGraph</td><td>Graph/state-machine control of agent flows; explicit, durable, great for complex + cyclic workflows</td><td>Steeper learning curve</td></tr>
   <tr><td>CrewAI</td><td>Role-based collaborating agents ("crew"); intuitive multi-agent</td><td>Less control over low-level flow</td></tr>
   <tr><td>AutoGen (AG2)</td><td>Conversational multi-agent; flexible agent chats</td><td>Conversations can sprawl</td></tr>
-  <tr><td>OpenAI Agents SDK</td><td>Lightweight: agents, handoffs, guardrails, tracing</td><td>Younger ecosystem</td></tr>
+  <tr><td>OpenAI Agents SDK</td><td>Lightweight: agents, handoffs, guardrails, tracing; mature by 2026, deployed via the Responses API</td><td>Most opinionated toward OpenAI stack</td></tr>
+  <tr><td>Claude Agent SDK</td><td>Anthropic's official agent framework; native MCP support; subagents as a first-class primitive; pairs with Anthropic's memory tool</td><td>Anthropic-aligned; newer than LangGraph</td></tr>
   <tr><td>Strands Agents</td><td>Model-driven, lightweight; AWS-friendly, MCP-native</td><td>Newer</td></tr>
   <tr><td>LlamaIndex / Haystack</td><td>Strong RAG + agent workflows</td><td>RAG-centric origins</td></tr>
   <tr><td>Smolagents (HF)</td><td>Minimal code-writing agents</td><td>Small ecosystem</td></tr>
@@ -1014,7 +1029,7 @@
 
 <h2 id="part-11">Part 11 — AWS Bedrock AgentCore deep dive <span class="tag tag-core">★ CORE</span> <span class="tag tag-prod">▲ PROD</span></h2>
 
-<p>AgentCore is AWS's framework for building, deploying, and operating production agents. It is <strong>framework-agnostic</strong> (use LangGraph, CrewAI, Strands, LlamaIndex, or custom) and <strong>model-agnostic</strong> (Bedrock models or others). Think of it as managed infrastructure for agents — the operational layer beneath your agent logic.</p>
+<p>AgentCore is AWS's framework for building, deploying, and operating production agents. It is <strong>framework-agnostic</strong> (use LangGraph, CrewAI, Strands, LlamaIndex, or custom) and <strong>model-agnostic</strong> (Bedrock models or others). Think of it as managed infrastructure for agents — the operational layer beneath your agent logic. For broader AWS context (Bedrock, IAM, networking) see the <a href="aws-guide.html">AWS Guide</a>; for how AWS's agent stack compares to Azure and GCP equivalents, see the <a href="cloud-ai-comparison.html">Cloud AI Comparison</a>.</p>
 
 <h3>The AgentCore building blocks</h3>
 <div class="ascii">  +--------------------------------------------------------+
@@ -1063,9 +1078,9 @@
   The JD names AgentCore explicitly. The strong answer: "AgentCore is framework- and model-agnostic managed infrastructure for agents — Runtime for hosting/scaling, Gateway to turn our existing APIs and Lambdas into MCP tools, Memory for state, Identity for least-privilege access, and OTEL observability for tracing every step. I'd build the agent logic in [LangGraph/Strands] and deploy it on AgentCore Runtime, exposing our data-engineering APIs through Gateway and gating writes behind Identity + approval." That maps the building blocks to a real data-engineering use case.
 </div>
 
-<div class="callout callout-warn">
-  <strong>Verify current specifics</strong>
-  AgentCore is evolving quickly (components, GA status, and limits change between releases). Treat the building-block model above as the durable mental map, but confirm exact capabilities, pricing, and regional availability in current AWS docs before designing around them.
+<div class="callout callout-tip">
+  <strong>Status as of 2026</strong>
+  AgentCore went GA on October 13, 2025 (after a July 2025 preview) and is now available across 9 AWS regions. It exposes 7 services — Runtime, Memory, Identity, Gateway, Code Interpreter, Browser, and Observability — and added A2A protocol support at GA. It works with CrewAI, LangGraph, LlamaIndex, Google ADK, the OpenAI Agents SDK, and the Claude Agent SDK. The building-block model above is the durable mental map; confirm exact pricing, limits, and regional availability in current AWS docs.
 </div>
 
 <hr>
@@ -1117,7 +1132,7 @@
 
 <div class="callout callout-warn">
   <strong>The compounding-error reality</strong>
-  Agent reliability degrades multiplicatively across steps. A 95%-reliable step over 10 steps ≈ 0.95¹⁰ ≈ 60% end-to-end success. This is THE hard ceiling of agents. Implications: keep trajectories short, validate at each step (programmatic checks), prefer deterministic workflows where the path is known, and design for graceful human handoff when confidence is low. State this number in interviews — it shows you understand why "demos are easy, reliable agents are hard."
+  Agent reliability degrades multiplicatively across steps. A 95%-reliable step over 10 steps ≈ 0.95¹⁰ ≈ 60% end-to-end success. This is a useful guard against optimism, though verifier loops and self-correction in 2025–2026 systems materially raise this in practice. Implications: keep trajectories short, validate at each step (programmatic checks), prefer deterministic workflows where the path is known, and design for graceful human handoff when confidence is low. State this number in interviews — it shows you understand why "demos are easy, reliable agents are hard."
 </div>
 
 <div class="callout callout-tip">
@@ -1209,6 +1224,8 @@
    - cache repeated sub-results
    - hard budgets per task</div>
 
+<p>Prompt/prefix caching is the single biggest cost lever for agents (stable system prompt + tool schemas replay every step) — see the <a href="llm-inference-guide.html">LLM Inference Guide</a> for how prefix caching, KV reuse, and provider cache semantics actually work under the hood.</p>
+
 <h3>Latency</h3>
 <ul>
   <li><strong>Parallelize independent tool calls</strong> — don't serialize what can run concurrently.</li>
@@ -1225,6 +1242,11 @@
   <li>Loop/anomaly detection to break runaway behavior.</li>
 </ul>
 
+<p>Idempotency keys, retries-with-backoff, sagas, and outbox patterns are general distributed-systems territory — see the <a href="system-design-guide.html">System Design Guide</a> for the canonical treatment that applies directly to agent tool calls.</p>
+
+<h3>Concurrent tool calls in Python</h3>
+<p>Parallelizing independent tool calls is the main latency lever inside one agent step. In Python this means <code>asyncio.gather</code> or <code>asyncio.TaskGroup</code> (3.11+) — see the <a href="python-guide.html">Python Guide</a> for the asyncio/TaskGroup patterns.</p>
+
 <h3>Observability — non-negotiable for agents</h3>
 <div class="ascii">  You CANNOT debug a non-deterministic multi-step system
   without full traces. Capture, per task:
@@ -1237,7 +1259,7 @@
 
   Tools: LangSmith, Langfuse, Arize Phoenix, Braintrust,
   AgentCore Observability, OpenTelemetry (OTEL) for LLMs.
-  OTEL spans/traces map naturally onto agent steps.</code></pre>
+  OTEL spans/traces map naturally onto agent steps.
 </div>
 
 <div class="callout callout-tip">
@@ -1385,7 +1407,7 @@
 <ul>
   <li><strong>Prefer the simplest thing.</strong> Workflow before agent; single agent before multi-agent.</li>
   <li><strong>The model decides; the system verifies.</strong> Ground proposals in real checks (tests, SQL execution, parity).</li>
-  <li><strong>Errors compound.</strong> 0.95¹⁰ ≈ 60% — keep trajectories short, validate each step.</li>
+  <li><strong>Errors compound.</strong> 0.95¹⁰ ≈ 60% is a useful guard against optimism (verifier loops and self-correction raise it in practice) — keep trajectories short, validate each step.</li>
   <li><strong>The model's judgment is not a security boundary.</strong> Enforce safety outside the model.</li>
   <li><strong>Autonomy scales with confidence and blast radius.</strong> Read-only → auto; irreversible → human approval.</li>
   <li><strong>Context is a budget.</strong> Curate ruthlessly; isolate with sub-agents.</li>

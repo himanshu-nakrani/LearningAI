@@ -452,7 +452,7 @@
 <h1>Python Guide — Basic to Advanced</h1>
 <div class="meta">
   Self-contained reference for learning and reviewing Python. Open in browser, or print to PDF.<br>
-  Targets Python 3.10+. Covers syntax fundamentals through concurrency, typing, and performance.<br>
+  Targets Python 3.12+/3.13+. Covers syntax fundamentals through concurrency, typing, and performance.<br>
   Legend:
   <span class="tag tag-basic">BASIC</span>
   <span class="tag tag-inter">INTERMEDIATE</span>
@@ -494,7 +494,18 @@ python -m module_name     # run a module
 python                    # interactive REPL
 python -c "print(2+2)"    # one-liner</code></pre>
 
-<h3>Virtual environments (always use one per project)</h3>
+<h3>Virtual environments &amp; project setup (use <code>uv</code>)</h3>
+<p>In 2026 the dominant Python tooling is <a href="https://github.com/astral-sh/uv"><code>uv</code></a> — a fast, all-in-one replacement for <code>venv</code> + <code>pip</code> + <code>pip-tools</code> + (most of) <code>poetry</code>. It creates environments, resolves and installs dependencies, and writes a reproducible <code>uv.lock</code> file alongside your <code>pyproject.toml</code>.</p>
+<pre><code>uv venv                       # create .venv in the project
+uv add requests               # add a dep to pyproject.toml + lockfile
+uv add --dev pytest ruff      # dev-only deps
+uv sync                       # install exactly what the lockfile says
+uv run python script.py       # run inside the project's env
+uv run pytest                 # run any tool inside the env</code></pre>
+<p>Project metadata lives in <code>pyproject.toml</code> (PEP 621) — the modern standard that replaces <code>setup.py</code>/<code>setup.cfg</code>/<code>requirements.txt</code> for new projects.</p>
+
+<h4>pip fallback</h4>
+<p>If you can't use <code>uv</code> yet, the classic flow still works:</p>
 <pre><code>python -m venv .venv          # create
 source .venv/bin/activate     # activate (macOS/Linux)
 pip install requests          # install into the venv
@@ -503,7 +514,7 @@ deactivate                    # leave the venv</code></pre>
 
 <div class="callout callout-tip">
   <strong>Why virtual environments matter</strong>
-  They isolate each project's dependencies so version conflicts can't happen across projects. Never <code>pip install</code> into the system Python. Modern alternatives like <code>uv</code> and <code>poetry</code> manage this for you and are worth adopting.
+  They isolate each project's dependencies so version conflicts can't happen across projects. Never <code>pip install</code> into the system Python. <code>uv</code> handles env + deps + lockfile in one tool; <code>poetry</code> is a viable alternative with a similar feature set.
 </div>
 
 <h3>The mental model: names point to objects</h3>
@@ -749,7 +760,21 @@ else:        # runs if loop finished without break</code></pre>
     case [action, *args]:
         handle(action, args)
     case _:
-        print("unknown")</code></pre>
+        print("unknown")
+
+# Class patterns -- match shape AND extract fields
+match point:
+    case Point(x=0, y=y):          # on the y-axis
+        print(f"y-axis at {y}")
+    case Point(x=x, y=y) as p:     # 'as' binds the whole match
+        print(f"{p} at ({x},{y})")
+
+# Guards: extra boolean condition on a case
+match value:
+    case [x] if x &gt; 0:             # only if guard is true
+        print("single positive")
+    case int() | float() as n:     # OR pattern (any numeric)
+        print(f"number {n}")</code></pre>
 
 <div class="callout callout-tip">
   <strong>Loop like a Pythonista</strong>
@@ -1058,8 +1083,11 @@ with open("d.csv", newline="") as f:
 def timer():
     import time
     start = time.perf_counter()
-    yield                         # body runs here
-    print(f"took {time.perf_counter() - start:.3f}s")
+    try:
+        yield                     # body runs here
+    finally:
+        # runs even if the body raised -- timing still reported
+        print(f"took {time.perf_counter() - start:.3f}s")
 
 with timer():
     do_work()</code></pre>
@@ -1148,7 +1176,7 @@ p = Point(3, 4)        # auto __init__, __repr__, __eq__</code></pre>
 
 <div class="callout callout-tip">
   <strong>Dunder methods make objects feel native</strong>
-  Implement <code>__len__</code>, <code>__getitem__</code>, <code>__eq__</code>, <code>__lt__</code>, <code>__iter__</code> and your objects work with <code>len()</code>, indexing, comparisons, sorting, and <code>for</code> loops. This is "duck typing" via the data model.
+  Implement <code>__len__</code>, <code>__getitem__</code>, <code>__eq__</code>, <code>__lt__</code>, <code>__iter__</code> and your objects work with <code>len()</code>, indexing, comparisons, sorting, and <code>for</code> loops. This is "duck typing" via the data model. When you start composing classes into services, the <a href="system-design-guide.html">system design guide</a> covers the next layer up — interfaces, boundaries, and how OO maps onto service-oriented architecture.
 </div>
 
 <hr>
@@ -1310,7 +1338,7 @@ def flaky():
 
 <h2 id="part-13">Part 13 — The standard library toolkit <span class="tag tag-inter">INTERMEDIATE</span></h2>
 
-<p>"Batteries included" — the stdlib covers most needs. Know these modules by name so you reach for them instead of reinventing.</p>
+<p>"Batteries included" — the stdlib covers most needs. Know these modules by name so you reach for them instead of reinventing. Several of these (<code>collections.deque</code>, <code>heapq</code>, <code>bisect</code>, <code>functools.lru_cache</code>) are the workhorses behind classic interview problems — see the <a href="dsa-guide.html">DSA guide</a> for when to reach for each.</p>
 
 <table>
   <tr><th scope="col">Module</th><th scope="col">For</th></tr>
@@ -1320,6 +1348,7 @@ def flaky():
   <tr><td><code>pathlib</code></td><td>Filesystem paths</td></tr>
   <tr><td><code>datetime</code></td><td>Dates, times, durations</td></tr>
   <tr><td><code>json</code> / <code>csv</code></td><td>Data formats</td></tr>
+  <tr><td><code>tomllib</code></td><td>Read TOML (3.11+) — e.g. parse <code>pyproject.toml</code></td></tr>
   <tr><td><code>re</code></td><td>Regular expressions</td></tr>
   <tr><td><code>os</code> / <code>sys</code></td><td>OS interaction, interpreter</td></tr>
   <tr><td><code>logging</code></td><td>Structured logging (not print)</td></tr>
@@ -1365,11 +1394,13 @@ handler: Callable[[int, str], bool]
 maybe: Optional[int] = None          # same as int | None</code></pre>
 
 <h3>Useful typing constructs</h3>
-<pre><code>from typing import TypedDict, Protocol, Literal, TypeVar, Generic
+<pre><code>from typing import TypedDict, Protocol, Literal, TypeVar, Generic, Self
+from typing import NotRequired, Required
 
 class User(TypedDict):
     name: str
     age: int
+    nickname: NotRequired[str]       # optional key (3.11+)
 
 Mode = Literal["r", "w", "a"]        # restrict to these values
 
@@ -1378,7 +1409,40 @@ def first(items: list[T]) -> T:
     return items[0]
 
 class Comparable(Protocol):          # structural typing
-    def __lt__(self, other) -> bool: ...</code></pre>
+    def __lt__(self, other) -> bool: ...
+
+class Builder:
+    def add(self, x: int) -> Self:   # 'Self' (3.11+) -- exact subclass
+        ...
+        return self</code></pre>
+
+<h3>PEP 695 generic syntax (3.12+)</h3>
+<p>Python 3.12 added a lightweight generic syntax that avoids the explicit <code>TypeVar</code> and <code>Generic[T]</code> boilerplate. Prefer it for new code on 3.12+.</p>
+<pre><code># Old style                       # New (3.12+)
+T = TypeVar("T")                   def first[T](items: list[T]) -> T:
+def first(items: list[T]) -> T:        return items[0]
+    return items[0]
+
+class Box(Generic[T]):             class Box[T]:
+    def __init__(self, val: T):        def __init__(self, val: T):
+        self.val = val                     self.val = val
+
+# Type aliases get a dedicated 'type' statement (3.12+)
+type Vector = list[float]
+type Json = dict[str, "Json"] | list["Json"] | str | int | float | bool | None</code></pre>
+<p>Use <code>X | Y</code> (3.10+) as the canonical union form rather than <code>typing.Union[X, Y]</code>, and <code>X | None</code> rather than <code>Optional[X]</code>.</p>
+
+<h3>Runtime validation: Pydantic v2</h3>
+<p>For runtime validation aligned with your type hints, <a href="https://docs.pydantic.dev/"><code>pydantic</code> v2</a> is the universal choice in 2026 — FastAPI, LangChain, and most modern Python frameworks build on it. The core is a Rust-backed validator, so it's fast. Pydantic models are also how you get <em>structured outputs</em> from LLMs in modern frameworks — see the <a href="ai-engineering-guide.html">AI engineering guide</a> for how this powers tool calling and JSON-mode responses.</p>
+<pre><code>from pydantic import BaseModel, Field
+
+class User(BaseModel):
+    name: str
+    age: int = Field(ge=0, le=150)
+    tags: list[str] = []
+
+u = User.model_validate({"name": "Ada", "age": 30})   # validates + coerces
+u.model_dump_json()                                   # serialize</code></pre>
 
 <div class="callout callout-tip">
   <strong>Adopt typing incrementally</strong>
@@ -1408,7 +1472,10 @@ CPU-BOUND (computing dominates):
   core2: |####B####|   truly parallel -> faster</div>
 
 <h3>The GIL in one paragraph</h3>
-<p>CPython has a Global Interpreter Lock: only one thread executes Python bytecode at a time. So threads give no speedup for CPU-bound work, but they're great for I/O-bound work because the GIL is released while waiting. For CPU parallelism, use multiple processes. (Free-threaded builds removing the GIL are emerging in 3.13+, but the GIL is still the default model to reason about.)</p>
+<p>CPython has a Global Interpreter Lock: only one thread executes Python bytecode at a time. So threads give no speedup for CPU-bound work, but they're great for I/O-bound work because the GIL is released while waiting. For CPU parallelism, use multiple processes.</p>
+
+<h3>Free-threaded (no-GIL) Python — officially supported in 3.14</h3>
+<p>Free-threaded CPython is <strong>officially supported as of Python 3.14</strong> (Oct 2025) via <a href="https://peps.python.org/pep-0779/">PEP 779</a> — Phase II of the no-GIL rollout that began as experimental in 3.13 (<a href="https://peps.python.org/pep-0703/">PEP 703</a>). It's still an <em>optional</em> build (you opt in via <code>python3.14t</code> / a <code>--free-threading</code> install), not the default, but it's no longer flagged as experimental. Single-thread overhead has dropped to <strong>~5–10%</strong> in 3.14 (from ~40% in 3.13), making it practical to use in production for CPU-bound multi-threaded workloads. Most non-C-extension code "just works" on a free-threaded build; C extensions must opt in by declaring free-threading support.</p>
 
 <table>
   <tr><th scope="col">Workload</th><th scope="col">Use</th></tr>
@@ -1437,6 +1504,21 @@ async def main(urls):
     async with aiohttp.ClientSession() as session:
         tasks = [fetch(session, u) for u in urls]
         return await asyncio.gather(*tasks)   # concurrent
+
+asyncio.run(main(urls))</code></pre>
+
+<h3><code>TaskGroup</code> and <code>asyncio.timeout()</code> — the modern API (3.11+)</h3>
+<p>Since 3.11, prefer <code>asyncio.TaskGroup</code> over <code>gather()</code>: it's a structured-concurrency context manager that cancels sibling tasks if one fails and re-raises errors as an <code>ExceptionGroup</code> — no silently-lost exceptions or orphaned tasks. Pair it with the <code>asyncio.timeout()</code> context manager for clean cancellation deadlines. This pattern is foundational for <a href="agentic-ai-guide.html">agent tool execution</a> (fan-out parallel tool calls with a deadline) and for <a href="llm-inference-guide.html">async LLM batching</a> (overlapping many in-flight requests to a serving endpoint).</p>
+<pre><code>import asyncio
+
+async def main(urls):
+    async with aiohttp.ClientSession() as session:
+        async with asyncio.timeout(10):           # 10s deadline
+            async with asyncio.TaskGroup() as tg:
+                tasks = [tg.create_task(fetch(session, u)) for u in urls]
+        # all tasks done here; if any raised,
+        # the others were cancelled and you get an ExceptionGroup
+        return [t.result() for t in tasks]
 
 asyncio.run(main(urls))</code></pre>
 
@@ -1488,10 +1570,11 @@ def test_query(db):
 <h3>The modern toolchain</h3>
 <table>
   <tr><th scope="col">Tool</th><th scope="col">Purpose</th></tr>
-  <tr><td><code>ruff</code></td><td>Fast linter + formatter (replaces flake8/isort/black)</td></tr>
-  <tr><td><code>black</code></td><td>Opinionated formatter</td></tr>
+  <tr><td><code>uv</code></td><td>Env + dependency management + lockfile (primary in 2026)</td></tr>
+  <tr><td><code>poetry</code></td><td>Alternative env/dependency manager</td></tr>
+  <tr><td><code>ruff</code> + <code>ruff format</code></td><td>Fast linter and formatter — <code>ruff format</code> has largely displaced <code>black</code></td></tr>
+  <tr><td><code>black</code></td><td>Opinionated formatter (still common, but ceding ground to <code>ruff format</code>)</td></tr>
   <tr><td><code>mypy</code> / <code>pyright</code></td><td>Static type checking</td></tr>
-  <tr><td><code>uv</code> / <code>poetry</code></td><td>Dependency &amp; env management</td></tr>
   <tr><td><code>pytest</code></td><td>Testing</td></tr>
 </table>
 
@@ -1514,7 +1597,7 @@ cProfile.run("expensive_function()")
   <li>Prefer comprehensions/generators over manual loops.</li>
   <li>Use <code>set</code>/<code>dict</code> for membership instead of <code>list</code>.</li>
   <li>Hoist invariant work out of loops; cache attribute lookups locally.</li>
-  <li>For numeric work, use <code>numpy</code> — vectorized, C-backed.</li>
+  <li>For numeric work, use <code>numpy</code> — vectorized, C-backed. (For GPU-scale tensor work and model serving, the same vectorized-thinking carries over to PyTorch/CUDA — see the <a href="llm-inference-guide.html">LLM inference guide</a>.)</li>
   <li>Memoize pure functions with <code>functools.lru_cache</code>.</li>
 </ul>
 
@@ -1527,6 +1610,13 @@ class Point:
     __slots__ = ("x", "y")
     def __init__(self, x, y):
         self.x, self.y = x, y</code></pre>
+
+<h3>What's coming from the interpreter (3.13+)</h3>
+<ul>
+  <li><strong>Experimental JIT</strong> (<a href="https://peps.python.org/pep-0744/">PEP 744</a>, 3.13+) — a copy-and-patch JIT compiler shipping behind a build flag. Modest wins today; the foundation for future speedups. Enable with <code>--enable-experimental-jit</code> at build time.</li>
+  <li><strong>Per-interpreter GIL / subinterpreters</strong> (<a href="https://peps.python.org/pep-0734/">PEP 734</a>, 3.13+) — multiple Python interpreters in one process, each with its own GIL. Gives true parallelism without the memory cost of full processes. Exposed via the <code>interpreters</code> stdlib module (still maturing).</li>
+  <li><strong>Free-threaded build</strong> (3.14+, see Part 15) — the most direct path to threaded CPU parallelism in pure Python.</li>
+</ul>
 
 <div class="callout callout-warn">
   <strong>Optimize the right thing</strong>

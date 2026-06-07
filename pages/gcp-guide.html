@@ -507,7 +507,7 @@
 
 <div class="callout callout-tip">
   <strong>GCP's global resources are a real differentiator</strong>
-  Unlike many clouds where most things are regional, several GCP resources are <em>global</em> or <em>multi-regional</em> by design — the VPC network, HTTP(S) load balancer (one anycast IP worldwide), and Cloud Storage multi-region buckets. Google's private backbone makes cross-region traffic fast and predictable.
+  Unlike many clouds where most things are regional, several GCP resources are <em>global</em> or <em>multi-regional</em> by design — the VPC network, the Global external Application Load Balancer (the renamed global HTTP(S) load balancer, one anycast IP worldwide), and Cloud Storage multi-region buckets. Google's private backbone makes cross-region traffic fast and predictable.
 </div>
 
 <h3>How you interact with GCP</h3>
@@ -630,8 +630,9 @@ gcloud services enable run.googleapis.com</code></pre>
   <tr><td>N2 / N2D / N4</td><td>Balanced general purpose</td></tr>
   <tr><td>C3 / C4</td><td>Compute-optimized (high CPU)</td></tr>
   <tr><td>M3 / M4</td><td>Memory-optimized (large in-memory DBs)</td></tr>
-  <tr><td>A3 / G2</td><td>GPU (AI/ML, NVIDIA H100/L4)</td></tr>
-  <tr><td>TPU VMs</td><td>Tensor Processing Units for ML at scale</td></tr>
+  <tr><td>A3 / G2</td><td>GPU (NVIDIA H100/L4); A3 Mega/Ultra add H200</td></tr>
+  <tr><td>A4</td><td>NVIDIA Blackwell (B200 / GB200) for frontier training &amp; inference</td></tr>
+  <tr><td>TPU VMs</td><td>Tensor Processing Units: Trillium (v6e) and Ironwood (v7) for ML at scale</td></tr>
 </table>
 
 <h3>Notable Compute Engine features</h3>
@@ -664,7 +665,7 @@ gcloud services enable run.googleapis.com</code></pre>
 
 <table>
   <tr><th scope="col">Service</th><th scope="col">What it is</th></tr>
-  <tr><td>Artifact Registry</td><td>Store container images &amp; packages (successor to Container Registry)</td></tr>
+  <tr><td>Artifact Registry</td><td>Store container images &amp; packages. Container Registry (its predecessor) was deprecated and fully shut down in 2025 — writes blocked March 2025, with final <code>gcr.io</code> migration to Artifact Registry in October 2025.</td></tr>
   <tr><td>Cloud Run</td><td>Serverless containers — scale to zero, pay per use</td></tr>
   <tr><td>GKE Autopilot</td><td>Managed K8s where Google runs the nodes for you</td></tr>
   <tr><td>GKE Standard</td><td>Managed K8s with full node control</td></tr>
@@ -724,6 +725,14 @@ gcloud services enable run.googleapis.com</code></pre>
   Scale-to-zero services cold-start on the first request after idle. Set a minimum number of instances for latency-sensitive APIs, keep containers lean for fast startup, and design every function to be stateless and idempotent (events may be delivered more than once).
 </div>
 
+<h3>Cloud Run GPU</h3>
+<p>Cloud Run added GPU support — GA on <strong>June 3, 2025</strong> for NVIDIA L4, with RTX Pro 6000 Blackwell now GA for services, jobs, and worker pools. You get the same scale-to-zero, per-second billing model as CPU Cloud Run, available in 5 regions (no quota request required for L4). Attach with a single flag at deploy time:</p>
+<pre><code>gcloud run deploy my-inference \
+   --image=us-docker.pkg.dev/me/repo/llm:latest \
+   --gpu 1 --gpu-type=nvidia-l4 \
+   --region=us-central1 --no-cpu-throttling</code></pre>
+<p>Use cases: NIM-style LLM inference, image/video models, batch jobs — without managing a GKE cluster or keeping a GPU VM idle. See the <a href="llm-inference-guide.html">LLM inference guide</a> for sizing GPU serving (batching, KV cache, throughput vs latency).</p>
+
 <hr>
 
 <h2 id="part-6">Part 6 — Storage <span class="tag tag-core">★ CORE</span></h2>
@@ -731,7 +740,7 @@ gcloud services enable run.googleapis.com</code></pre>
 <table>
   <tr><th scope="col">Service</th><th scope="col">Model</th><th scope="col">Use for</th></tr>
   <tr><td>Cloud Storage (GCS)</td><td>Object storage (buckets → objects)</td><td>Files, media, backups, data lake, static sites</td></tr>
-  <tr><td>Persistent Disk / Hyperdisk</td><td>Block storage for VMs</td><td>VM disks, databases</td></tr>
+  <tr><td>Persistent Disk / Hyperdisk</td><td>Block storage for VMs. Hyperdisk is the next-gen line (Balanced, Extreme, Throughput, ML) superseding Persistent Disk on modern C3/C4/N4 families.</td><td>VM disks, databases</td></tr>
   <tr><td>Filestore</td><td>Managed NFS file shares</td><td>Shared filesystems, lift-and-shift</td></tr>
 </table>
 
@@ -768,8 +777,8 @@ gcloud services enable run.googleapis.com</code></pre>
 <table>
   <tr><th scope="col">Service</th><th scope="col">What it is</th></tr>
   <tr><td>Cloud SQL</td><td>Managed MySQL, PostgreSQL, SQL Server (regional)</td></tr>
-  <tr><td>AlloyDB</td><td>Postgres-compatible, high-performance (analytics + transactional)</td></tr>
-  <tr><td>Cloud Spanner</td><td>Globally distributed, horizontally scalable, strongly consistent SQL</td></tr>
+  <tr><td>AlloyDB</td><td>Postgres-compatible, high-performance (analytics + transactional). <strong>AlloyDB AI</strong> adds built-in vector support (incl. the ScaNN index) and model integration for in-database embeddings/RAG.</td></tr>
+  <tr><td>Cloud Spanner</td><td>Globally distributed, horizontally scalable, strongly consistent SQL. Now includes <strong>Spanner vector search</strong> and <strong>Spanner Graph</strong> (GA by 2026) for hybrid relational + graph + vector workloads.</td></tr>
 </table>
 
 <h3>Cloud Spanner — the standout</h3>
@@ -788,7 +797,7 @@ gcloud services enable run.googleapis.com</code></pre>
 <h3>NoSQL &amp; in-memory</h3>
 <table>
   <tr><th scope="col">Service</th><th scope="col">Model</th><th scope="col">Use for</th></tr>
-  <tr><td>Firestore</td><td>Serverless document DB (real-time sync)</td><td>Mobile/web apps, real-time data</td></tr>
+  <tr><td>Firestore</td><td>Serverless document DB (real-time sync), with built-in <strong>vector search</strong> for embeddings</td><td>Mobile/web apps, real-time data, app-side RAG</td></tr>
   <tr><td>Bigtable</td><td>Wide-column, petabyte-scale, low latency</td><td>Time-series, IoT, analytics, high throughput</td></tr>
   <tr><td>Memorystore</td><td>Managed Redis / Memcached</td><td>Caching, sessions</td></tr>
 </table>
@@ -849,7 +858,7 @@ gcloud services enable run.googleapis.com</code></pre>
 <table>
   <tr><th scope="col">Service</th><th scope="col">Pattern</th><th scope="col">Use for</th></tr>
   <tr><td>Pub/Sub</td><td>Global pub/sub messaging + streaming</td><td>Decoupling, event ingestion, fan-out, streaming pipelines</td></tr>
-  <tr><td>Pub/Sub Lite</td><td>Lower-cost, zonal streaming</td><td>High-volume, cost-sensitive streaming</td></tr>
+  <tr><td>Pub/Sub Lite</td><td>Lower-cost, zonal streaming — <strong>being deprecated</strong>; migrate to Pub/Sub or Google Cloud Managed Service for Apache Kafka</td><td>(legacy) high-volume, cost-sensitive streaming</td></tr>
   <tr><td>Eventarc</td><td>Event routing from many sources</td><td>Trigger Cloud Run/Functions from events</td></tr>
   <tr><td>Cloud Tasks</td><td>Async task queue with rate control</td><td>Deferred work, throttled dispatch</td></tr>
   <tr><td>Workflows</td><td>Orchestrate services in sequence</td><td>Multi-step processes</td></tr>
@@ -898,7 +907,15 @@ gcloud services enable run.googleapis.com</code></pre>
                reserved slots (flat-rate capacity)
 
   Built-in extras:
-    - BigQuery ML: train ML models with SQL (CREATE MODEL)
+    - BigQuery ML: train ML models with SQL (CREATE MODEL),
+      plus BQ ML REMOTE MODELs that call Gemini through
+      ML.GENERATE_TEXT / ML.GENERATE_EMBEDDING in SQL
+    - BigQuery vector search: VECTOR_SEARCH() + vector
+      indexes for embedding retrieval, GA
+    - BigQuery DataFrames (bigframes): pandas/scikit-learn
+      style Python API that pushes execution into BigQuery
+    - BigLake + Iceberg tables: open-format tables over GCS
+      / multi-cloud data, queryable from BigQuery
     - BI Engine: in-memory acceleration for dashboards
     - federated queries: query GCS, Spanner, external data
     - Gemini in BigQuery: AI-assisted analytics</div>
@@ -923,7 +940,7 @@ gcloud services enable run.googleapis.com</code></pre>
 
 <h2 id="part-11">Part 11 — AI &amp; machine learning (Vertex AI &amp; Gemini) <span class="tag tag-core">★ CORE</span></h2>
 
-<p>AI is core to Google's identity. GCP offers Gemini foundation models, the Vertex AI platform, pre-built APIs, and custom hardware (TPUs).</p>
+<p>AI is core to Google's identity. GCP offers Gemini foundation models, the Vertex AI platform, pre-built APIs, and custom hardware (TPUs). For cloud-agnostic RAG/eval patterns see the <a href="ai-engineering-guide.html">AI engineering guide</a>, and for agent frameworks that plug into Agent Builder/ADK see the <a href="agentic-ai-guide.html">agentic AI guide</a>.</p>
 
 <h3>The layers of GCP AI</h3>
 <div class="ascii">  1. PRE-BUILT AI APIs (call and go)
@@ -932,26 +949,35 @@ gcloud services enable run.googleapis.com</code></pre>
      Video Intelligence
 
   2. GENERATIVE AI (foundation models)
-     Vertex AI + Model Garden: Gemini (Google's flagship
-       multimodal models), plus Llama, Claude, Mistral,
-       and image/video models (Imagen, Veo)
+     Vertex AI + Model Garden: Gemini 2.5 (Flash, Pro) and
+       Gemini 3 — Google's flagship multimodal models with
+       1M–2M token context windows, Live API for realtime
+       audio/video, plus Llama, Claude, Mistral, and
+       image/video models (Imagen, Veo)
+     Gemini API on AI Studio: consumer/dev surface for
+       Gemini, distinct from the enterprise Vertex AI path
      Vertex AI Search & RAG Engine: managed retrieval
-     Vertex AI Agent Builder: build agents & assistants
+     Vertex AI Agent Builder + ADK (Agent Development Kit)
+       + A2A protocol: Google's agentic stack for building,
+       deploying, and interoperating multi-agent systems
 
   3. CUSTOM ML (build &amp; operate your own)
      Vertex AI: training, tuning, pipelines, feature store,
        model registry, endpoints, monitoring (full MLOps)
-     Hardware: GPUs and TPUs (v5/v6) for large-scale training</div>
+     Hardware: GPUs (H100/H200/L4, Blackwell B200/GB200)
+       and TPUs — Trillium (v6e) and Ironwood (v7) — for
+       large-scale training &amp; inference</div>
 
 <table>
   <tr><th scope="col">Service</th><th scope="col">Use for</th></tr>
   <tr><td>Vertex AI</td><td>Unified platform: train, tune, deploy, monitor models &amp; GenAI</td></tr>
-  <tr><td>Gemini API (on Vertex)</td><td>Google's multimodal LLMs (text, image, audio, video, code)</td></tr>
-  <tr><td>Model Garden</td><td>Catalog of Google, partner &amp; open models (Llama, Claude, etc.)</td></tr>
+  <tr><td>Gemini API (on Vertex AI)</td><td>Enterprise access to Gemini 2.5 (Flash, Pro) and Gemini 3 — multimodal (text, image, audio, video, code) with 1M–2M token context windows and a Live API for realtime streaming</td></tr>
+  <tr><td>Gemini API (on AI Studio)</td><td>Consumer/dev surface for Gemini with a free tier and quick prototyping — separate from Vertex AI enterprise controls</td></tr>
+  <tr><td>Model Garden</td><td>Catalog of Google, partner &amp; open models (Llama, Claude, Mistral, etc.)</td></tr>
   <tr><td>Vertex AI Search</td><td>Managed retrieval / RAG over your data</td></tr>
-  <tr><td>Vertex AI Agent Builder</td><td>Build, deploy &amp; orchestrate AI agents</td></tr>
+  <tr><td>Vertex AI Agent Builder + ADK + A2A</td><td>Google's agent stack: Agent Builder for orchestration, the open-source <strong>Agent Development Kit (ADK)</strong> for code-first agents, and the <strong>A2A (Agent-to-Agent) protocol</strong> for cross-framework agent interop</td></tr>
   <tr><td>Pre-built AI APIs</td><td>Vision, Speech, Language, Document AI, Translation</td></tr>
-  <tr><td>TPUs</td><td>Custom accelerators for large-scale ML training/inference</td></tr>
+  <tr><td>TPUs</td><td>Custom accelerators: <strong>Trillium (TPU v6e)</strong> — only a v6e SKU, 32 GB HBM, 256-chip pods, ~4.7× v5e compute, used to train Gemini 2.0. <strong>Ironwood (TPU v7)</strong> — GA Nov 2025, 4,614 FP8 TFLOPS/chip, 192 GB HBM3e, 7.37 TB/s memory bandwidth, 9,216-chip superpods delivering 42.5 ExaFLOPS; powers Gemini 3 inference (Anthropic has committed to 1M+ Ironwood chips in 2026). See the <a href="llm-inference-guide.html">LLM inference guide</a> for how accelerator memory bandwidth maps to serving throughput.</td></tr>
 </table>
 
 <h3>A typical RAG architecture on GCP</h3>
@@ -968,9 +994,21 @@ gcloud services enable run.googleapis.com</code></pre>
   Or use Vertex AI Search as a managed end-to-end RAG
   engine (ingest + retrieve + ground) with less plumbing.</div>
 
+<h3>Gemini hello-world (google-genai SDK)</h3>
+<p>The unified <code>google-genai</code> Python SDK works against both AI Studio and Vertex AI. A minimal call:</p>
+<pre><code># pip install google-genai
+from google import genai
+
+client = genai.Client()  # uses GOOGLE_API_KEY or ADC
+response = client.models.generate_content(
+    model="gemini-2.5-flash",
+    contents="Hello, Gemini — give me a one-line GCP fun fact."
+)
+print(response.text)</code></pre>
+
 <div class="callout callout-tip">
   <strong>Gemini + BigQuery + TPUs = GCP's AI edge</strong>
-  GCP's strengths: Gemini's strong multimodal/long-context models, native AI inside BigQuery (analyze data with SQL + LLMs), and TPUs for cost-effective large-scale training. If your workload is data-and-AI heavy, GCP's integration of analytics and ML is compelling.
+  GCP's strengths: Gemini's strong multimodal/long-context models, native AI inside BigQuery (analyze data with SQL + LLMs), and TPUs for cost-effective large-scale training. If your workload is data-and-AI heavy, GCP's integration of analytics and ML is compelling. For a side-by-side with <a href="aws-guide.html">AWS Bedrock</a> and <a href="azure-guide.html">Azure AI Foundry</a>, see the <a href="cloud-ai-comparison.html">cloud AI comparison</a>.
 </div>
 
 <hr>
@@ -1060,6 +1098,8 @@ resource "google_storage_bucket" "data" {
 <hr>
 
 <h2 id="part-14">Part 14 — Architecture patterns &amp; cheat sheet</h2>
+
+<p>For cloud-agnostic distributed-systems patterns (load balancing, caching, queues, consistency) behind the architectures below, see the <a href="system-design-guide.html">system design guide</a>.</p>
 
 <h3>Reference: a typical web app on GCP</h3>
 <div class="ascii">          Global HTTP(S) Load Balancer

@@ -487,7 +487,7 @@
 
 <h2 id="part-0">Part 0 — How to use this guide &amp; interview strategy</h2>
 
-<p>Most basic-to-medium interview problems are variations on a small set of patterns. Once you recognize the pattern, the solution follows. This guide teaches you to map a problem to its pattern, then implement cleanly.</p>
+<p>Most basic-to-medium interview problems are variations on a small set of patterns. Once you recognize the pattern, the solution follows. This guide teaches you to map a problem to its pattern, then implement cleanly. For the broader interview loop (behavioral, system design, take-homes), see the <a href="interview-prep.html">interview prep guide</a>.</p>
 
 <h3>The interview loop (say this out loud)</h3>
 <ol>
@@ -571,8 +571,9 @@ decide whether your program finishes in milliseconds or never.</div>
   <tr><td>~10–20</td><td>O(2ⁿ) or O(n!) — backtracking is fine</td></tr>
   <tr><td>~500</td><td>O(n³)</td></tr>
   <tr><td>~5,000</td><td>O(n²)</td></tr>
+  <tr><td>~10⁴–10⁵</td><td>O(n log n)</td></tr>
   <tr><td>~10⁶</td><td>O(n) or O(n log n)</td></tr>
-  <tr><td>~10⁹+</td><td>O(log n) or O(1)</td></tr>
+  <tr><td>~10⁹+</td><td>O(log n) or O(1) — typically binary search on the <em>answer space</em>, not on the input</td></tr>
 </table>
 
 <h3>How to count complexity in practice</h3>
@@ -704,7 +705,7 @@ buckets:
 
 lookup("apple"): hash -> bucket 3 -> found in O(1)</div>
 
-<p><strong>Collisions</strong> happen when two keys hash to the same bucket. Python handles this internally (open addressing), so multiple keys can coexist. Collisions are why lookups are O(1) <em>average</em>, not guaranteed worst case — but in practice you treat dict operations as constant time.</p>
+<p><strong>Collisions</strong> happen when two keys hash to the same bucket. CPython's dict actually uses open addressing (probe to the next slot); separate chaining is shown above for clarity. Either way, multiple keys can coexist. Collisions are why lookups are O(1) <em>average</em>, not guaranteed worst case — but in practice you treat dict operations as constant time.</p>
 
 <div class="callout callout-tip">
   <strong>The core trick: "remember as you go"</strong>
@@ -758,6 +759,49 @@ Each element is checked once against a O(1) lookup.</div>
   <strong>When NOT to use a hash map</strong>
   If the array is sorted, two pointers may be O(1) space vs the hash map's O(n). And dict keys must be hashable — lists can't be keys, but tuples can.
 </div>
+
+<h3>Trie (prefix tree) — for string prefix queries</h3>
+<p>A trie is a tree where each edge is one character of a key. Words sharing a prefix share the same root-to-internal-node path. Insert, search, and <code>startsWith</code> are all O(L) where L is the word length — independent of how many words you've stored. Classic uses: autocomplete, spell check, word search II, IP routing, and the "longest common prefix" family.</p>
+<div class="ascii">insert "cat", "car", "card", "do"
+
+       (root)
+        /  \
+       c    d
+       |    |
+       a    o*
+      / \
+     t*  r*
+         |
+         d*
+
+* marks end-of-word.  "car" and "card" share the prefix "ca-r",
+so one path stores both. startsWith("ca") walks two edges.</div>
+<pre><code>class Trie:
+    def __init__(self):
+        self.children = {}       # char -> Trie
+        self.end = False         # marks end of a word
+
+    def insert(self, word):
+        node = self
+        for ch in word:
+            node = node.children.setdefault(ch, Trie())
+        node.end = True
+
+    def search(self, word):
+        node = self._walk(word)
+        return node is not None and node.end
+
+    def startsWith(self, prefix):
+        return self._walk(prefix) is not None
+
+    def _walk(self, s):
+        node = self
+        for ch in s:
+            if ch not in node.children:
+                return None
+            node = node.children[ch]
+        return node
+# Insert/search/startsWith: O(L). Space: O(total characters).</code></pre>
 
 <hr>
 
@@ -956,7 +1000,7 @@ def build_prefix(nums):
 
 <h2 id="part-7">Part 7 — Stack &amp; queue <span class="tag tag-pattern">PATTERN</span> <span class="tag tag-easy">EASY</span></h2>
 
-<p>A <strong>stack</strong> is LIFO (last in, first out). A <strong>queue</strong> is FIFO (first in, first out). In Python, use a <code>list</code> for a stack and <code>collections.deque</code> for a queue (front pops are O(1) on a deque, O(n) on a list).</p>
+<p>A <strong>stack</strong> is LIFO (last in, first out). A <strong>queue</strong> is FIFO (first in, first out). In Python, use a <code>list</code> for a stack and <code>collections.deque</code> for a queue (front pops are O(1) on a deque, O(n) on a list). See the <a href="python-guide.html">Python guide</a> for the broader stdlib container toolkit.</p>
 
 <h3>Visualizing the two</h3>
 <div class="ascii">STACK (LIFO)              QUEUE (FIFO)
@@ -1189,12 +1233,12 @@ def min_feasible(lo, hi, feasible):
 
 <h2 id="part-10">Part 10 — Sorting <span class="tag tag-pattern">FOUNDATION</span></h2>
 
-<p>You'll rarely implement a sort in an interview — Python's <code>sorted()</code> is O(n log n) Timsort. But you must know the trade-offs and how custom keys work.</p>
+<p>You'll rarely implement a sort in an interview — Python's <code>sorted()</code> is O(n log n) Timsort. But you must know the trade-offs and how custom keys work. (Quick sort's space is O(log n) on average from the recursion stack, but degrades to O(n) when pivots are consistently bad — e.g. already-sorted input with first-element pivot.)</p>
 
 <table>
   <tr><th scope="col">Algorithm</th><th scope="col">Avg</th><th scope="col">Worst</th><th scope="col">Space</th><th scope="col">Stable?</th></tr>
   <tr><td>Merge sort</td><td>O(n log n)</td><td>O(n log n)</td><td>O(n)</td><td>Yes</td></tr>
-  <tr><td>Quick sort</td><td>O(n log n)</td><td>O(n²)</td><td>O(log n)</td><td>No</td></tr>
+  <tr><td>Quick sort</td><td>O(n log n)</td><td>O(n²)</td><td>O(log n) avg, O(n) worst</td><td>No</td></tr>
   <tr><td>Heap sort</td><td>O(n log n)</td><td>O(n log n)</td><td>O(1)</td><td>No</td></tr>
   <tr><td>Insertion sort</td><td>O(n²)</td><td>O(n²)</td><td>O(1)</td><td>Yes</td></tr>
   <tr><td>Counting sort</td><td>O(n+k)</td><td>O(n+k)</td><td>O(k)</td><td>Yes</td></tr>
@@ -1336,7 +1380,11 @@ collect, then pop back up (un-choose) to try siblings.
   - parent/child: 1 is parent of 2 and 3
   - leaf: a node with no children (4, 5, 6)
   - height: longest root-to-leaf path (here, 2)
-  - subtree: any node + all its descendants</div>
+  - subtree: any node + all its descendants
+
+  Note: this is a generic binary tree used to illustrate
+  structure. It does NOT satisfy the BST property — see
+  the BST diagram further down for that.</div>
 
 <h3>The four traversals</h3>
 <table>
@@ -1420,7 +1468,7 @@ Warning: an unbalanced BST degrades to a linked list, O(n).</div>
 
 <h2 id="part-13">Part 13 — Graphs (BFS / DFS) <span class="tag tag-pattern">PATTERN</span> <span class="tag tag-medium">MEDIUM</span></h2>
 
-<p>A graph is nodes + edges. Represent it as an <strong>adjacency list</strong> (dict of node → neighbors). Trees and grids are special graphs.</p>
+<p>A graph is nodes + edges. Represent it as an <strong>adjacency list</strong> (dict of node → neighbors). Trees and grids are special graphs. The same structures power real systems — social graphs, dependency resolution, rate-limit relationship graphs — covered in the <a href="system-design-guide.html">system design guide</a>.</p>
 
 <h3>Representing a graph</h3>
 <div class="ascii">The graph:              Adjacency list:
@@ -1492,6 +1540,17 @@ def num_islands(grid):
                 sink(r, c)
     return count</code></pre>
 
+<p>For large grids (say &gt;1000×1000), the recursive flood fill can blow Python's ~1000-deep recursion limit. Swap to an explicit stack (or BFS queue) — same algorithm, no stack-overflow risk:</p>
+<pre><code>def sink_iter(grid, r0, c0):
+    stack = [(r0, c0)]
+    rows, cols = len(grid), len(grid[0])
+    while stack:
+        r, c = stack.pop()
+        if r &lt; 0 or r &gt;= rows or c &lt; 0 or c &gt;= cols or grid[r][c] != '1':
+            continue
+        grid[r][c] = '0'
+        stack.extend([(r+1,c),(r-1,c),(r,c+1),(r,c-1)])</code></pre>
+
 <h3>Must-know graph topics</h3>
 <ul>
   <li>Connected components count (DFS/BFS/union-find)</li>
@@ -1506,11 +1565,62 @@ def num_islands(grid):
   Forgetting the visited set causes infinite loops on cyclic graphs. For grids, you can mark cells in place to save space.
 </div>
 
+<h3>Union-Find (Disjoint Set Union)</h3>
+<p>Union-Find tracks which elements belong to the same group. Two operations: <code>find(x)</code> returns the representative ("root") of x's group, and <code>union(a, b)</code> merges the two groups. With <strong>path compression</strong> (during <code>find</code>, point every node directly at the root) and <strong>union by rank/size</strong> (always hang the smaller tree under the larger), both operations are effectively O(α(n)) — inverse Ackermann, basically constant.</p>
+<p>Use it for: counting connected components on a stream of edges, Kruskal's MST, redundant-connection detection, "accounts merge", and "number of provinces". When edges arrive one at a time and you need fast "are these in the same group?", DSU usually beats BFS/DFS.</p>
+<pre><code>class DSU:
+    def __init__(self, n):
+        self.parent = list(range(n))
+        self.size = [1] * n
+
+    def find(self, x):
+        # path compression: flatten the chain on the way up
+        while self.parent[x] != x:
+            self.parent[x] = self.parent[self.parent[x]]
+            x = self.parent[x]
+        return x
+
+    def union(self, a, b):
+        ra, rb = self.find(a), self.find(b)
+        if ra == rb:
+            return False                 # already merged
+        # union by size: smaller tree hangs under larger
+        if self.size[ra] &lt; self.size[rb]:
+            ra, rb = rb, ra
+        self.parent[rb] = ra
+        self.size[ra] += self.size[rb]
+        return True
+# find/union: ~O(α(n)) ≈ O(1) amortized.</code></pre>
+
+<h3>Topological sort — Kahn's algorithm (BFS)</h3>
+<p>For a DAG, return nodes in an order where every edge points forward. Kahn's idea: repeatedly pick a node with in-degree 0 (no remaining prerequisites), output it, and decrement its neighbors' in-degrees. If you can't visit all nodes, the graph has a cycle — which is exactly how "Course Schedule" detects impossibility.</p>
+<pre><code>from collections import deque, defaultdict
+
+def topo_sort(n, edges):
+    graph = defaultdict(list)
+    indeg = [0] * n
+    for u, v in edges:               # edge u -> v means u before v
+        graph[u].append(v)
+        indeg[v] += 1
+
+    q = deque(i for i in range(n) if indeg[i] == 0)
+    order = []
+    while q:
+        u = q.popleft()
+        order.append(u)
+        for v in graph[u]:
+            indeg[v] -= 1
+            if indeg[v] == 0:
+                q.append(v)
+
+    return order if len(order) == n else []   # [] means cycle
+# O(V + E) time and space.</code></pre>
+
 <hr>
 
 <h2 id="part-14">Part 14 — Heaps / priority queue <span class="tag tag-pattern">PATTERN</span> <span class="tag tag-medium">MEDIUM</span></h2>
 
-<p>A heap gives O(1) access to the min (or max) and O(log n) insert/remove. Python's <code>heapq</code> is a <strong>min-heap</strong>. Use it for "top K", "Kth largest", "merge K lists", and streaming-median problems.</p>
+<p>A heap gives O(1) access to the min (or max) and O(log n) insert/remove. Python's <code>heapq</code> is a <strong>min-heap</strong>. Use it for "top K", "Kth largest", "merge K lists", and streaming-median problems. Two heaps powering a streaming median is also how you'd build a real-time leaderboard or percentile tracker — see the <a href="system-design-guide.html">system design guide</a> for the production version. (For the API itself, see <code>heapq</code> in the <a href="python-guide.html">Python guide</a>'s stdlib section.)</p>
 
 <h3>What a heap actually is</h3>
 <p>A binary heap is a complete binary tree where every parent is ≤ its children (min-heap). The smallest element is always at the root, so peeking the min is O(1). It's stored compactly in a plain array — no node objects — using index arithmetic to find parents and children.</p>
@@ -1540,6 +1650,7 @@ largest = -heapq.heappop(h)</code></pre>
 
 <h3>Kth largest element</h3>
 <pre><code>def kth_largest(nums, k):
+    # assumes 1 &lt;= k &lt;= len(nums)
     h = nums[:k]
     heapq.heapify(h)             # min-heap of k elements
     for x in nums[k:]:
@@ -1547,6 +1658,34 @@ largest = -heapq.heappop(h)</code></pre>
             heapq.heapreplace(h, x)
     return h[0]
 # O(n log k) time, O(k) space</code></pre>
+
+<h3>Quickselect — average O(n) alternative</h3>
+<p>When you only need the Kth value (not the top K sorted), quickselect beats the heap on average. It's quicksort's partition step, but you only recurse into the side that contains the Kth index, giving expected O(n) — worst case O(n²) with bad pivots. Python's <code>random.shuffle</code> first, or median-of-three pivot, keeps the worst case unlikely.</p>
+<pre><code>import random
+def kth_largest_qs(nums, k):
+    # Kth largest = (len-k)-th smallest (0-indexed)
+    target = len(nums) - k
+    lo, hi = 0, len(nums) - 1
+    while lo &lt; hi:
+        p = partition(nums, lo, hi)
+        if p == target: return nums[p]
+        if p &lt; target:  lo = p + 1
+        else:           hi = p - 1
+    return nums[lo]
+
+def partition(a, lo, hi):
+    # Lomuto, with random pivot to avoid O(n^2)
+    r = random.randint(lo, hi)
+    a[r], a[hi] = a[hi], a[r]
+    pivot = a[hi]
+    i = lo
+    for j in range(lo, hi):
+        if a[j] &lt;= pivot:
+            a[i], a[j] = a[j], a[i]
+            i += 1
+    a[i], a[hi] = a[hi], a[i]
+    return i
+# Average O(n), worst O(n^2), in-place O(1) extra space.</code></pre>
 
 <h3>Top K frequent elements</h3>
 <pre><code>def top_k_frequent(nums, k):
@@ -1739,7 +1878,7 @@ def erase_overlap(intervals):
 <pre><code>x &amp; 1            # is x odd?
 x &amp; (x - 1)      # clears lowest set bit (count bits)
 x ^ x == 0       # any value XOR itself is 0
-n &amp; (n - 1) == 0 # is n a power of two?
+n &gt; 0 and n &amp; (n - 1) == 0 # is n a power of two? (guard n=0)
 
 # Single number: every element appears twice except one
 def single(nums):
@@ -1813,7 +1952,7 @@ def single(nums):
 
 <div class="callout callout-tip">
   <strong>Final advice</strong>
-  Don't grind randomly. Pick a pattern, do 5–8 problems in it until recognition is automatic, then move on. Re-solve problems you got wrong after a few days. In the interview, narrate your thinking — a clear thought process with a brute force beats silent struggling toward an optimal answer.
+  Don't grind randomly. Pick a pattern, do 5–8 problems in it until recognition is automatic, then move on. Re-solve problems you got wrong after a few days. In the interview, narrate your thinking — a clear thought process with a brute force beats silent struggling toward an optimal answer. For the full interview playbook — behavioral, system design, take-homes, and ML-specific rounds — see the <a href="interview-prep.html">interview prep guide</a>.
 </div>
 
 <hr>

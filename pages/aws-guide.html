@@ -524,8 +524,10 @@
 aws configure                       # set keys, region
 aws s3 ls                           # list buckets
 aws ec2 run-instances \
-  --image-id ami-xxxxxxxx --instance-type t3.micro \
-  --key-name my-key --count 1</code></pre>
+  --image-id ami-0abc1234def567890 --instance-type t3.micro \
+  --key-name my-key --count 1 \
+  --subnet-id subnet-0123abcd --security-group-ids sg-0123abcd
+# subnet-id &amp; security-group-ids are required outside the default VPC</code></pre>
 
 <hr>
 
@@ -647,7 +649,7 @@ aws ec2 run-instances \
   <tr><td>M (general)</td><td>Balanced CPU/RAM</td><td>m6i, m7g</td></tr>
   <tr><td>C (compute)</td><td>High CPU</td><td>c7g, c6i</td></tr>
   <tr><td>R / X (memory)</td><td>Large RAM (DBs, caches)</td><td>r7g, x2</td></tr>
-  <tr><td>P / G / Inf / Trn</td><td>GPU / AI accelerators</td><td>p5, g6, inf2, trn2</td></tr>
+  <tr><td>P / G / Inf / Trn</td><td>GPU / AI accelerators (Trainium2 &amp; Inferentia2 are AWS's own)</td><td>p5, p5e (H200), p5en, p6 (Blackwell), g6, inf2, trn2</td></tr>
   <tr><td>I / D (storage)</td><td>High local disk throughput</td><td>i4i, d3</td></tr>
 </table>
 <p><strong>Graviton</strong> (the <code>g</code> suffix) are AWS's own ARM CPUs — better price/performance for many workloads.</p>
@@ -681,7 +683,7 @@ aws ec2 run-instances \
   <tr><th scope="col">Service</th><th scope="col">What it is</th></tr>
   <tr><td>ECR (Elastic Container Registry)</td><td>Private Docker image registry</td></tr>
   <tr><td>ECS (Elastic Container Service)</td><td>AWS-native container orchestration (simpler than K8s)</td></tr>
-  <tr><td>EKS (Elastic Kubernetes Service)</td><td>Managed Kubernetes</td></tr>
+  <tr><td>EKS (Elastic Kubernetes Service)</td><td>Managed Kubernetes (EKS Auto Mode, GA 2024, automates nodes, networking, scaling, storage)</td></tr>
   <tr><td>Fargate</td><td>Serverless compute engine for ECS &amp; EKS (no servers to manage)</td></tr>
 </table>
 
@@ -902,7 +904,8 @@ aws ec2 run-instances \
 <h3>SQS vs SNS vs EventBridge vs Kinesis</h3>
 <div class="ascii">  SQS (queue):  producer -> [ queue ] -> one consumer
        buffer work; each message processed once.
-       Standard (at-least-once) or FIFO (ordered, exactly-once).
+       Standard (at-least-once) or FIFO (ordered, exactly-once
+       processing within a 5-minute deduplication window).
 
   SNS (pub/sub): publisher -> TOPIC -+-> SQS queue
                                      +-> Lambda
@@ -957,7 +960,7 @@ aws ec2 run-instances \
 
 <h2 id="part-11">Part 11 — AI &amp; machine learning (Bedrock &amp; SageMaker) <span class="tag tag-core">★ CORE</span></h2>
 
-<p>AWS's AI stack centers on <strong>Bedrock</strong> (managed access to foundation models + agents) and <strong>SageMaker</strong> (custom ML platform), plus a set of pre-built AI services.</p>
+<p>AWS's AI stack centers on <strong>Bedrock</strong> (managed access to foundation models + agents) and <strong>SageMaker</strong> (custom ML platform), plus a set of pre-built AI services. For cloud-agnostic LLM application patterns see the <a href="ai-engineering-guide.html">AI engineering guide</a>, and for a side-by-side with Azure/GCP see the <a href="cloud-ai-comparison.html">cloud AI comparison</a>.</p>
 
 <h3>The layers of AWS AI</h3>
 <div class="ascii">  1. PRE-BUILT AI SERVICES (call an API)
@@ -966,9 +969,12 @@ aws ec2 run-instances \
      Textract (document extraction), Translate
 
   2. GENERATIVE AI (foundation models) -- AMAZON BEDROCK
-     Managed access to models from Anthropic (Claude),
-     Meta (Llama), Mistral, Cohere, Amazon (Nova/Titan),
-     Stability AI -- via ONE API. Plus:
+     Managed access to models from Anthropic (Claude Opus
+     4.7, Sonnet 4.6, Haiku 4.5), Amazon (Nova Pro/Lite/
+     Micro/Canvas/Reel; Titan text largely superseded by
+     Nova), Meta (Llama), Mistral, Cohere, DeepSeek, AI21,
+     Stability AI (SD 3.5 Large, Stable Image Ultra/Core)
+     -- via ONE API. Plus:
        - Knowledge Bases (managed RAG)
        - Agents / AgentCore (build & run agents)
        - Guardrails (safety filters)
@@ -977,31 +983,37 @@ aws ec2 run-instances \
   3. CUSTOM ML -- AMAZON SAGEMAKER
      Full lifecycle: label, build, train, tune, deploy,
      monitor. SageMaker Studio is the IDE; pipelines,
-     feature store, model registry, endpoints.</div>
+     feature store, model registry, endpoints. HyperPod
+     for distributed FM training on Trainium2/GPU clusters.</div>
 
 <table>
   <tr><th scope="col">Service</th><th scope="col">Use for</th></tr>
-  <tr><td>Amazon Bedrock</td><td>Access many foundation models (Claude, Llama, Nova, etc.) via one managed API</td></tr>
-  <tr><td>Bedrock Knowledge Bases</td><td>Managed RAG: ingest, embed, retrieve, ground — minimal plumbing</td></tr>
-  <tr><td>Bedrock Agents / AgentCore</td><td>Build, deploy &amp; operate agents that reason &amp; call tools/APIs</td></tr>
-  <tr><td>Bedrock Guardrails</td><td>Content filters, denied topics, PII redaction, prompt-injection defense</td></tr>
+  <tr><td>Amazon Bedrock</td><td>Access many foundation models (Claude 4.7/4.6/4.5, Nova, Llama, Mistral, Cohere, DeepSeek, AI21, Stability AI) via one managed API — see the <a href="llm-inference-guide.html">LLM inference guide</a> for token-economics and serving trade-offs</td></tr>
+  <tr><td>Bedrock Knowledge Bases</td><td>Managed RAG: ingest, chunk (fixed / semantic / hierarchical), embed (Titan, Cohere), store in OpenSearch / Aurora pgvector / Pinecone / MongoDB Atlas, retrieve, ground (see the <a href="ai-engineering-guide.html">AI engineering guide</a> for RAG depth)</td></tr>
+  <tr><td>Bedrock Agents / AgentCore</td><td>Build, deploy &amp; operate agents that reason &amp; call tools/APIs (AgentCore GA Oct 2025) — see the <a href="agentic-ai-guide.html">agentic AI guide</a> for framework patterns</td></tr>
+  <tr><td>Bedrock Guardrails</td><td>Policy categories: denied topics, content filters (hate/violence/sexual/insults/misconduct), PII detection &amp; redaction, word filters, contextual grounding &amp; relevance checks, prompt-injection defense</td></tr>
   <tr><td>Amazon SageMaker</td><td>Custom model training &amp; full MLOps</td></tr>
   <tr><td>Amazon Q</td><td>AI assistant for business (Q Business) &amp; developers (Q Developer)</td></tr>
   <tr><td>Pre-built AI APIs</td><td>Rekognition, Transcribe, Comprehend, Textract, Polly</td></tr>
 </table>
 
 <h3>Bedrock AgentCore — production agents</h3>
-<p>AgentCore is AWS's framework for building, deploying, and operating production AI agents. It's <strong>framework-agnostic</strong> (use LangGraph, CrewAI, Strands, or your own) and provides the managed runtime plus supporting services — think "managed infrastructure for agents".</p>
-<div class="ascii">  AgentCore building blocks (mix &amp; match):
-    Runtime   -> secure, serverless, scalable agent hosting
-    Gateway   -> turn APIs/Lambdas into agent tools (MCP)
-    Memory    -> short- &amp; long-term agent memory
-    Identity  -> secure agent auth &amp; access to resources
-    Browser   -> managed headless browser tool
+<p>AgentCore is AWS's <strong>managed runtime and platform</strong> for building, deploying, and operating production AI agents (preview Jul 2025, <strong>GA Oct 13, 2025</strong>; available in 9 regions at GA). It's <strong>framework-agnostic</strong> — bring CrewAI, LangGraph, LlamaIndex, Google ADK, OpenAI Agents SDK, or AWS's own <strong>Strands Agents SDK</strong> (an open-source agent framework, distinct from AgentCore: Strands is the framework, AgentCore is the managed runtime they run on). Supports the A2A (agent-to-agent) protocol at GA.</p>
+<div class="ascii">  AgentCore — 7 building blocks (mix &amp; match):
+    Runtime          -> secure, serverless, scalable agent
+                        hosting (framework-agnostic)
+    Memory           -> short- &amp; long-term agent memory
+    Identity         -> secure agent auth &amp; access to
+                        resources (OAuth, IAM)
+    Gateway          -> turn APIs/Lambdas into agent tools
+                        (MCP-compatible)
     Code Interpreter -> sandboxed code execution
-    Observability -> trace &amp; monitor agent behavior
+    Browser          -> managed headless browser tool
+    Observability    -> trace &amp; monitor agent behavior
 
-  Bring any framework/model; AgentCore runs &amp; operates it.</div>
+  Bring any framework (Strands, LangGraph, CrewAI, ADK,
+  LlamaIndex, OpenAI Agents SDK) &amp; any model; AgentCore
+  runs &amp; operates it. A2A protocol supported at GA.</div>
 
 <h3>A typical RAG architecture on AWS</h3>
 <div class="ascii">  docs in S3 -> Bedrock Knowledge Base
@@ -1016,6 +1028,16 @@ aws ec2 run-instances \
   
   Or wire it yourself: Lambda + Bedrock InvokeModel +
   a vector store (OpenSearch / Aurora pgvector / Pinecone).</div>
+
+<h3>SageMaker HyperPod — distributed FM training</h3>
+<p>HyperPod (GA 2024) is SageMaker's purpose-built platform for training and fine-tuning <strong>foundation models</strong> at scale. It manages persistent, resilient clusters of accelerators with deep-health checks and <strong>auto-recovery</strong> from node failures (a single hardware fault used to derail multi-day FM training runs). For the serving side of the same models (latency, throughput, batching), see the <a href="llm-inference-guide.html">LLM inference guide</a>.</p>
+<ul>
+  <li><strong>Orchestration:</strong> Slurm or Amazon EKS — pick the workflow your team knows.</li>
+  <li><strong>Hardware:</strong> NVIDIA GPU clusters and AWS <strong>Trainium2</strong>; <strong>UltraServers</strong> (Blackwell GB200 NVL72) for the largest models.</li>
+  <li><strong>HyperPod recipes (GA):</strong> validated training/fine-tuning configs for Llama 3.1 405B, Llama 3.2 90B, Mixtral, and Amazon Nova — skip weeks of cluster tuning.</li>
+  <li><strong>Elastic training</strong> (GA Dec 2025): dynamically scale a job's node count up/down without restarting from scratch — useful when capacity fluctuates or you want to absorb spare GPUs.</li>
+  <li><strong>Observability:</strong> built-in metrics, CloudWatch integration, and task governance to share clusters across teams.</li>
+</ul>
 
 <div class="callout callout-tip">
   <strong>Bedrock's edge: model choice + AWS integration</strong>
@@ -1047,8 +1069,8 @@ class MyStack(Stack):
 <h3>CI/CD &amp; developer tools</h3>
 <ul>
   <li><strong>CodePipeline / CodeBuild / CodeDeploy</strong> — AWS-native CI/CD.</li>
-  <li><strong>CodeCommit / CodeArtifact</strong> — git repos &amp; package registry.</li>
-  <li><strong>Amazon Q Developer</strong> — AI coding assistant.</li>
+  <li><strong>CodeCommit / CodeArtifact</strong> — managed Git repos &amp; package registry. (CodeCommit was briefly closed to new customers in mid-2024, but that was reversed in 2025 — it's back to full GA and open to all.)</li>
+  <li><strong>Amazon Q Developer</strong> — AI coding assistant (the successor to CodeWhisperer). In-IDE completions and chat, plus agentic features: <code>/dev</code> for multi-file feature implementation, <code>/transform</code> for code &amp; language modernization (e.g., Java upgrades, .NET porting), an automated code-review agent for PRs, unit-test generation, and documentation generation. Integrates with the AWS Console, IDEs (VS Code, JetBrains), GitLab, and the CLI.</li>
 </ul>
 
 <h3>Observability: CloudWatch &amp; X-Ray</h3>
@@ -1115,6 +1137,8 @@ class MyStack(Stack):
 <hr>
 
 <h2 id="part-14">Part 14 — Architecture patterns &amp; cheat sheet</h2>
+
+<p>For cloud-agnostic distributed-systems patterns (load balancing, caching, queues, consistency) used in the architectures below, see the <a href="system-design-guide.html">system design guide</a>.</p>
 
 <h3>Reference: a typical 3-tier web app on AWS</h3>
 <div class="ascii">          Route 53 (DNS)

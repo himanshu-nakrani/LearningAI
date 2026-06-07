@@ -646,8 +646,8 @@
      70B model -> ~140 GB
      405B model -> ~810 GB
 
-  INT8: roughly 1 x params (GB) ; INT4: ~0.5 x params</code></pre>
-</div>
+  INT8: roughly 1 x params (GB) ; INT4: ~0.5 x params
+  FP8: ~1 x params ; FP4 (NVFP4/MXFP4): ~0.5 x params</div>
 
 <h3>The total memory budget</h3>
 <div class="ascii">  GPU HBM must hold ALL of:
@@ -668,7 +668,10 @@
   <tr><td>A100 40GB</td><td>40 GB</td><td>~13B; 70B needs quant or multi-GPU</td></tr>
   <tr><td>A100 / H100 80GB</td><td>80 GB</td><td>~70B quantized, or 1 of several for 70B FP16</td></tr>
   <tr><td>H200</td><td>141 GB</td><td>70B FP16 single-GPU with room for KV</td></tr>
-  <tr><td>8x H100</td><td>640 GB</td><td>405B (with tensor parallelism)</td></tr>
+  <tr><td>AMD MI300X / MI325X</td><td>192 GB / 256 GB</td><td>70B FP16 single-GPU with large KV budget; 405B with TP</td></tr>
+  <tr><td>NVIDIA B200 (Blackwell)</td><td>192 GB HBM3e</td><td>70B FP16 single-GPU; native NVFP4/MXFP4 acceleration</td></tr>
+  <tr><td>8x H100</td><td>640 GB</td><td>405B only with FP8/INT8 quantization (~405 GB); does NOT fit at FP16 (~810 GB)</td></tr>
+  <tr><td>8x B200 / GB200 NVL72</td><td>1.5 TB+</td><td>405B FP16 with TP; frontier-scale FP4 inference</td></tr>
 </table>
 
 <div class="callout callout-tip">
@@ -778,7 +781,7 @@
 
 <h2 id="part-6">Part 6 — PagedAttention &amp; KV cache management <span class="tag tag-core">★ CORE</span></h2>
 
-<p>PagedAttention (introduced by vLLM) solved the KV cache <em>memory fragmentation</em> problem and is the reason vLLM became the default serving engine. It's the most-asked optimization in serving interviews.</p>
+<p>PagedAttention (introduced by vLLM) solved the KV cache <em>memory fragmentation</em> problem and is a large part of why vLLM became a default serving engine. By 2026 most major engines have adopted paged/block KV cache (TensorRT-LLM, SGLang via RadixAttention, TGI), but the underlying idea remains one of the most-asked optimizations in serving interviews.</p>
 
 <h3>The problem: KV cache fragmentation</h3>
 <p>Traditional serving pre-allocates a contiguous chunk of memory for each request's KV cache, sized to the maximum possible length. This wastes huge amounts of memory: most requests don't reach max length (internal fragmentation), and freed blocks of different sizes leave unusable gaps (external fragmentation).</p>
@@ -832,8 +835,9 @@
   <tr><th scope="col">Format</th><th scope="col">Bits</th><th scope="col">Memory vs FP16</th><th scope="col">Typical use</th></tr>
   <tr><td>FP32</td><td>32</td><td>2x</td><td>Rare for inference</td></tr>
   <tr><td>FP16 / BF16</td><td>16</td><td>1x (baseline)</td><td>Default full precision</td></tr>
-  <tr><td>FP8</td><td>8</td><td>0.5x</td><td>Modern GPUs (H100+), great quality/speed</td></tr>
+  <tr><td>FP8</td><td>8</td><td>0.5x</td><td>H100+ native; on Blackwell, FP4 (NVFP4/MXFP4) is the bigger 2026 story</td></tr>
   <tr><td>INT8</td><td>8</td><td>0.5x</td><td>Widely supported, small quality hit</td></tr>
+  <tr><td>FP4 (NVFP4 / MXFP4)</td><td>4</td><td>0.25x</td><td>Hardware-native on Blackwell (B200/B300/RTX Pro 6000); software fallback only on H100/A100</td></tr>
   <tr><td>INT4</td><td>4</td><td>0.25x</td><td>Max compression, noticeable but often acceptable loss</td></tr>
 </table>
 
@@ -864,6 +868,8 @@
   <tr><td>GGUF (llama.cpp)</td><td>Flexible CPU/GPU quant formats (Q4_K_M, etc.) for local inference</td></tr>
   <tr><td>SmoothQuant</td><td>Shifts difficulty from activations to weights to enable INT8 W8A8</td></tr>
   <tr><td>FP8 (native)</td><td>Hardware-native 8-bit float on H100+; minimal quality loss, fast</td></tr>
+  <tr><td>NVFP4</td><td>NVIDIA 4-bit float: blocks of 16, FP8 (E4M3) scale + FP32 per-tensor scale — finer granularity; Blackwell-native (TensorRT-LLM v0.17+)</td></tr>
+  <tr><td>MXFP4</td><td>OCP open-standard 4-bit float: blocks of 32, FP8 (E8M0) scale — broader kernel support; only format with both fwd+bwd low-precision matmuls on Blackwell training</td></tr>
   <tr><td>KV cache quant</td><td>Store the KV cache in INT8/FP8 -> bigger batches/context</td></tr>
 </table>
 
@@ -886,7 +892,7 @@
 <h2 id="part-8">Part 8 — Attention optimizations (FlashAttention, GQA, MQA) <span class="tag tag-core">★ CORE</span></h2>
 
 <h3>FlashAttention — fix the memory bottleneck in attention</h3>
-<p>Naive attention computes the full N×N attention score matrix and writes it to HBM — slow and memory-hungry (O(N²) memory). FlashAttention computes attention in <em>tiles</em> that fit in fast on-chip SRAM, never materializing the full matrix in HBM. It's mathematically identical, just IO-aware.</p>
+<p>Naive attention computes the full N×N attention score matrix and writes it to HBM — slow and memory-hungry (O(N²) memory). FlashAttention computes attention in <em>tiles</em> that fit in fast on-chip SRAM, never materializing the full matrix in HBM. It's mathematically identical, just IO-aware. <strong>FlashAttention-3</strong> (Hopper-optimized, with FP8 support) is the 2026 standard; FA-2 remains common on Ampere.</p>
 <div class="ascii">  NAIVE attention:
     Q x K^T -> [N x N] scores -> write to HBM -> softmax
     -> read back -> x V.   O(N^2) HBM traffic. Slow.
@@ -1064,14 +1070,16 @@
   + better TTFT (prefill not blocked by decodes) AND
     better TPOT (decode not stalled by big prefills)
   - adds complexity + KV transfer cost. Used at large scale
-    (e.g. DeepSeek, modern vLLM/Dynamo deployments).</div>
+    (e.g. DeepSeek, modern vLLM and NVIDIA Dynamo deployments —
+    Dynamo being NVIDIA's standalone disaggregated inference
+    platform, not a vLLM component).</div>
 
 <h3>Other production tricks</h3>
 <ul>
   <li><strong>Response caching</strong> — cache full responses for identical (or semantically similar) requests; the cheapest token is the one you never generate.</li>
   <li><strong>Structured/constrained decoding</strong> — mask invalid tokens to force JSON/grammar; guarantees parseable output and can speed sampling.</li>
   <li><strong>CUDA graphs</strong> — capture the decode step as a graph to remove per-step kernel-launch overhead (big for small batches).</li>
-  <li><strong>Multi-LoRA serving</strong> — host one base model + many small LoRA adapters, swapping adapters per request (S-LoRA) instead of one model per fine-tune.</li>
+  <li><strong>Multi-LoRA serving</strong> — host one base model + many small LoRA adapters, swapping adapters per request (S-LoRA) instead of one model per fine-tune. Pairs well with multi-tenant agent platforms — see the <a href="agentic-ai-guide.html">Agentic AI Guide</a> for the agent-side routing patterns this enables.</li>
   <li><strong>Continuous KV offloading</strong> — spill cold KV blocks to CPU/NVMe to extend effective capacity.</li>
 </ul>
 
@@ -1090,22 +1098,30 @@
   <tr><th scope="col">Engine</th><th scope="col">By</th><th scope="col">Strengths</th><th scope="col">Notes</th></tr>
   <tr><td>vLLM</td><td>OSS (Berkeley origin)</td><td>PagedAttention, continuous batching, broad model + feature support</td><td>The default OSS choice; huge community</td></tr>
   <tr><td>TensorRT-LLM</td><td>NVIDIA</td><td>Fastest on NVIDIA GPUs; deep kernel optimization</td><td>Compile step; NVIDIA-only; less flexible</td></tr>
-  <tr><td>TGI</td><td>Hugging Face</td><td>Production-ready, easy HF integration</td><td>Solid all-rounder</td></tr>
+  <tr><td>TGI</td><td>Hugging Face</td><td>Easy HF integration, production-ready</td><td>Historically a solid all-rounder; less actively developed than vLLM/TRT-LLM/SGLang in 2026</td></tr>
   <tr><td>SGLang</td><td>OSS</td><td>RadixAttention prefix caching, fast structured output, agents</td><td>Strong for complex/structured workloads</td></tr>
+  <tr><td>NVIDIA Dynamo</td><td>NVIDIA</td><td>Disaggregated prefill/decode, multi-node, KV-aware routing</td><td>Standalone inference platform; pairs with TRT-LLM/vLLM backends</td></tr>
+  <tr><td>LMDeploy</td><td>OSS (InternLM)</td><td>TurboMind backend; strong quantization (W4A16, KV INT8)</td><td>Popular in China; competitive throughput</td></tr>
   <tr><td>llama.cpp / Ollama</td><td>OSS</td><td>CPU + consumer GPU, GGUF quant, local</td><td>Local/edge, not high-throughput serving</td></tr>
-  <tr><td>TGI/Triton + backends</td><td>NVIDIA Triton</td><td>Multi-model, multi-framework serving platform</td><td>Orchestration layer</td></tr>
+  <tr><td>Triton Inference Server</td><td>NVIDIA</td><td>Multi-model, multi-framework serving platform (separate from HF TGI)</td><td>Orchestration layer; hosts TRT-LLM, vLLM, etc. as backends</td></tr>
 </table>
 
 <h3>Managed / cloud options</h3>
+<p>If you'd rather not run GPUs, every major cloud has a managed-serving path. See the <a href="cloud-ai-comparison.html">Cloud AI Comparison</a> for a side-by-side of these offerings.</p>
 <table>
   <tr><th scope="col">Cloud</th><th scope="col">Managed serving</th></tr>
-  <tr><td>AWS</td><td>Bedrock (fully managed models), SageMaker endpoints (bring your own + LMI/vLLM containers)</td></tr>
-  <tr><td>Azure</td><td>Azure OpenAI (PTUs), Azure ML managed endpoints</td></tr>
-  <tr><td>GCP</td><td>Vertex AI endpoints, Model Garden one-click deploy</td></tr>
+  <tr><td><a href="aws-guide.html">AWS</a></td><td>Bedrock (fully managed models), SageMaker endpoints (bring your own + LMI/vLLM containers)</td></tr>
+  <tr><td><a href="azure-guide.html">Azure</a></td><td>Azure AI Foundry (the 2026 rebrand of Azure OpenAI / Azure ML; PTUs for reserved throughput, managed endpoints for bring-your-own models)</td></tr>
+  <tr><td><a href="gcp-guide.html">GCP</a></td><td>Vertex AI endpoints, Model Garden one-click deploy</td></tr>
 </table>
 
+<h3>A minimal vLLM launch command</h3>
+<pre><code># Serve Llama-3-70B across 4 GPUs with FP8 KV cache for bigger batches
+vllm serve meta-llama/Llama-3-70B \
+    --tensor-parallel-size 4 \
+    --kv-cache-dtype fp8</code></pre>
+
 <div class="callout callout-tip">
-  <strong>How to choose</strong>
   Default to <strong>vLLM</strong> for self-hosted OSS models — best balance of performance, features, and ecosystem. Use <strong>TensorRT-LLM</strong> when you need the absolute lowest latency on NVIDIA and can afford the compile/ops complexity. Use a <strong>managed API</strong> (Bedrock/OpenAI/Vertex) when you don't want to run GPUs at all and can accept per-token pricing. The build-vs-buy line: self-host when volume is high and steady (cheaper per token at scale); use APIs when volume is low/spiky or you need the latest frontier models.
 </div>
 
@@ -1177,6 +1193,8 @@
      high, steady volume  -> self-host wins (amortize GPU)
      low, spiky volume    -> API wins (pay per token,
                              no idle GPU cost)</div>
+
+<p>For the API side of that trade-off — provider pricing, prompt caching discounts, and the LLMOps view of hosted vs self-hosted — see the <a href="ai-engineering-guide.html">AI Engineering Guide</a>; for managed-serving options per cloud, see the <a href="cloud-ai-comparison.html">Cloud AI Comparison</a>.</p>
 
 <h3>The cost-reduction toolkit (in rough order of impact)</h3>
 <table>
@@ -1258,6 +1276,8 @@
   <li>Load shedding / admission control when queues exceed SLO — reject early rather than melt down.</li>
   <li>Circuit breakers around model backends; health checks that actually run a tiny inference.</li>
 </ul>
+
+<p>The API-gateway, load-shedding, circuit-breaker, and SLO patterns above are general distributed-systems territory — see the <a href="system-design-guide.html">System Design Guide</a> for the canonical treatments these LLM specifics build on top of.</p>
 
 <div class="callout callout-warn">
   <strong>The cold-start trap</strong>

@@ -1,0 +1,18 @@
+.root {
+  padding: 14px 20px;
+  margin: 1.2em 0;
+  border-radius: 6px;
+  border-left: 3px solid;
+}
+.title {
+  display: block;
+  margin-bottom: 4px;
+  font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+  font-weight: 600;
+}
+.body :global(p):first-child { margin-top: 0; }
+.body :global(p):last-child { margin-bottom: 0; }
+
+.tip { background: var(--tip-bg); border-color: var(--tip-bd); }
+.warn { background: var(--warn-bg); border-color: var(--warn-bd); }
+.gap { background: var(--gap-bg); border-color: var(--gap-bd); }

@@ -1,0 +1,9 @@
+node_modules/
+.next/
+out/
+.env*
+*.log
+.DS_Store
+src/content/
+src/guides-meta.generated.ts
+public/search-index.json

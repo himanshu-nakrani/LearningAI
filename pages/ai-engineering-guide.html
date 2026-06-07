@@ -461,6 +461,120 @@
     .sidebar-toc { font-size: 0.74em; padding: 14px 14px; }
   }
 
+
+  /* code-block enhancements: hljs theme using CSS vars + copy button */
+  pre code.hljs { display: block; padding: 0; background: transparent; color: var(--code-fg); }
+  .hljs-keyword, .hljs-built_in, .hljs-type, .hljs-class .hljs-title { color: var(--accent); font-weight: 600; }
+  .hljs-string, .hljs-attr { color: #4a7ba6; }
+  .hljs-number, .hljs-literal, .hljs-symbol { color: #b8453a; }
+  .hljs-comment, .hljs-meta, .hljs-doctag { color: var(--muted); font-style: italic; }
+  .hljs-function .hljs-title, .hljs-title.function_ { color: var(--accent); }
+  .hljs-variable, .hljs-name { color: var(--code-fg); }
+  html.dark .hljs-string, html.dark .hljs-attr { color: #8db4d9; }
+  html.dark .hljs-number, html.dark .hljs-literal { color: #d18883; }
+  pre { position: relative; }
+  .copy-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+    font-size: 0.7em;
+    padding: 3px 9px;
+    border-radius: 4px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    letter-spacing: 0.02em;
+  }
+  pre:hover .copy-btn, .copy-btn:focus { opacity: 1; }
+  .copy-btn:hover { color: var(--accent); border-color: var(--accent); }
+  .copy-btn.copied { color: var(--tip-bd); border-color: var(--tip-bd); }
+
+  /* search overlay */
+  .search-trigger {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 0.78em;
+    padding: 2px 9px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-left: auto;
+    margin-right: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    flex-shrink: 0;
+    transition: color 0.15s ease, border-color 0.15s ease;
+  }
+  .search-trigger:hover { color: var(--accent); border-color: var(--accent); }
+  .search-trigger kbd {
+    font-family: -apple-system, sans-serif;
+    background: var(--code-bg);
+    padding: 0 5px;
+    border-radius: 3px;
+    font-size: 0.9em;
+    color: var(--muted);
+    border: none;
+  }
+  .booknav .theme-toggle-inline { margin-left: 0; }
+  .search-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 2000;
+    display: none;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 12vh;
+    backdrop-filter: blur(2px);
+  }
+  .search-overlay.open { display: flex; }
+  .search-modal {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    width: min(640px, 92%);
+    max-height: 70vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+  .search-input {
+    border: none;
+    outline: none;
+    padding: 16px 20px;
+    font-size: 1.05em;
+    background: transparent;
+    color: var(--fg);
+    border-bottom: 1px solid var(--border);
+    font-family: inherit;
+  }
+  .search-input::placeholder { color: var(--muted); }
+  .search-results { overflow-y: auto; padding: 6px 0; }
+  .search-result {
+    display: block;
+    padding: 10px 20px;
+    color: var(--fg);
+    text-decoration: none;
+    border-left: 3px solid transparent;
+    font-size: 0.92em;
+  }
+  .search-result:hover, .search-result.active {
+    background: var(--accent-soft);
+    border-left-color: var(--accent);
+  }
+  .search-result-title { font-weight: 600; color: var(--fg); }
+  .search-result-meta { font-size: 0.78em; color: var(--muted); margin-top: 2px; letter-spacing: 0.02em; }
+  .search-result-text { font-size: 0.82em; color: var(--muted); margin-top: 4px; line-height: 1.4; max-height: 2.9em; overflow: hidden; }
+  .search-empty { padding: 24px 20px; color: var(--muted); text-align: center; font-size: 0.9em; }
+  .search-result mark { background: var(--accent-soft); color: var(--accent); padding: 0 2px; border-radius: 2px; font-weight: 600; }
 </style>
 </head>
 <body>
@@ -483,6 +597,7 @@
   <a href="dsa-guide.html">DSA</a>
   <a href="system-design-guide.html">System Design</a>
   <a href="interview-prep.html">Interview Prep</a>
+  <button class="search-trigger" id="search-trigger" type="button" aria-label="Search guides">Search <kbd>⌘K</kbd></button>
   <button class="theme-toggle-inline" id="theme-toggle" aria-label="Toggle dark mode">🌙</button>
 </nav>
 
@@ -528,7 +643,7 @@
 
 <p>AI engineering is building <em>applications</em> on top of foundation models. You usually don't train models from scratch — you adapt, prompt, retrieve, orchestrate, evaluate, and operate them. It's a discipline that sits between traditional software engineering and machine learning.</p>
 
-<h3>How it differs from classic ML</h3>
+<h3 id="how-it-differs-from-classic-ml">How it differs from classic ML</h3>
 <table>
   <tr><th scope="col">Traditional ML</th><th scope="col">AI engineering (LLM era)</th></tr>
   <tr><td>Train a model on your data</td><td>Adapt a pre-trained foundation model</td></tr>
@@ -538,7 +653,7 @@
   <tr><td>Accuracy / F1 metrics</td><td>Quality, faithfulness, helpfulness (fuzzy)</td></tr>
 </table>
 
-<h3>The AI engineering stack</h3>
+<h3 id="the-ai-engineering-stack">The AI engineering stack</h3>
 <div class="ascii">  +-------------------------------------------------+
   |  APPLICATION   (chat UI, agent, copilot, API)   |
   +-------------------------------------------------+
@@ -557,7 +672,7 @@
   
   You'll spend most time in the middle three layers.</div>
 
-<h3>The capability ladder (try cheap before expensive)</h3>
+<h3 id="the-capability-ladder-try-cheap-before-expensive">The capability ladder (try cheap before expensive)</h3>
 <p>When a model can't do what you need, climb this ladder in order. Each rung adds capability but also cost and complexity. Most problems are solved well before the top.</p>
 <div class="ascii">  5. Fine-tuning / training      (most effort, last resort)
   4. Agents + tools              (multi-step, actions)
@@ -579,7 +694,7 @@
 
 <p>You don't need to derive backpropagation, but you must understand the mechanics that explain an LLM's behavior, costs, and limits.</p>
 
-<h3>Tokens: the unit of everything</h3>
+<h3 id="tokens-the-unit-of-everything">Tokens: the unit of everything</h3>
 <p>LLMs don't see words or characters — they see <strong>tokens</strong>, sub-word chunks. A token is ~4 characters or ~0.75 words in English. Pricing, context limits, and latency are all measured in tokens.</p>
 <div class="ascii">  text:   "AI engineering is powerful"
   tokens: ["AI", " engineering", " is", " power", "ful"]
@@ -590,7 +705,7 @@
   "powerful" splits into "power"+"ful" -> rare/long words
   cost more tokens than common ones.</div>
 
-<h3>Embeddings: meaning as vectors</h3>
+<h3 id="embeddings-meaning-as-vectors">Embeddings: meaning as vectors</h3>
 <p>Each token (and whole texts) can be mapped to a high-dimensional vector where <em>distance encodes meaning</em>. Similar concepts land near each other. This is the foundation of semantic search and RAG.</p>
 <p>Note the two distinct kinds of "embedding" you'll encounter: <strong>token embeddings</strong> are internal, contextual vectors the transformer computes as it processes input (they shift with surrounding tokens); <strong>sentence / document embeddings</strong> are fixed vectors produced by a dedicated embedding model (e.g. for RAG and search) representing a whole piece of text. They share the underlying idea but are different artifacts used for different purposes.</p>
 <div class="ascii">  Words placed in vector space (simplified to 2D):
@@ -604,7 +719,7 @@
   "king" - "man" + "woman"  ~=  "queen"
   Meaning becomes arithmetic. Closeness = similarity.</div>
 
-<h3>The transformer &amp; attention (the key idea)</h3>
+<h3 id="the-transformer-amp-attention-the-key-idea">The transformer &amp; attention (the key idea)</h3>
 <p>Transformers process all tokens in parallel and use <strong>attention</strong> to let each token "look at" every other token and decide what's relevant. This is how the model resolves context — what "it" refers to, which earlier fact matters now.</p>
 <div class="ascii">  "The cat sat on the mat because it was tired"
                                     ^
@@ -617,7 +732,7 @@
   other token. This is O(n^2) in sequence length ->
   why long contexts are expensive.</div>
 
-<h3>Autoregressive generation: one token at a time</h3>
+<h3 id="autoregressive-generation-one-token-at-a-time">Autoregressive generation: one token at a time</h3>
 <p>An LLM is fundamentally a next-token predictor. It outputs a probability distribution over the whole vocabulary, picks one token, appends it, and repeats — feeding its own output back in.</p>
 <div class="ascii">  prompt: "The capital of France is"
   
@@ -641,7 +756,7 @@
 
 <h2 id="part-2">Part 2 — Inference: sampling, context windows, parameters <span class="tag tag-core">★ CORE</span></h2>
 
-<h3>The decoding parameters you'll actually tune</h3>
+<h3 id="the-decoding-parameters-youll-actually-tune">The decoding parameters you'll actually tune</h3>
 <table>
   <tr><th scope="col">Parameter</th><th scope="col">What it does</th><th scope="col">Typical</th></tr>
   <tr><td><code>temperature</code></td><td>Randomness. 0 = deterministic/focused, high = creative/diverse</td><td>0–0.3 factual, 0.7–1.0 creative</td></tr>
@@ -652,7 +767,7 @@
   <tr><td><code>frequency/presence penalty</code></td><td>Discourage repetition</td><td>0–1</td></tr>
 </table>
 
-<h3>How temperature reshapes the distribution</h3>
+<h3 id="how-temperature-reshapes-the-distribution">How temperature reshapes the distribution</h3>
 <div class="ascii">  LOW temperature (~0):        HIGH temperature (~1.2):
   sharpen -> pick the top      flatten -> spread the odds
   
@@ -664,7 +779,7 @@
   -> almost always "Paris"     -> varied, sometimes wrong
   Use low temp for facts/code, higher for brainstorming.</div>
 
-<h3>The context window</h3>
+<h3 id="the-context-window">The context window</h3>
 <p>The context window is the model's working memory — the maximum tokens it can consider at once, covering <em>both</em> your input and its output. Everything must fit: system prompt + history + retrieved docs + the answer.</p>
 <p>Frontier models now commonly support 1M+ tokens (Gemini 2.5/3, Claude with extended context, GPT-5), so the older 128K ceiling is no longer the norm — but bigger windows still cost more and can dilute attention.</p>
 <div class="ascii">  context window (e.g. 1M tokens) =
@@ -683,7 +798,7 @@
   Many providers cache a stable prompt prefix (system prompt, long instructions, fixed context) so repeated calls reuse it cheaply. Put the unchanging parts first and the variable parts last to maximize cache hits — this can cut cost and time-to-first-token dramatically.
 </div>
 
-<h3>Streaming</h3>
+<h3 id="streaming">Streaming</h3>
 <p>Instead of waiting for the full response, stream tokens as they're generated. The user sees output start in a few hundred ms (time-to-first-token) rather than waiting seconds for the whole thing. Almost always worth it for chat UX.</p>
 
 <hr>
@@ -692,7 +807,7 @@
 
 <p>The prompt is your primary control surface. Small structural changes produce large quality differences. Prompting is iterative empirical work, not magic incantations.</p>
 
-<h3>The three message roles</h3>
+<h3 id="the-three-message-roles">The three message roles</h3>
 <div class="ascii">  SYSTEM:  sets behavior, role, rules, output format
            "You are a precise SQL assistant. Only return
             valid PostgreSQL. Never modify data."
@@ -701,7 +816,7 @@
 
   conversation = [system] + alternating [user]/[assistant]</div>
 
-<h3>Anatomy of a strong prompt</h3>
+<h3 id="anatomy-of-a-strong-prompt">Anatomy of a strong prompt</h3>
 <ol>
   <li><strong>Role / persona</strong> — who the model is acting as.</li>
   <li><strong>Task</strong> — the specific instruction, stated plainly.</li>
@@ -711,7 +826,7 @@
   <li><strong>Guardrails</strong> — what to do on uncertainty / edge cases.</li>
 </ol>
 
-<h3>Zero-shot vs few-shot</h3>
+<h3 id="zero-shot-vs-few-shot">Zero-shot vs few-shot</h3>
 <pre><code># Zero-shot: just ask
 "Classify the sentiment: 'The food was cold.'"
 
@@ -723,7 +838,7 @@ Review: 'It was fine'       -> neutral
 Review: 'The food was cold' ->
 """</code></pre>
 
-<h3>Chain-of-thought (CoT): make it reason step by step</h3>
+<h3 id="chain-of-thought-cot-make-it-reason-step-by-step">Chain-of-thought (CoT): make it reason step by step</h3>
 <p>For multi-step problems, asking the model to reason before answering dramatically improves accuracy. The intermediate "thinking" tokens give it room to work.</p>
 <div class="ascii">  WITHOUT CoT:                 WITH CoT:
   "What's 17 * 24?"            "...think step by step."
@@ -737,7 +852,7 @@ Review: 'The food was cold' ->
   do this internally. For others, prompt "think step
   by step" or give a worked example.</div>
 
-<h3>Prompting techniques worth knowing</h3>
+<h3 id="prompting-techniques-worth-knowing">Prompting techniques worth knowing</h3>
 <table>
   <tr><th scope="col">Technique</th><th scope="col">Idea</th></tr>
   <tr><td>Chain-of-thought</td><td>Reason step by step before answering</td></tr>
@@ -765,7 +880,7 @@ Review: 'The food was cold' ->
 
 <p>To integrate an LLM into software, you need reliable structured output (usually JSON) and the ability to let it call your code. This is what turns a chatbot into a system component.</p>
 
-<h3>Structured output</h3>
+<h3 id="structured-output">Structured output</h3>
 <p>Free-form text is hard to parse. Constrain the model to emit JSON matching a schema, and validate it. Modern APIs support "JSON mode" or schema-constrained decoding that guarantees valid structure. (Pydantic patterns are covered in depth in the <a href="python-guide.html">Python Guide</a>.)</p>
 <pre><code>from pydantic import BaseModel
 
@@ -778,7 +893,7 @@ class Extraction(BaseModel):
 # then validate. Reject/retry on validation failure.
 data = Extraction.model_validate_json(llm_response)</code></pre>
 
-<h3>Function / tool calling — how it actually works</h3>
+<h3 id="function-tool-calling-how-it-actually-works">Function / tool calling — how it actually works</h3>
 <p>The model doesn't run your code. You describe available tools (name, description, parameter schema); the model <em>decides</em> which to call and emits a structured request; <em>your</em> code executes it and feeds the result back. This loop is the foundation of agents.</p>
 <div class="ascii">  1. You send: user message + tool definitions
         tools = [get_weather(city), search_db(query)]
@@ -818,7 +933,7 @@ data = Extraction.model_validate_json(llm_response)</code></pre>
   Treat a model's tool call like user input: validate arguments, enforce permissions, and sandbox side effects. An LLM (especially if prompt-injected) may request destructive or out-of-scope actions. Never wire a model directly to <code>rm</code>, raw SQL writes, or money movement without guardrails and confirmation.
 </div>
 
-<h3>MCP: the open standard for tools &amp; context</h3>
+<h3 id="mcp-the-open-standard-for-tools-amp-context">MCP: the open standard for tools &amp; context</h3>
 <p>Since late 2024, <strong>MCP (Model Context Protocol)</strong> has become the de facto open standard for connecting LLMs to tools and data sources — introduced by Anthropic and now adopted by OpenAI, Google, Microsoft, and AWS, with 10K+ public servers and a 2025 donation to the Linux Foundation under the Agentic AI Foundation. Detail in <a href="agentic-ai-guide.html">Agentic AI Guide</a>.</p>
 
 <hr>
@@ -827,7 +942,7 @@ data = Extraction.model_validate_json(llm_response)</code></pre>
 
 <p>Embeddings turn text (or images, audio) into vectors so you can find semantically similar content by measuring distance. This powers search, RAG, clustering, recommendations, and deduplication.</p>
 
-<h3>Semantic vs keyword search</h3>
+<h3 id="semantic-vs-keyword-search">Semantic vs keyword search</h3>
 <div class="ascii">  KEYWORD search ("car"):     SEMANTIC search ("car"):
    matches only "car"          matches "automobile",
                                "vehicle", "sedan"...
@@ -837,7 +952,7 @@ data = Extraction.model_validate_json(llm_response)</code></pre>
   query -> embed -> vector -> find nearest vectors -> docs
   Meaning matches even when words differ.</div>
 
-<h3>Measuring similarity</h3>
+<h3 id="measuring-similarity">Measuring similarity</h3>
 <p>Cosine similarity (the angle between vectors) is the standard metric — it ignores magnitude and captures direction/meaning. It ranges from -1 to 1: 1 = identical direction (same meaning), 0 = orthogonal (unrelated), -1 = opposite direction. In practice, embedding models from the same family usually produce non-negative similarities, so most real-world scores fall in the 0–1 range.</p>
 <div class="ascii">           ^
            |    o doc A       small angle (theta)
@@ -849,7 +964,7 @@ data = Extraction.model_validate_json(llm_response)</code></pre>
   
   cosine = cos(theta).  near 1 = similar, near 0 = not.</div>
 
-<h3>Vector databases &amp; ANN</h3>
+<h3 id="vector-databases-amp-ann">Vector databases &amp; ANN</h3>
 <p>Comparing a query against millions of vectors exactly is too slow. Vector databases use <strong>Approximate Nearest Neighbor (ANN)</strong> indexes (HNSW, IVF) that trade a tiny bit of accuracy for massive speed — sub-millisecond search over billions of vectors.</p>
 <table>
   <tr><th scope="col">Option</th><th scope="col">Notes</th></tr>
@@ -881,7 +996,7 @@ data = Extraction.model_validate_json(llm_response)</code></pre>
 
 <p>RAG grounds the model in <em>your</em> data: retrieve relevant context at query time and inject it into the prompt so the model answers from facts, not just its training. It's the dominant pattern for knowledge-based AI apps because it's cheaper than fine-tuning, updates instantly, and supports citations.</p>
 
-<h3>The two phases</h3>
+<h3 id="the-two-phases">The two phases</h3>
 <div class="ascii">  PHASE 1 — INGESTION (offline, build the index):
    documents -> chunk -> embed each chunk -> store in
                                              vector DB
@@ -901,7 +1016,7 @@ data = Extraction.model_validate_json(llm_response)</code></pre>
         |
      return answer (+ source citations)</div>
 
-<h3>The end-to-end flow</h3>
+<h3 id="the-end-to-end-flow">The end-to-end flow</h3>
 <div class="ascii">  user: "What's our refund policy?"
      |
      v
@@ -920,7 +1035,7 @@ data = Extraction.model_validate_json(llm_response)</code></pre>
    "You can request a refund within 30 days...
     [source: policy.pdf, p.4]"</div>
 
-<h3>Minimal RAG in code</h3>
+<h3 id="minimal-rag-in-code">Minimal RAG in code</h3>
 <pre><code># Ingestion (once)
 chunks = split_documents(docs)
 vectors = embed(chunks)
@@ -945,7 +1060,7 @@ Question: {question}"""
   RAG quality is bounded by <em>retrieval</em> quality — if the right chunk isn't retrieved, the LLM can't answer (or worse, hallucinates). Common failures: chunks too big/small, poor embeddings, the answer split across chunks, or the query phrased differently than the docs. Most RAG debugging is retrieval debugging, not prompt tweaking.
 </div>
 
-<h3>Why RAG over fine-tuning for knowledge</h3>
+<h3 id="why-rag-over-fine-tuning-for-knowledge">Why RAG over fine-tuning for knowledge</h3>
 <table>
   <tr><th scope="col">RAG</th><th scope="col">Fine-tuning</th></tr>
   <tr><td>Update data instantly (re-index)</td><td>Retrain to update knowledge</td></tr>
@@ -959,7 +1074,7 @@ Question: {question}"""
 
 <h2 id="part-7">Part 7 — Advanced RAG &amp; chunking strategies <span class="tag tag-concept">◆ CONCEPT</span></h2>
 
-<h3>Chunking: the most underrated lever</h3>
+<h3 id="chunking-the-most-underrated-lever">Chunking: the most underrated lever</h3>
 <p>How you split documents determines what can be retrieved. Too large → diluted relevance and wasted context. Too small → lost meaning and fragmented answers. There's no universal size; tune it per content type.</p>
 <div class="ascii">  TOO BIG (whole page per chunk):
     retrieval returns a wall of text, mostly irrelevant
@@ -975,7 +1090,7 @@ Question: {question}"""
     ~200-500 tokens, overlap ~10-20%, split on
     paragraph/section boundaries when possible.</div>
 
-<h3>Chunking strategies</h3>
+<h3 id="chunking-strategies">Chunking strategies</h3>
 <table>
   <tr><th scope="col">Strategy</th><th scope="col">How</th><th scope="col">Good for</th></tr>
   <tr><td>Fixed-size</td><td>N tokens with overlap</td><td>Simple, uniform text</td></tr>
@@ -984,7 +1099,7 @@ Question: {question}"""
   <tr><td>Document-structure</td><td>By headings/sections/tables</td><td>Structured docs, markdown</td></tr>
 </table>
 
-<h3>Hybrid search &amp; reranking (the quality upgrade)</h3>
+<h3 id="hybrid-search-amp-reranking-the-quality-upgrade">Hybrid search &amp; reranking (the quality upgrade)</h3>
 <p>Pure vector search misses exact terms (names, codes, acronyms); pure keyword search misses meaning. Combine both, then <strong>rerank</strong> the merged candidates with a more precise (but slower) cross-encoder model that scores each query-document pair directly.</p>
 <div class="ascii">  query
     |
@@ -1001,7 +1116,7 @@ Question: {question}"""
   
   Retrieve broadly (recall) -> rerank tightly (precision).</div>
 
-<h3>More advanced RAG patterns</h3>
+<h3 id="more-advanced-rag-patterns">More advanced RAG patterns</h3>
 <ul>
   <li><strong>Query rewriting</strong> — expand/clarify the user query before retrieval (handles vague or multi-part questions).</li>
   <li><strong>HyDE</strong> — generate a hypothetical answer, embed <em>that</em>, and search with it (often better than embedding the bare question).</li>
@@ -1023,7 +1138,7 @@ Question: {question}"""
 
 <p>An agent is an LLM that can <strong>reason, act, observe, and repeat</strong> to accomplish a goal — instead of producing a single response. The model decides which tools to call, looks at the results, and keeps going until the task is done. The dominant pattern is <strong>ReAct</strong> (Reason + Act). For a deeper treatment of planning patterns, MCP, multi-agent topologies, and production agent infra, see the <a href="agentic-ai-guide.html">Agentic AI Guide</a>.</p>
 
-<h3>The agent loop</h3>
+<h3 id="the-agent-loop">The agent loop</h3>
 <div class="ascii">                  +-----------------------------+
                   |        user goal            |
                   +-----------------------------+
@@ -1047,7 +1162,7 @@ Question: {question}"""
   Reason -> Act -> Observe -> repeat. Tools are the
   agent's "hands"; the loop is its "will".</div>
 
-<h3>A concrete trace</h3>
+<h3 id="a-concrete-trace">A concrete trace</h3>
 <div class="ascii">  Goal: "What's the weather where our HQ is, in Fahrenheit?"
   
   THINK: I need the HQ city. -> call db.lookup("HQ city")
@@ -1061,7 +1176,7 @@ Question: {question}"""
   
   Three tool calls, chained by the model's own reasoning.</div>
 
-<h3>The four ingredients of an agent</h3>
+<h3 id="the-four-ingredients-of-an-agent">The four ingredients of an agent</h3>
 <table>
   <tr><th scope="col">Component</th><th scope="col">Role</th></tr>
   <tr><td>Model (the brain)</td><td>Reasons, plans, decides actions</td></tr>
@@ -1070,7 +1185,7 @@ Question: {question}"""
   <tr><td>Orchestration / loop</td><td>Runs the think-act-observe cycle, stops when done</td></tr>
 </table>
 
-<h3>Planning approaches</h3>
+<h3 id="planning-approaches">Planning approaches</h3>
 <ul>
   <li><strong>ReAct</strong> — interleave reasoning and acting one step at a time (reactive, flexible).</li>
   <li><strong>Plan-and-execute</strong> — make a full plan upfront, then execute steps (cheaper, more predictable).</li>
@@ -1094,7 +1209,7 @@ Question: {question}"""
 
 <p>When one agent's prompt gets overloaded with tools and responsibilities, split the work across specialized agents that collaborate. Each agent has a focused role, fewer tools, and a clearer prompt. (See the <a href="agentic-ai-guide.html">Agentic AI Guide</a> for in-depth topology, A2A, and orchestration coverage.)</p>
 
-<h3>Common topologies</h3>
+<h3 id="common-topologies">Common topologies</h3>
 <div class="ascii">  SUPERVISOR (orchestrator-worker):
         +-------------+
         | supervisor  |  routes subtasks, aggregates
@@ -1117,7 +1232,7 @@ Question: {question}"""
   <tr><td>Debate / ensemble</td><td>Multiple agents critique to improve quality</td></tr>
 </table>
 
-<h3>Orchestration frameworks</h3>
+<h3 id="orchestration-frameworks">Orchestration frameworks</h3>
 <table>
   <tr><th scope="col">Framework</th><th scope="col">Style</th></tr>
   <tr><td>LangGraph</td><td>Graph/state-machine control of agent flows</td></tr>
@@ -1138,7 +1253,7 @@ Question: {question}"""
 
 <p>LLMs are stateless — each call only knows what's in the context window. "Memory" is engineering you add to carry information across turns and sessions.</p>
 
-<h3>Short-term vs long-term memory</h3>
+<h3 id="short-term-vs-long-term-memory">Short-term vs long-term memory</h3>
 <div class="ascii">  SHORT-TERM (within a conversation):
     the chat history kept in the context window.
     Problem: it grows until it overflows the window.
@@ -1153,7 +1268,7 @@ Question: {question}"""
                                                 |
                   next session <--(retrieve)----+</div>
 
-<h3>Managing a growing conversation</h3>
+<h3 id="managing-a-growing-conversation">Managing a growing conversation</h3>
 <table>
   <tr><th scope="col">Strategy</th><th scope="col">How</th><th scope="col">Trade-off</th></tr>
   <tr><td>Sliding window</td><td>Keep last N turns</td><td>Simple; forgets older context</td></tr>
@@ -1167,7 +1282,7 @@ Question: {question}"""
   Every token in context costs money, adds latency, and can dilute attention. Don't dump everything in — curate. Put the most important and most recent information where the model attends best (start and end). Summarize or evict the rest. "Context engineering" is becoming as important as prompt engineering.
 </div>
 
-<h3>The "lost in the middle" effect</h3>
+<h3 id="the-lost-in-the-middle-effect">The "lost in the middle" effect</h3>
 <div class="ascii">  recall accuracy vs. position in a long context:
   
   high |#                                   #
@@ -1188,7 +1303,7 @@ Question: {question}"""
 
 <p>Fine-tuning continues training a pre-trained model on your examples to change its <em>behavior</em> — tone, format, a narrow skill, or a domain style. It does not reliably add factual knowledge (use RAG for that).</p>
 
-<h3>When fine-tuning makes sense</h3>
+<h3 id="when-fine-tuning-makes-sense">When fine-tuning makes sense</h3>
 <table>
   <tr><th scope="col">Good fit</th><th scope="col">Poor fit</th></tr>
   <tr><td>Consistent output format/structure</td><td>Adding facts/knowledge (use RAG)</td></tr>
@@ -1198,7 +1313,7 @@ Question: {question}"""
   <tr><td>Distilling a big model into a small one</td><td>You have &lt; a few hundred good examples</td></tr>
 </table>
 
-<h3>The spectrum of adaptation</h3>
+<h3 id="the-spectrum-of-adaptation">The spectrum of adaptation</h3>
 <div class="ascii">  full fine-tune     update ALL weights   most compute,
                                           best control
   ------------------------------------------------------
@@ -1210,7 +1325,7 @@ Question: {question}"""
   ------------------------------------------------------
   RAG / prompting    no training at all   start here</div>
 
-<h3>LoRA / PEFT (parameter-efficient fine-tuning)</h3>
+<h3 id="lora-peft-parameter-efficient-fine-tuning">LoRA / PEFT (parameter-efficient fine-tuning)</h3>
 <p>Instead of updating billions of weights, LoRA freezes the base model and trains small low-rank "adapter" matrices injected into each layer. You get most of the benefit at a fraction of the compute and storage — and can swap adapters per task.</p>
 <div class="ascii">  base model weights (FROZEN, huge)
         |
@@ -1222,7 +1337,7 @@ Question: {question}"""
   many adapters share one base model. QLoRA quantizes
   the base to 4-bit to fit on a single consumer GPU.</div>
 
-<h3>Alignment: RLHF &amp; DPO (how chat models are tuned)</h3>
+<h3 id="alignment-rlhf-amp-dpo-how-chat-models-are-tuned">Alignment: RLHF &amp; DPO (how chat models are tuned)</h3>
 <p>Beyond supervised fine-tuning, models are aligned to human preferences. <strong>RLHF</strong> trains a reward model from human rankings, then optimizes the LLM against it. <strong>DPO</strong> achieves similar results more simply by training directly on preferred-vs-rejected response pairs. You rarely do this yourself, but you should know the terms.</p>
 
 <div class="callout callout-warn">
@@ -1236,7 +1351,7 @@ Question: {question}"""
 
 <p>Because outputs are non-deterministic and "correctness" is fuzzy, evaluation is the hardest and most important part of AI engineering. Without evals you're flying blind — you can't tell if a prompt change helped or hurt.</p>
 
-<h3>Why traditional testing breaks</h3>
+<h3 id="why-traditional-testing-breaks">Why traditional testing breaks</h3>
 <div class="ascii">  classic test:  assert add(2,3) == 5   (exact, binary)
   
   LLM output:    "Paris is the capital of France."
@@ -1245,7 +1360,7 @@ Question: {question}"""
   -> all correct, none string-equal. Need SEMANTIC,
      graded evaluation, not exact match.</div>
 
-<h3>Evaluation methods</h3>
+<h3 id="evaluation-methods">Evaluation methods</h3>
 <table>
   <tr><th scope="col">Method</th><th scope="col">How</th><th scope="col">Use for</th></tr>
   <tr><td>Reference-based</td><td>Compare to a gold answer (exact, F1, semantic similarity)</td><td>Tasks with known answers</td></tr>
@@ -1254,7 +1369,7 @@ Question: {question}"""
   <tr><td>Heuristics/assertions</td><td>Regex, schema valid, length, contains</td><td>Cheap guardrail checks</td></tr>
 </table>
 
-<h3>RAG-specific metrics (the RAG triad)</h3>
+<h3 id="rag-specific-metrics-the-rag-triad">RAG-specific metrics (the RAG triad)</h3>
 <div class="ascii">             question
             /         \
    context relevance   answer relevance
@@ -1268,7 +1383,7 @@ Question: {question}"""
   Score all three to localize failures: retrieval vs
   generation vs hallucination.</div>
 
-<h3>Building an eval pipeline</h3>
+<h3 id="building-an-eval-pipeline">Building an eval pipeline</h3>
 <ol>
   <li><strong>Build a dataset</strong> — collect representative inputs + expected behavior. Start with 20–50 real examples; grow it from production failures.</li>
   <li><strong>Define metrics</strong> — what "good" means for your task (accuracy, faithfulness, format, safety).</li>
@@ -1293,7 +1408,7 @@ Question: {question}"""
 
 <p>LLM applications have a unique attack surface and unique failure modes. Guardrails are the input/output checks that keep the system safe, on-topic, and compliant.</p>
 
-<h3>Where guardrails sit</h3>
+<h3 id="where-guardrails-sit">Where guardrails sit</h3>
 <div class="ascii">  user input
       |
   [ INPUT GUARDRAILS ]  - block prompt injection, PII,
@@ -1308,7 +1423,7 @@ Question: {question}"""
   
   Validate on the way IN and on the way OUT.</div>
 
-<h3>Prompt injection: the #1 LLM security risk</h3>
+<h3 id="prompt-injection-the-1-llm-security-risk">Prompt injection: the #1 LLM security risk</h3>
 <p>Untrusted text (a web page, a document, a user message) contains instructions that hijack the model. Because the model can't reliably tell "data" from "instructions," injected text can override your system prompt, exfiltrate data, or trigger unwanted tool calls.</p>
 <div class="ascii">  Your prompt: "Summarize this web page: {page}"
   
@@ -1322,7 +1437,7 @@ Question: {question}"""
   INDIRECT injection: malicious content in fetched data
                       (docs, emails, web) -- more dangerous</div>
 
-<h3>Defenses</h3>
+<h3 id="defenses">Defenses</h3>
 <ul>
   <li><strong>Treat all external content as untrusted</strong> — never let fetched/retrieved text issue commands.</li>
   <li><strong>Separate instructions from data</strong> — clear delimiters; tell the model retrieved content is data only.</li>
@@ -1332,7 +1447,7 @@ Question: {question}"""
   <li><strong>Sandboxing</strong> — run any model-generated code in isolation.</li>
 </ul>
 
-<h3>The broader risk checklist</h3>
+<h3 id="the-broader-risk-checklist">The broader risk checklist</h3>
 <table>
   <tr><th scope="col">Risk</th><th scope="col">Mitigation</th></tr>
   <tr><td>Prompt injection</td><td>Untrusted-content handling, least privilege</td></tr>
@@ -1355,7 +1470,7 @@ Question: {question}"""
 
 <p>Getting a demo working is easy; running it reliably and affordably at scale is the real job. LLMOps is MLOps adapted to the realities of LLMs: token costs, high latency, non-determinism, and external dependencies.</p>
 
-<h3>Hosted API vs self-hosted</h3>
+<h3 id="hosted-api-vs-self-hosted">Hosted API vs self-hosted</h3>
 <table>
   <tr><th scope="col">Hosted API (OpenAI, Anthropic, Google, Bedrock)</th><th scope="col">Self-hosted (open models)</th></tr>
   <tr><td>No infra; best models; fast to ship</td><td>Full control, data stays in-house</td></tr>
@@ -1368,7 +1483,7 @@ Question: {question}"""
 
 <p>Hosted providers all offer prompt caching to cut cost on repeated prefixes: Anthropic's explicit <code>cache_control</code> gives up to ~90% discount on cached tokens; OpenAI's implicit caching gives ~50% discount; Gemini offers both implicit and explicit context caching. Structure prompts to maximize prefix reuse.</p>
 
-<h3>The cost &amp; latency levers</h3>
+<h3 id="the-cost-amp-latency-levers">The cost &amp; latency levers</h3>
 <div class="ascii">  COST drivers:  tokens_in + tokens_out, model size,
                  number of calls (agents multiply these!)
   
@@ -1383,7 +1498,7 @@ Question: {question}"""
     - cap output length; stream for perceived speed
     - batch where possible</div>
 
-<h3>Model routing &amp; cascades</h3>
+<h3 id="model-routing-amp-cascades">Model routing &amp; cascades</h3>
 <div class="ascii">  request
      |
   [ classifier / cheap model ]
@@ -1397,7 +1512,7 @@ Question: {question}"""
   and escalating only hard ones cuts cost dramatically
   while keeping quality where it matters.</div>
 
-<h3>Observability for LLM apps</h3>
+<h3 id="observability-for-llm-apps">Observability for LLM apps</h3>
 <p>Log far more than a normal API. You need to debug non-deterministic, multi-step behavior after the fact.</p>
 <ul>
   <li><strong>Traces</strong> — full chain: prompt, retrieved context, tool calls, intermediate steps, final output (LangSmith, Langfuse, Arize, OTEL).</li>
@@ -1423,7 +1538,7 @@ Question: {question}"""
 
 <p>Modern foundation models handle images, audio, and video alongside text. The engineering patterns (prompting, RAG, tools, evals) carry over; the inputs and some components change.</p>
 
-<h3>Modalities &amp; uses</h3>
+<h3 id="modalities-amp-uses">Modalities &amp; uses</h3>
 <table>
   <tr><th scope="col">Modality</th><th scope="col">Capabilities</th><th scope="col">Example uses</th></tr>
   <tr><td>Vision (image in)</td><td>Describe, OCR, reason over images, charts</td><td>Document parsing, accessibility, QA</td></tr>
@@ -1432,7 +1547,7 @@ Question: {question}"""
   <tr><td>Video</td><td>Understand or generate video</td><td>Summarization, content creation</td></tr>
 </table>
 
-<h3>Multimodal RAG</h3>
+<h3 id="multimodal-rag">Multimodal RAG</h3>
 <div class="ascii">  Index images + text together using a model that
   embeds BOTH into the SAME vector space (e.g. CLIP-style):
   
@@ -1445,7 +1560,7 @@ Question: {question}"""
   For docs with tables/figures: extract or caption them,
   then embed, so charts become retrievable.</div>
 
-<h3>Voice agent pipeline</h3>
+<h3 id="voice-agent-pipeline">Voice agent pipeline</h3>
 <div class="ascii">  speech in -> [ STT ] -> text -> [ LLM/agent ] -> text
                                                     |
   speech out <- [ TTS ] <----------------------------+
@@ -1460,13 +1575,13 @@ Question: {question}"""
 
 <p>The most common AI engineering project. Walk it end to end the way you would in an interview.</p>
 
-<h3>1. Requirements</h3>
+<h3 id="1-requirements">1. Requirements</h3>
 <ul>
   <li><strong>Functional</strong>: answer employee questions from internal docs (policies, wikis, PDFs) with citations; conversational follow-ups.</li>
   <li><strong>Non-functional</strong>: accurate &amp; grounded (no hallucinated policy), &lt; 3s response, respects document access permissions, fresh when docs change.</li>
 </ul>
 
-<h3>2. Architecture</h3>
+<h3 id="2-architecture">2. Architecture</h3>
 <div class="ascii">  INGESTION (pipeline, runs on doc changes):
    sources (Confluence, S3, GDrive)
         -> load -> clean -> chunk -> embed -> vector DB
@@ -1483,7 +1598,7 @@ Question: {question}"""
         -> guardrails (PII, grounding check)
         -> log trace for evals</div>
 
-<h3>3. Key decisions</h3>
+<h3 id="3-key-decisions">3. Key decisions</h3>
 <table>
   <tr><th scope="col">Decision</th><th scope="col">Choice &amp; why</th></tr>
   <tr><td>RAG vs fine-tune</td><td>RAG — docs change, need citations &amp; freshness</td></tr>
@@ -1494,7 +1609,7 @@ Question: {question}"""
   <tr><td>Freshness</td><td>Re-index on doc change (event-driven or scheduled)</td></tr>
 </table>
 
-<h3>4. Handling the hard parts</h3>
+<h3 id="4-handling-the-hard-parts">4. Handling the hard parts</h3>
 <ul>
   <li><strong>Follow-up questions</strong> — rewrite "what about for contractors?" into a standalone query using chat history before retrieval.</li>
   <li><strong>Access control</strong> — never let a user retrieve chunks from docs they can't see; filter by ACL <em>during</em> search, not after.</li>
@@ -1514,13 +1629,13 @@ Question: {question}"""
 
 <p>A system where an LLM agent automates a multi-step task — e.g., "triage and resolve an incoming support ticket" or "research a topic and produce a report."</p>
 
-<h3>1. Requirements</h3>
+<h3 id="1-requirements-2">1. Requirements</h3>
 <ul>
   <li><strong>Functional</strong>: take a goal, plan steps, call tools (search KB, query DB, create ticket, send reply), produce a result.</li>
   <li><strong>Non-functional</strong>: reliable, bounded cost/time, safe (no destructive actions without approval), observable, recoverable.</li>
 </ul>
 
-<h3>2. Architecture</h3>
+<h3 id="2-architecture-2">2. Architecture</h3>
 <div class="ascii">   goal
      |
   [ orchestrator (agent loop) ]
@@ -1539,7 +1654,7 @@ Question: {question}"""
      |
   result -> (optional human review) -> done</div>
 
-<h3>3. Key decisions</h3>
+<h3 id="3-key-decisions-2">3. Key decisions</h3>
 <table>
   <tr><th scope="col">Decision</th><th scope="col">Choice &amp; why</th></tr>
   <tr><td>Agent vs workflow</td><td>Workflow for known steps; agent only where the path depends on intermediate results</td></tr>
@@ -1550,7 +1665,7 @@ Question: {question}"""
   <tr><td>State</td><td>Persist step state so a crashed run can resume / be audited</td></tr>
 </table>
 
-<h3>4. Handling the hard parts</h3>
+<h3 id="4-handling-the-hard-parts-2">4. Handling the hard parts</h3>
 <ul>
   <li><strong>Runaway loops</strong> — cap iterations and spend; detect repeated identical actions and break.</li>
   <li><strong>Wrong tool / bad args</strong> — validate against schema; return clear errors so the agent can self-correct.</li>
@@ -1569,7 +1684,7 @@ Question: {question}"""
 
 <h2 id="part-18">Part 18 — Glossary, checklist &amp; further patterns</h2>
 
-<h3>Project checklist</h3>
+<h3 id="project-checklist">Project checklist</h3>
 <ol>
   <li>Define the task and success metrics before building.</li>
   <li>Start simple: prompt → few-shot → RAG → agent → fine-tune (in that order).</li>
@@ -1583,7 +1698,7 @@ Question: {question}"""
   <li>Keep humans in the loop for high-impact actions.</li>
 </ol>
 
-<h3>Glossary of essential terms</h3>
+<h3 id="glossary-of-essential-terms">Glossary of essential terms</h3>
 <table>
   <tr><th scope="col">Term</th><th scope="col">Meaning</th></tr>
   <tr><td>Token</td><td>Sub-word unit; the billing/context unit</td></tr>
@@ -1608,7 +1723,7 @@ Question: {question}"""
   <tr><td>Distillation</td><td>Training a small model to mimic a big one</td></tr>
 </table>
 
-<h3>The mantras</h3>
+<h3 id="the-mantras">The mantras</h3>
 <ul>
   <li><strong>Simplest thing first.</strong> Prompt and RAG before agents and fine-tuning.</li>
   <li><strong>RAG for knowledge, fine-tuning for behavior.</strong></li>
@@ -1729,6 +1844,151 @@ Question: {question}"""
 </script>
 
 <button class="scroll-top" id="scroll-top" aria-label="Scroll to top">↑</button>
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/styles/default.min.css" disabled>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/highlight.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  if (typeof hljs !== 'undefined') {
+    document.querySelectorAll('pre code').forEach(b => {
+      try { hljs.highlightElement(b); } catch (e) {}
+    });
+  }
+  document.querySelectorAll('pre').forEach(pre => {
+    if (pre.classList.contains('ascii')) return;
+    const btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.type = 'button';
+    btn.textContent = 'Copy';
+    btn.setAttribute('aria-label', 'Copy code to clipboard');
+    btn.addEventListener('click', async () => {
+      const code = pre.querySelector('code')?.innerText ?? pre.innerText;
+      try {
+        await navigator.clipboard.writeText(code);
+        btn.textContent = 'Copied'; btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1400);
+      } catch (e) { btn.textContent = 'Err'; }
+    });
+    pre.appendChild(btn);
+  });
+});
+</script>
+
+
+<div class="search-overlay" id="search-overlay" role="dialog" aria-modal="true" aria-label="Search">
+  <div class="search-modal">
+    <input type="text" class="search-input" id="search-input" placeholder="Search all guides…  (Esc to close, ↑↓ to navigate)" autocomplete="off" spellcheck="false">
+    <div class="search-results" id="search-results"></div>
+  </div>
+</div>
+
+<script>
+(function() {
+  const overlay = document.getElementById('search-overlay');
+  const input = document.getElementById('search-input');
+  const results = document.getElementById('search-results');
+  const trigger = document.getElementById('search-trigger');
+  if (!overlay || !input || !results) return;
+  let idx = null;
+  let active = 0;
+
+  async function loadIndex() {
+    if (idx) return idx;
+    try {
+      const r = await fetch('search-index.json');
+      idx = await r.json();
+    } catch (e) { idx = []; }
+    return idx;
+  }
+  function escapeHTML(s) { return s.replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c])); }
+  function escapeRE(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+  function highlight(s, terms) {
+    let h = escapeHTML(s);
+    for (const t of terms) {
+      if (!t) continue;
+      h = h.replace(new RegExp('(' + escapeRE(t) + ')', 'gi'), '<mark>$1</mark>');
+    }
+    return h;
+  }
+  function score(sec, terms) {
+    let s = 0;
+    const title = sec.t.toLowerCase();
+    const text = sec.x.toLowerCase();
+    for (const t of terms) {
+      if (!t) continue;
+      if (title === t) s += 50;
+      if (title.includes(t)) s += 10;
+      if (title.startsWith(t)) s += 5;
+      if (text.includes(t)) s += 1;
+    }
+    return s;
+  }
+  async function render(q) {
+    await loadIndex();
+    const terms = q.toLowerCase().split(/\s+/).filter(Boolean);
+    if (!terms.length) {
+      results.innerHTML = '<div class="search-empty">Type to search across all guides.</div>';
+      return;
+    }
+    let hits = [];
+    for (const g of idx) {
+      for (const sec of g.s) {
+        const sc = score(sec, terms);
+        if (sc > 0) hits.push({g, sec, sc});
+      }
+    }
+    hits.sort((a, b) => b.sc - a.sc);
+    hits = hits.slice(0, 20);
+    if (!hits.length) {
+      results.innerHTML = '<div class="search-empty">No matches.</div>';
+      return;
+    }
+    results.innerHTML = hits.map((h, i) => '<a class="search-result' + (i === 0 ? ' active' : '') + '" href="' + h.g.f + '#' + h.sec.i + '" data-i="' + i + '">' +
+      '<div class="search-result-title">' + highlight(h.sec.t, terms) + '</div>' +
+      '<div class="search-result-meta">' + escapeHTML(h.g.g) + ' · ' + h.sec.l + '</div>' +
+      '<div class="search-result-text">' + highlight(h.sec.x.substring(0, 200), terms) + '</div>' +
+    '</a>').join('');
+    active = 0;
+  }
+  function open() {
+    overlay.classList.add('open');
+    input.focus();
+    render(input.value);
+  }
+  function close() { overlay.classList.remove('open'); }
+  function moveActive(d) {
+    const items = results.querySelectorAll('.search-result');
+    if (!items.length) return;
+    items[active]?.classList.remove('active');
+    active = (active + d + items.length) % items.length;
+    items[active].classList.add('active');
+    items[active].scrollIntoView({block: 'nearest'});
+  }
+  if (trigger) trigger.addEventListener('click', open);
+  overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+  input.addEventListener('input', e => render(e.target.value));
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Escape') close();
+    else if (e.key === 'ArrowDown') { e.preventDefault(); moveActive(1); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); moveActive(-1); }
+    else if (e.key === 'Enter') {
+      const items = results.querySelectorAll('.search-result');
+      if (items[active]) items[active].click();
+    }
+  });
+  document.addEventListener('keydown', e => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      e.preventDefault();
+      overlay.classList.contains('open') ? close() : open();
+    } else if (e.key === '/' && !overlay.classList.contains('open') &&
+               !['INPUT','TEXTAREA'].includes(e.target.tagName) &&
+               !e.target.isContentEditable) {
+      e.preventDefault(); open();
+    }
+  });
+})();
+</script>
 
 </body>
 </html>

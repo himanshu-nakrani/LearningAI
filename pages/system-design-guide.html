@@ -461,6 +461,120 @@
     .sidebar-toc { font-size: 0.74em; padding: 14px 14px; }
   }
 
+
+  /* code-block enhancements: hljs theme using CSS vars + copy button */
+  pre code.hljs { display: block; padding: 0; background: transparent; color: var(--code-fg); }
+  .hljs-keyword, .hljs-built_in, .hljs-type, .hljs-class .hljs-title { color: var(--accent); font-weight: 600; }
+  .hljs-string, .hljs-attr { color: #4a7ba6; }
+  .hljs-number, .hljs-literal, .hljs-symbol { color: #b8453a; }
+  .hljs-comment, .hljs-meta, .hljs-doctag { color: var(--muted); font-style: italic; }
+  .hljs-function .hljs-title, .hljs-title.function_ { color: var(--accent); }
+  .hljs-variable, .hljs-name { color: var(--code-fg); }
+  html.dark .hljs-string, html.dark .hljs-attr { color: #8db4d9; }
+  html.dark .hljs-number, html.dark .hljs-literal { color: #d18883; }
+  pre { position: relative; }
+  .copy-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+    font-size: 0.7em;
+    padding: 3px 9px;
+    border-radius: 4px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    letter-spacing: 0.02em;
+  }
+  pre:hover .copy-btn, .copy-btn:focus { opacity: 1; }
+  .copy-btn:hover { color: var(--accent); border-color: var(--accent); }
+  .copy-btn.copied { color: var(--tip-bd); border-color: var(--tip-bd); }
+
+  /* search overlay */
+  .search-trigger {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 0.78em;
+    padding: 2px 9px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-left: auto;
+    margin-right: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    flex-shrink: 0;
+    transition: color 0.15s ease, border-color 0.15s ease;
+  }
+  .search-trigger:hover { color: var(--accent); border-color: var(--accent); }
+  .search-trigger kbd {
+    font-family: -apple-system, sans-serif;
+    background: var(--code-bg);
+    padding: 0 5px;
+    border-radius: 3px;
+    font-size: 0.9em;
+    color: var(--muted);
+    border: none;
+  }
+  .booknav .theme-toggle-inline { margin-left: 0; }
+  .search-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 2000;
+    display: none;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 12vh;
+    backdrop-filter: blur(2px);
+  }
+  .search-overlay.open { display: flex; }
+  .search-modal {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    width: min(640px, 92%);
+    max-height: 70vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+  .search-input {
+    border: none;
+    outline: none;
+    padding: 16px 20px;
+    font-size: 1.05em;
+    background: transparent;
+    color: var(--fg);
+    border-bottom: 1px solid var(--border);
+    font-family: inherit;
+  }
+  .search-input::placeholder { color: var(--muted); }
+  .search-results { overflow-y: auto; padding: 6px 0; }
+  .search-result {
+    display: block;
+    padding: 10px 20px;
+    color: var(--fg);
+    text-decoration: none;
+    border-left: 3px solid transparent;
+    font-size: 0.92em;
+  }
+  .search-result:hover, .search-result.active {
+    background: var(--accent-soft);
+    border-left-color: var(--accent);
+  }
+  .search-result-title { font-weight: 600; color: var(--fg); }
+  .search-result-meta { font-size: 0.78em; color: var(--muted); margin-top: 2px; letter-spacing: 0.02em; }
+  .search-result-text { font-size: 0.82em; color: var(--muted); margin-top: 4px; line-height: 1.4; max-height: 2.9em; overflow: hidden; }
+  .search-empty { padding: 24px 20px; color: var(--muted); text-align: center; font-size: 0.9em; }
+  .search-result mark { background: var(--accent-soft); color: var(--accent); padding: 0 2px; border-radius: 2px; font-weight: 600; }
 </style>
 </head>
 <body>
@@ -483,6 +597,7 @@
   <a href="dsa-guide.html">DSA</a>
   <a href="system-design-guide.html" class="current">System Design</a>
   <a href="interview-prep.html">Interview Prep</a>
+  <button class="search-trigger" id="search-trigger" type="button" aria-label="Search guides">Search <kbd>⌘K</kbd></button>
   <button class="theme-toggle-inline" id="theme-toggle" aria-label="Toggle dark mode">🌙</button>
 </nav>
 
@@ -528,7 +643,7 @@
 
 <p>A system design interview is open-ended on purpose. The interviewer wants to see <em>how you think</em>, not a memorized answer. The biggest mistake is jumping straight to boxes and arrows. Drive the conversation with a repeatable framework so you never freeze.</p>
 
-<h3>The RESHADED-style flow (use this every time)</h3>
+<h3 id="the-reshaded-style-flow-use-this-every-time">The RESHADED-style flow (use this every time)</h3>
 <ol>
   <li><strong>Requirements</strong> — clarify functional &amp; non-functional needs. Never skip this.</li>
   <li><strong>Estimate</strong> — back-of-envelope scale: users, QPS, storage, bandwidth.</li>
@@ -552,7 +667,7 @@
   Don't spend 20 minutes on requirements, and don't
   start drawing before you know what you're building.</div>
 
-<h3>Step 1: nail the requirements</h3>
+<h3 id="step-1-nail-the-requirements">Step 1: nail the requirements</h3>
 <p>Spend the first few minutes asking questions. This shows seniority and stops you building the wrong thing.</p>
 <ul>
   <li><strong>Functional</strong>: What must it do? (e.g., "post a tweet, follow users, view a feed")</li>
@@ -566,7 +681,7 @@
   Ask early: is this read-heavy or write-heavy? A read-heavy system (Twitter feed, ~100:1) leans on caching and read replicas. A write-heavy system (logging, metrics) leans on partitioning, write buffers, and append-only stores. State your assumption out loud and design accordingly.
 </div>
 
-<h3>Functional vs non-functional requirements</h3>
+<h3 id="functional-vs-non-functional-requirements">Functional vs non-functional requirements</h3>
 <table>
   <tr><th scope="col">Functional (what)</th><th scope="col">Non-functional (how well)</th></tr>
   <tr><td>Upload a video</td><td>99.9% availability</td></tr>
@@ -581,7 +696,7 @@
 
 <p>Estimation justifies your design choices with numbers. You don't need precision — you need the right order of magnitude. Round aggressively.</p>
 
-<h3>Powers of two &amp; ten you must know</h3>
+<h3 id="powers-of-two-amp-ten-you-must-know">Powers of two &amp; ten you must know</h3>
 <table>
   <tr><th scope="col">Power</th><th scope="col">Approx value</th><th scope="col">Name</th></tr>
   <tr><td>2¹⁰</td><td>~1 thousand</td><td>1 KB</td></tr>
@@ -591,7 +706,7 @@
   <tr><td>2⁵⁰</td><td>~10¹⁵</td><td>1 PB</td></tr>
 </table>
 
-<h3>Latency numbers every engineer should know</h3>
+<h3 id="latency-numbers-every-engineer-should-know">Latency numbers every engineer should know</h3>
 <div class="ascii">  Operation                          Time          Relative
   ----------------------------------------------------------
   L1 cache reference                 ~1 ns         |
@@ -608,7 +723,7 @@
     Memory is fast, disk is slow, network is slower,
     cross-region is slowest. Keep hot data in RAM.</div>
 
-<h3>A worked estimation: Twitter-like service</h3>
+<h3 id="a-worked-estimation-twitter-like-service">A worked estimation: Twitter-like service</h3>
 <pre><code>Assume:
   300M monthly active users
   50% use it daily            -> 150M daily active users (DAU)
@@ -639,7 +754,7 @@ Storage (5 years of tweets):
 
 <h2 id="part-2">Part 2 — Core concepts: latency, throughput, availability <span class="tag tag-concept">◆ CONCEPT</span></h2>
 
-<h3>Latency vs throughput</h3>
+<h3 id="latency-vs-throughput">Latency vs throughput</h3>
 <p>They're different and often in tension. <strong>Latency</strong> is how long one request takes. <strong>Throughput</strong> is how many requests you handle per second. A highway analogy: latency is how long your car takes to travel the road; throughput is how many cars pass per minute. Adding lanes (parallelism) raises throughput without lowering any single car's travel time.</p>
 <div class="ascii">  LATENCY (per request)        THROUGHPUT (system-wide)
   request --[ 200ms ]--> resp   ====> 10,000 req/sec ====>
@@ -648,7 +763,7 @@ Storage (5 years of tweets):
   High latency, high throughput: slow each, serves many
   Goal: low latency AND high throughput (hard, costs money)</div>
 
-<h3>Measure tail latency, not averages</h3>
+<h3 id="measure-tail-latency-not-averages">Measure tail latency, not averages</h3>
 <p>Averages lie. If 1% of requests take 5 seconds, the average may still look fine, but those users are furious. Use <strong>percentiles</strong>: p50 (median), p95, p99, p999. The "tail" (p99+) is what users remember and what cascades into outages.</p>
 <div class="ascii">  latency distribution:
    count
@@ -663,7 +778,7 @@ Storage (5 years of tweets):
     A few slow requests don't move the average much
     but ruin the experience for many users at scale.</div>
 
-<h3>Availability: the nines</h3>
+<h3 id="availability-the-nines">Availability: the nines</h3>
 <table>
   <tr><th scope="col">Availability</th><th scope="col">Downtime / year</th><th scope="col">Downtime / day</th></tr>
   <tr><td>99% (two nines)</td><td>3.65 days</td><td>14.4 min</td></tr>
@@ -710,7 +825,7 @@ Storage (5 years of tweets):
      reconcile later. -> always answers, may serve stale.
      Examples: Cassandra, DynamoDB, Riak, CouchDB.</div>
 
-<h3>The consistency spectrum</h3>
+<h3 id="the-consistency-spectrum">The consistency spectrum</h3>
 <p>"Consistency" isn't binary. From strongest to weakest:</p>
 <table>
   <tr><th scope="col">Model</th><th scope="col">Guarantee</th><th scope="col">Use case</th></tr>
@@ -729,7 +844,7 @@ Storage (5 years of tweets):
 
 <h2 id="part-4">Part 4 — Networking, DNS, load balancing <span class="tag tag-core">★ CORE</span></h2>
 
-<h3>What happens when you type a URL</h3>
+<h3 id="what-happens-when-you-type-a-url">What happens when you type a URL</h3>
 <div class="ascii">  browser
     |  1. DNS lookup: example.com -> 93.184.x.x
     v
@@ -746,7 +861,7 @@ Storage (5 years of tweets):
     v
   response travels back -> browser renders</div>
 
-<h3>Load balancing</h3>
+<h3 id="load-balancing">Load balancing</h3>
 <p>A load balancer spreads traffic across servers so no single machine is overwhelmed, and routes around failed ones. It's the front door to a scalable system.</p>
 
 <h4>Layer 4 vs Layer 7</h4>
@@ -770,7 +885,7 @@ Storage (5 years of tweets):
   If you have one LB, its death takes everything down. Run them in pairs (active-passive or active-active) with a floating IP and health checks. In the cloud, managed LBs (ALB/NLB, Cloud Load Balancing) handle this redundancy for you.
 </div>
 
-<h3>Stateless vs stateful servers</h3>
+<h3 id="stateless-vs-stateful-servers">Stateless vs stateful servers</h3>
 <p>Prefer <strong>stateless</strong> application servers: they store no session data locally, so any server can handle any request and you can add/remove them freely. Push state to a shared store (Redis, database). Stateful servers force sticky routing and complicate scaling.</p>
 <div class="ascii">  STATELESS (good):           STATEFUL (avoid if possible):
    any server, any request      session pinned to server 2
@@ -788,7 +903,7 @@ Storage (5 years of tweets):
 
 <p>A cache stores copies of data closer to where it's needed so you avoid slow recomputation or database hits. Caching is the single highest-leverage scaling technique for read-heavy systems. The principle: most systems access a small "hot" subset of data far more often than the rest (the 80/20 rule).</p>
 
-<h3>Where caches live (closest to farthest from the user)</h3>
+<h3 id="where-caches-live-closest-to-farthest-from-the-user">Where caches live (closest to farthest from the user)</h3>
 <div class="ascii">  browser cache        (user's device, fastest)
        |
   CDN edge cache       (geographically near user)
@@ -803,7 +918,7 @@ Storage (5 years of tweets):
 
   Each layer absorbs reads so fewer requests reach the DB.</div>
 
-<h3>Cache reading strategies</h3>
+<h3 id="cache-reading-strategies">Cache reading strategies</h3>
 <table>
   <tr><th scope="col">Pattern</th><th scope="col">How it works</th><th scope="col">Trade-off</th></tr>
   <tr><td>Cache-aside (lazy)</td><td>App checks cache; on miss, reads DB and populates cache</td><td>Most common; first request is slow, possible staleness</td></tr>
@@ -812,7 +927,7 @@ Storage (5 years of tweets):
   <tr><td>Write-back</td><td>Write to cache, flush to DB later (async)</td><td>Fast writes; risk of data loss on crash</td></tr>
 </table>
 
-<h3>Cache-aside, step by step (the default you should describe)</h3>
+<h3 id="cache-aside-step-by-step-the-default-you-should-describe">Cache-aside, step by step (the default you should describe)</h3>
 <div class="ascii">  READ:
     1. app asks cache for key
     2. HIT  -> return cached value (fast path)
@@ -830,7 +945,7 @@ Storage (5 years of tweets):
                  v
               [database] --> backfill cache</div>
 
-<h3>Eviction policies</h3>
+<h3 id="eviction-policies">Eviction policies</h3>
 <p>A cache has limited memory, so when full it must evict something:</p>
 <ul>
   <li><strong>LRU</strong> (least recently used) — evict what hasn't been touched longest. Most common default.</li>
@@ -853,7 +968,7 @@ Storage (5 years of tweets):
   "There are only two hard things in computer science: cache invalidation and naming things." Stale data is the cost of caching. Decide your tolerance: a likes counter can be seconds stale; a bank balance cannot. Use TTLs for bounded staleness and explicit invalidation on writes for correctness.
 </div>
 
-<h3>Two strategies worth naming</h3>
+<h3 id="two-strategies-worth-naming">Two strategies worth naming</h3>
 <ul>
   <li><strong>Stale-while-revalidate (SWR)</strong> — when a cached entry expires, serve the stale value <em>immediately</em> while asynchronously fetching a fresh one in the background. Tail latency stays flat across expiries; users never wait for a recompute. Standardized in the HTTP <code>Cache-Control: stale-while-revalidate=N</code> directive, supported by CDNs (Cloudflare, Vercel, Fastly) and popularized by the SWR/React Query libraries. Combine with a short <code>max-age</code> for nearly-fresh-with-no-stampedes behavior.</li>
   <li><strong>Negative caching</strong> — explicitly cache "not found" results (with a short TTL) so repeated misses for non-existent keys don't hammer the DB. The principled fix to cache penetration, alongside bloom filters. Used by DNS resolvers (negative TTL on NXDOMAIN) and any read-heavy lookup service.</li>
@@ -865,7 +980,7 @@ Storage (5 years of tweets):
 
 <p>Choosing the right datastore is often the most consequential design decision. There's no universally "better" option — it depends on your access patterns, consistency needs, and scale.</p>
 
-<h3>SQL (relational)</h3>
+<h3 id="sql-relational">SQL (relational)</h3>
 <p>Data in tables with fixed schemas and relationships. Strong consistency, powerful queries via joins, and <strong>ACID</strong> transactions. Traditionally scales <em>up</em> (bigger machine) more easily than <em>out</em>. Examples: PostgreSQL, MySQL.</p>
 
 <div class="callout callout-tip">
@@ -873,7 +988,7 @@ Storage (5 years of tweets):
   Modern <strong>distributed SQL</strong> systems give you horizontal scale without giving up SQL or transactions. <strong>Google Spanner</strong>, <strong>CockroachDB</strong>, <strong>YugabyteDB</strong>, and <strong>TiDB</strong> shard storage automatically while preserving ACID; <strong>Vitess</strong> shards MySQL behind a single endpoint (powers YouTube, Slack); <strong>PlanetScale</strong> productizes Vitess; <strong>Neon</strong> offers serverless Postgres with storage/compute separation. "SQL doesn't scale" is outdated as a default.
 </div>
 
-<h3>NoSQL (non-relational)</h3>
+<h3 id="nosql-non-relational">NoSQL (non-relational)</h3>
 <p>Flexible schema, designed to scale <em>out</em> horizontally. Trades joins and strong consistency for throughput and availability. Four main families:</p>
 <table>
   <tr><th scope="col">Type</th><th scope="col">Model</th><th scope="col">Examples</th><th scope="col">Good for</th></tr>
@@ -883,7 +998,7 @@ Storage (5 years of tweets):
   <tr><td>Graph</td><td>nodes + edges</td><td>Neo4j, Neptune</td><td>Social graphs, recommendations</td></tr>
 </table>
 
-<h3>ACID vs BASE</h3>
+<h3 id="acid-vs-base">ACID vs BASE</h3>
 <div class="ascii">  ACID (SQL)                    BASE (NoSQL)
   -------------------           ----------------------
   Atomicity                     Basically Available
@@ -894,7 +1009,7 @@ Storage (5 years of tweets):
   "All-or-nothing, always       "Stay up and fast,
    correct" -> safety            converge later" -> scale</div>
 
-<h3>How to choose (say this in the interview)</h3>
+<h3 id="how-to-choose-say-this-in-the-interview">How to choose (say this in the interview)</h3>
 <table>
   <tr><th scope="col">Choose SQL when…</th><th scope="col">Choose NoSQL when…</th></tr>
   <tr><td>Complex queries &amp; joins</td><td>Simple key-based access at scale</td></tr>
@@ -908,7 +1023,7 @@ Storage (5 years of tweets):
   Don't just say SQL or NoSQL. Tie it to access patterns: "Reads are key-lookups by user_id at very high QPS with flexible fields, so a key-value/document store fits. But the payments piece needs ACID, so I'll keep that in Postgres." Polyglot persistence — different stores for different needs — is a strong senior answer.
 </div>
 
-<h3>Indexes: the read/write trade-off</h3>
+<h3 id="indexes-the-readwrite-trade-off">Indexes: the read/write trade-off</h3>
 <p>An index is a sorted lookup structure (usually a B-tree) that turns an O(n) table scan into an O(log n) lookup. The cost: every write must also update the index, and indexes consume storage. Index the columns you filter/sort on; don't index everything.</p>
 <div class="ascii">  Without index: WHERE email = 'x'  -> scan all N rows  O(N)
   With B-tree index on email:       -> tree descent     O(log N)
@@ -925,7 +1040,7 @@ Storage (5 years of tweets):
 
 <p>Two distinct techniques, often confused. <strong>Replication</strong> = copies of the same data for redundancy and read scaling. <strong>Partitioning (sharding)</strong> = splitting different data across machines for write scaling and capacity.</p>
 
-<h3>Replication</h3>
+<h3 id="replication">Replication</h3>
 <div class="ascii">  PRIMARY-REPLICA (a.k.a. master-slave):
 
        writes
@@ -949,7 +1064,7 @@ Storage (5 years of tweets):
 
 <p><strong>Multi-primary / leaderless</strong> setups (e.g., Cassandra, Dynamo) accept writes anywhere and reconcile conflicts (last-write-wins, vector clocks, or quorum reads/writes: <code>R + W &gt; N</code>).</p>
 
-<h3>Partitioning (sharding)</h3>
+<h3 id="partitioning-sharding">Partitioning (sharding)</h3>
 <p>When data or write volume exceeds one machine, split it. Each shard holds a subset and runs independently.</p>
 <div class="ascii">  All users (too big for one DB):
   +------------------------------------------+
@@ -964,7 +1079,7 @@ Storage (5 years of tweets):
    | 0-33M  |  | 33-66M |  | 66-100M|
    +--------+  +--------+  +--------+</div>
 
-<h3>Sharding strategies</h3>
+<h3 id="sharding-strategies">Sharding strategies</h3>
 <table>
   <tr><th scope="col">Strategy</th><th scope="col">How</th><th scope="col">Risk</th></tr>
   <tr><td>Range-based</td><td>Split by key ranges (A–M, N–Z)</td><td>Hot spots if data skews to one range</td></tr>
@@ -973,7 +1088,7 @@ Storage (5 years of tweets):
   <tr><td>Directory-based</td><td>Lookup table maps key → shard</td><td>Flexible, but the directory is a bottleneck/SPOF</td></tr>
 </table>
 
-<h3>Consistent hashing (the interview favorite)</h3>
+<h3 id="consistent-hashing-the-interview-favorite">Consistent hashing (the interview favorite)</h3>
 <p>Naive <code>hash(key) % N</code> breaks when N changes — almost every key moves to a new shard. Consistent hashing places both keys and nodes on a circular hash ring; each key belongs to the next node clockwise. Adding or removing a node only relocates the keys between it and its neighbor.</p>
 <div class="ascii">          0 / 360
             o  Node A
@@ -999,7 +1114,7 @@ Storage (5 years of tweets):
 
 <p>Message queues decouple producers from consumers. Instead of calling a service directly and waiting, you drop a message and move on; consumers process at their own pace. This absorbs spikes, enables async work, and isolates failures.</p>
 
-<h3>Synchronous vs asynchronous</h3>
+<h3 id="synchronous-vs-asynchronous">Synchronous vs asynchronous</h3>
 <div class="ascii">  SYNCHRONOUS (tight coupling):
     client --> service A --> service B --> service C
     client waits for the whole chain. If C is slow,
@@ -1011,7 +1126,7 @@ Storage (5 years of tweets):
     later. Spikes buffer in the queue. C down? messages
     wait safely until it recovers.</div>
 
-<h3>Queue vs pub/sub</h3>
+<h3 id="queue-vs-pubsub">Queue vs pub/sub</h3>
 <table>
   <tr><th scope="col">Message queue (point-to-point)</th><th scope="col">Pub/sub (publish-subscribe)</th></tr>
   <tr><td>Each message consumed by ONE worker</td><td>Each message delivered to ALL subscribers</td></tr>
@@ -1028,7 +1143,7 @@ Storage (5 years of tweets):
     publisher -> topic +-> subscriber 2 (analytics)
                        +-> subscriber 3 (audit log)</div>
 
-<h3>Event streaming (Kafka model)</h3>
+<h3 id="event-streaming-kafka-model">Event streaming (Kafka model)</h3>
 <p>A log-based stream like Kafka keeps an ordered, durable, replayable record of events. Unlike a traditional queue that deletes a message once consumed, the log retains events so multiple consumers can read independently and replay history. Managed equivalents per cloud: <a href="aws-guide.html">Kinesis / MSK on AWS</a>, <a href="gcp-guide.html">Pub/Sub on GCP</a>, <a href="azure-guide.html">Event Hubs on Azure</a>.</p>
 <div class="ascii">  Kafka topic = an append-only log, split into partitions:
 
@@ -1041,7 +1156,7 @@ Storage (5 years of tweets):
   - Consumers track their own offset -> replay anytime.
   - Partitions enable parallel consumption + scale.</div>
 
-<h3>Delivery guarantees</h3>
+<h3 id="delivery-guarantees">Delivery guarantees</h3>
 <ul>
   <li><strong>At-most-once</strong> — may lose messages, never duplicates. (fire and forget)</li>
   <li><strong>At-least-once</strong> — never lost, but may duplicate. Most common; requires <em>idempotent</em> consumers.</li>
@@ -1058,7 +1173,7 @@ Storage (5 years of tweets):
   A message that repeatedly fails processing shouldn't block the queue forever. After N retries, route it to a Dead Letter Queue (DLQ) for inspection. This isolates "poison" messages and keeps the main pipeline flowing.
 </div>
 
-<h3>Kafka exactly-once &amp; stream processing</h3>
+<h3 id="kafka-exactly-once-amp-stream-processing">Kafka exactly-once &amp; stream processing</h3>
 <p>"Exactly-once" used to be considered impossible at the broker level. Kafka achieves it (within Kafka, end-to-end requires care) via:</p>
 <ul>
   <li><strong>Idempotent producers</strong> — each producer has a session ID + per-partition sequence number; duplicates from retries are de-duplicated on the broker.</li>
@@ -1067,14 +1182,14 @@ Storage (5 years of tweets):
 </ul>
 <p><strong>Stream processing</strong> frameworks layer on top: <strong>Kafka Streams</strong> (library, Java/Scala) and <strong>Apache Flink</strong> (distributed engine, richer windowing &amp; state) compute aggregations, joins, and enrichments on flowing data with exactly-once semantics and event-time windowing. Use these instead of hand-rolled consumer loops when you need stateful, ordered, fault-tolerant processing.</p>
 
-<h3>CDC as the messaging glue</h3>
+<h3 id="cdc-as-the-messaging-glue">CDC as the messaging glue</h3>
 <p>Change Data Capture (covered in Part 11) often <em>is</em> your event stream: Debezium reads the DB log and produces a Kafka topic per table. Downstream consumers update caches, search indexes, analytics warehouses, and read models — without the source service knowing about them. Many "event-driven" architectures are really CDC pipelines in disguise.</p>
 
 <hr>
 
 <h2 id="part-9">Part 9 — Microservices, APIs &amp; communication <span class="tag tag-concept">◆ CONCEPT</span></h2>
 
-<h3>Monolith vs microservices</h3>
+<h3 id="monolith-vs-microservices">Monolith vs microservices</h3>
 <p>A <strong>monolith</strong> is one deployable unit — simple to build and debug, but every change redeploys everything and one bug can crash the whole app. <strong>Microservices</strong> split the system into independently deployable services owned by small teams, at the cost of operational and network complexity.</p>
 <div class="ascii">  MONOLITH                    MICROSERVICES
   +------------------+        +------+  +------+  +------+
@@ -1099,7 +1214,7 @@ Storage (5 years of tweets):
   Most successful systems begin as a well-structured monolith and extract services only when team size or scaling pain demands it. Premature microservices add distributed-systems complexity (network failures, eventual consistency, distributed tracing) before you can afford it.
 </div>
 
-<h3>API styles</h3>
+<h3 id="api-styles">API styles</h3>
 <table>
   <tr><th scope="col">Style</th><th scope="col">Strength</th><th scope="col">Best for</th></tr>
   <tr><td>REST</td><td>Simple, cacheable, ubiquitous</td><td>Public CRUD APIs</td></tr>
@@ -1115,7 +1230,7 @@ Storage (5 years of tweets):
   <strong>HTTP/3</strong> runs over <strong>QUIC</strong> (UDP-based) instead of TCP. Benefits: 0-RTT connection setup, no head-of-line blocking across streams, faster recovery on mobile/lossy networks. Most major CDNs and browsers support it; enable at the edge for measurable mobile latency wins.
 </div>
 
-<h3>The API Gateway</h3>
+<h3 id="the-api-gateway">The API Gateway</h3>
 <p>A single entry point in front of many microservices. It handles cross-cutting concerns so each service doesn't have to: authentication, rate limiting, routing, request aggregation, SSL termination, and logging.</p>
 <div class="ascii">                  +-------------+
    clients  --->  | API GATEWAY |  auth, rate-limit, route
@@ -1129,7 +1244,7 @@ Storage (5 years of tweets):
 
   Clients talk to ONE endpoint; the gateway fans out.</div>
 
-<h3>Resilience patterns for service calls</h3>
+<h3 id="resilience-patterns-for-service-calls">Resilience patterns for service calls</h3>
 <ul>
   <li><strong>Timeout</strong> — never wait forever on a downstream call.</li>
   <li><strong>Retry with backoff</strong> — retry transient failures, with exponential delay + jitter (don't retry instantly in a tight loop).</li>
@@ -1150,7 +1265,7 @@ Storage (5 years of tweets):
 
 <h2 id="part-10">Part 10 — Storage, CDN &amp; blob systems <span class="tag tag-scale">SCALE</span></h2>
 
-<h3>Storage types</h3>
+<h3 id="storage-types">Storage types</h3>
 <table>
   <tr><th scope="col">Type</th><th scope="col">Model</th><th scope="col">Examples</th><th scope="col">Use for</th></tr>
   <tr><td>Block storage</td><td>Raw volumes, like a disk</td><td>EBS, attached SSD</td><td>Databases, low-level I/O</td></tr>
@@ -1160,7 +1275,7 @@ Storage (5 years of tweets):
 
 <p><strong>Object storage</strong> is the workhorse for large unstructured data (images, video, logs). It's cheap, virtually infinite, and durable (S3 advertises 11 nines of durability). You store the blob in object storage and keep only a URL/reference in your database — never store large blobs in the DB.</p>
 
-<h3>Content Delivery Network (CDN)</h3>
+<h3 id="content-delivery-network-cdn">Content Delivery Network (CDN)</h3>
 <p>A CDN caches static content (images, CSS, JS, video) on edge servers physically close to users worldwide. Instead of every request crossing the globe to your origin, users hit a nearby edge — cutting latency dramatically and offloading your servers.</p>
 <div class="ascii">  WITHOUT CDN:                  WITH CDN:
   user (Tokyo)                  user (Tokyo)
@@ -1179,10 +1294,10 @@ Storage (5 years of tweets):
   Serve static assets from a CDN and object storage. Keep dynamic, personalized content (your feed, your cart) on application servers, but cache the static shell. Many designs win latency just by correctly separating these two.
 </div>
 
-<h3>Edge compute (beyond the CDN)</h3>
+<h3 id="edge-compute-beyond-the-cdn">Edge compute (beyond the CDN)</h3>
 <p>Modern CDNs run <em>code</em>, not just cache files, at hundreds of points of presence near users. <strong>Cloudflare Workers</strong>, <strong>Vercel Edge Functions</strong>, <strong>AWS Lambda@Edge / CloudFront Functions</strong>, <strong>Fastly Compute@Edge</strong>, and <strong>Deno Deploy</strong> let you execute JavaScript/WASM with sub-millisecond cold starts on V8 isolates (Workers) or short-lived containers. Useful for: auth/JWT verification at the edge, A/B test routing, request rewrites, personalization, geo-aware redirects, light HTML rendering. Constraints: short execution budgets (e.g., 50 ms CPU on Workers), no persistent local disk, regionally distributed data via edge KV / Durable Objects / D1. Use for what's cheap to do close to the user; keep heavy logic at the origin.</p>
 
-<h3>Designing a blob upload flow (pre-signed URLs)</h3>
+<h3 id="designing-a-blob-upload-flow-pre-signed-urls">Designing a blob upload flow (pre-signed URLs)</h3>
 <p>Don't proxy large uploads through your app servers — it wastes bandwidth and ties up workers. Instead, issue a <strong>pre-signed URL</strong> so the client uploads directly to object storage.</p>
 <div class="ascii">  1. client asks app: "I want to upload photo.jpg"
   2. app returns a pre-signed S3 URL (short-lived token)
@@ -1199,10 +1314,10 @@ Storage (5 years of tweets):
 
 <p>When a single business operation spans multiple services or databases, you can't use one ACID transaction. You need patterns that keep data consistent across boundaries.</p>
 
-<h3>The dual-write problem</h3>
+<h3 id="the-dual-write-problem">The dual-write problem</h3>
 <p>If you write to a database and then publish an event (or write to a second service), a crash between the two leaves the system inconsistent. The fixes below address this.</p>
 
-<h3>Two-phase commit (2PC)</h3>
+<h3 id="two-phase-commit-2pc">Two-phase commit (2PC)</h3>
 <p>A coordinator asks all participants to "prepare," then "commit" only if all agreed. Strong consistency, but blocking and fragile — if the coordinator dies mid-commit, participants are stuck holding locks. Rarely used at scale.</p>
 <div class="ascii">  Phase 1 (prepare):  coordinator -> "can you commit?"
                       A: yes   B: yes   C: yes
@@ -1212,7 +1327,7 @@ Storage (5 years of tweets):
   If ANY says no -> everyone aborts.
   Problem: coordinator crash = participants block. SPOF.</div>
 
-<h3>The Saga pattern (preferred for microservices)</h3>
+<h3 id="the-saga-pattern-preferred-for-microservices">The Saga pattern (preferred for microservices)</h3>
 <p>Break a distributed transaction into a sequence of local transactions, each with a <strong>compensating action</strong> to undo it. If a step fails, run the compensations in reverse to roll back.</p>
 <div class="ascii">  Book a trip (3 services):
 
@@ -1231,7 +1346,7 @@ Storage (5 years of tweets):
   <tr><td>Coordinator is a focal point</td><td>Hard to track the overall flow</td></tr>
 </table>
 
-<h3>Outbox pattern (solving dual-write)</h3>
+<h3 id="outbox-pattern-solving-dual-write">Outbox pattern (solving dual-write)</h3>
 <p>Write the business change and an "event to publish" into the same database transaction (the outbox table). A separate process reads the outbox and publishes to the message broker. Now the DB write and the intent-to-publish are atomic.</p>
 <div class="ascii">  ONE local transaction:
     +-- update orders table
@@ -1248,7 +1363,7 @@ Storage (5 years of tweets):
   <strong>CQRS</strong> separates the write model from the read model — you write to one optimized store and serve reads from another (often denormalized) view. <strong>Event sourcing</strong> stores the full sequence of state-changing events as the source of truth, rebuilding current state by replaying them. Powerful for audit trails and complex domains, but adds significant complexity — mention them, don't reach for them by default.
 </div>
 
-<h3>Idempotency keys (first-class)</h3>
+<h3 id="idempotency-keys-first-class">Idempotency keys (first-class)</h3>
 <p>Any non-trivial distributed system must handle duplicate requests — clients retry on timeout, networks lose ACKs, queues redeliver. Treat <strong>idempotency keys</strong> as a primary API concept, not an afterthought:</p>
 <ul>
   <li>Client generates a UUID per logical operation (<code>Idempotency-Key</code> header — Stripe pioneered this pattern).</li>
@@ -1257,7 +1372,7 @@ Storage (5 years of tweets):
   <li>Without this, "charge card", "send message", and "create order" all risk silent duplication on retry.</li>
 </ul>
 
-<h3>CDC &amp; the outbox in practice</h3>
+<h3 id="cdc-amp-the-outbox-in-practice">CDC &amp; the outbox in practice</h3>
 <p>Change Data Capture (CDC) reads the database's commit log (Postgres WAL, MySQL binlog) and emits each row change as an event. <strong>Debezium</strong> is the de facto open-source CDC tool, usually paired with Kafka Connect. CDC is the modern, production-grade implementation of the outbox pattern: instead of writing both a row and an outbox entry, you just write the row — Debezium streams the change to Kafka. Eliminates the relay you'd otherwise build by hand, and powers data replication, search index sync, and cache invalidation.</p>
 
 <div class="callout callout-warn">
@@ -1271,7 +1386,7 @@ Storage (5 years of tweets):
 
 <p>At scale, failure is constant — disks die, networks blip, deploys go bad. Reliable systems are designed to <em>expect</em> failure and degrade gracefully rather than collapse.</p>
 
-<h3>Eliminate single points of failure (SPOF)</h3>
+<h3 id="eliminate-single-points-of-failure-spof">Eliminate single points of failure (SPOF)</h3>
 <div class="ascii">  SPOF (one of everything):       REDUNDANT (no SPOF):
    client                          client
      |                            /      \
@@ -1285,17 +1400,17 @@ Storage (5 years of tweets):
   Rule: for every critical component, ask
   "what happens when this one instance dies?"</div>
 
-<h3>Redundancy &amp; failover</h3>
+<h3 id="redundancy-amp-failover">Redundancy &amp; failover</h3>
 <ul>
   <li><strong>Active-passive</strong> — standby takes over when primary fails (failover delay, simpler).</li>
   <li><strong>Active-active</strong> — all instances serve traffic; failure just removes capacity (no failover gap, more complex).</li>
   <li><strong>N+1 / N+2</strong> — provision enough spare capacity to survive 1 (or 2) node losses.</li>
 </ul>
 
-<h3>Graceful degradation</h3>
+<h3 id="graceful-degradation">Graceful degradation</h3>
 <p>When a dependency fails, serve a reduced experience instead of an error. If the recommendation service is down, show generic popular items. If the avatar service is down, show a default avatar. The core function keeps working.</p>
 
-<h3>Observability: the three pillars</h3>
+<h3 id="observability-the-three-pillars">Observability: the three pillars</h3>
 <div class="ascii">  +-----------+   +-----------+   +-----------+
   |  METRICS  |   |   LOGS    |   |  TRACES   |
   +-----------+   +-----------+   +-----------+
@@ -1314,7 +1429,7 @@ Storage (5 years of tweets):
   <tr><td>Traces</td><td>Where in the call chain?</td><td>Jaeger, X-Ray, OpenTelemetry</td></tr>
 </table>
 
-<h3>Modern observability practice</h3>
+<h3 id="modern-observability-practice">Modern observability practice</h3>
 <p>The "three pillars" framing is now table stakes. Today's practice layers concrete standards on top (for LLM-specific tracing — spans per tool call, token-level cost attribution, prompt/response capture — see the <a href="ai-engineering-guide.html">AI engineering guide</a>'s observability section):</p>
 <ul>
   <li><strong>OpenTelemetry (OTel)</strong> — the de facto standard SDK + wire protocol (OTLP) for emitting metrics, logs, and traces from any language. Decouples instrumentation from your backend choice (Datadog, Honeycomb, Jaeger, Tempo, etc.).</li>
@@ -1339,13 +1454,13 @@ Storage (5 years of tweets):
 
 <h2 id="part-13">Part 13 — Security &amp; rate limiting <span class="tag tag-core">★ CORE</span></h2>
 
-<h3>Authentication vs authorization</h3>
+<h3 id="authentication-vs-authorization">Authentication vs authorization</h3>
 <ul>
   <li><strong>Authentication (authn)</strong> — who are you? (login, tokens, sessions)</li>
   <li><strong>Authorization (authz)</strong> — what are you allowed to do? (roles, permissions)</li>
 </ul>
 
-<h3>Tokens &amp; sessions</h3>
+<h3 id="tokens-amp-sessions">Tokens &amp; sessions</h3>
 <table>
   <tr><th scope="col">Session-based</th><th scope="col">Token-based (JWT)</th></tr>
   <tr><td>Server stores session; client holds session ID</td><td>Self-contained signed token; server stores nothing</td></tr>
@@ -1353,7 +1468,7 @@ Storage (5 years of tweets):
   <tr><td>Needs shared session store to scale</td><td>Stateless, scales horizontally</td></tr>
 </table>
 
-<h3>Security essentials to mention</h3>
+<h3 id="security-essentials-to-mention">Security essentials to mention</h3>
 <ul>
   <li><strong>Encrypt in transit</strong> (TLS everywhere) and <strong>at rest</strong> (disk/DB encryption).</li>
   <li><strong>Hash passwords</strong> with a slow salted hash (bcrypt, Argon2) — never store plaintext or fast hashes.</li>
@@ -1362,7 +1477,7 @@ Storage (5 years of tweets):
   <li><strong>Secrets management</strong> — keep keys in a vault (AWS Secrets Manager, HashiCorp Vault), not in code.</li>
 </ul>
 
-<h3>Rate limiting algorithms</h3>
+<h3 id="rate-limiting-algorithms">Rate limiting algorithms</h3>
 <p>Rate limiting protects against abuse, runaway clients, and cascading overload. Four common algorithms:</p>
 <table>
   <tr><th scope="col">Algorithm</th><th scope="col">Idea</th><th scope="col">Note</th></tr>
@@ -1386,7 +1501,7 @@ Storage (5 years of tweets):
   Apply limits at the API gateway / edge so abusive traffic is rejected before consuming backend resources. In a distributed setup, store counters in a shared fast store (Redis) so the limit is enforced globally, not per-server. Return HTTP 429 with a <code>Retry-After</code> header.
 </div>
 
-<h3>Beyond fixed-rate limiting</h3>
+<h3 id="beyond-fixed-rate-limiting">Beyond fixed-rate limiting</h3>
 <ul>
   <li><strong>GCRA</strong> (Generic Cell Rate Algorithm) — a mathematically equivalent, single-value alternative to token bucket from ATM networking. Stores only the next-allowed-time per key instead of a bucket count; one atomic compare-and-set per request. Used by <strong>Stripe</strong> and <strong>redis-cell</strong>; cheaper to implement correctly in Redis than token bucket.</li>
   <li><strong>Adaptive concurrency limiting (AIMD)</strong> — additive-increase, multiplicative-decrease (the same idea as TCP congestion control). Instead of a fixed N req/s, the limiter probes for the server's actual capacity: increase concurrency limit by 1 while latency is healthy, halve it on errors or latency spikes. Netflix's <em>concurrency-limits</em> library and Envoy's adaptive concurrency filter implement this. Self-tuning — survives capacity changes without reconfiguration.</li>
@@ -1397,7 +1512,7 @@ Storage (5 years of tweets):
 
 <h2 id="part-14">Part 14 — Design patterns &amp; building blocks cheat sheet</h2>
 
-<h3>The building blocks and what each solves</h3>
+<h3 id="the-building-blocks-and-what-each-solves">The building blocks and what each solves</h3>
 <table>
   <tr><th scope="col">Building block</th><th scope="col">Solves</th><th scope="col">When to add it</th></tr>
   <tr><td>Load balancer</td><td>Distribute traffic, remove SPOF</td><td>More than one server</td></tr>
@@ -1411,7 +1526,7 @@ Storage (5 years of tweets):
   <tr><td>API gateway</td><td>Cross-cutting concerns</td><td>Many microservices</td></tr>
 </table>
 
-<h3>The standard scaling journey</h3>
+<h3 id="the-standard-scaling-journey">The standard scaling journey</h3>
 <p>Most systems evolve along the same path as load grows. Knowing this lets you say "we'd start simple and add X when we hit Y."</p>
 <div class="ascii">  STAGE 1: single server (app + DB on one box)
      client -> [ server + DB ]
@@ -1428,7 +1543,7 @@ Storage (5 years of tweets):
                                     -> queue -> workers
                                     -> sharded DBs + caches</div>
 
-<h3>Trade-off vocabulary (sprinkle these in)</h3>
+<h3 id="trade-off-vocabulary-sprinkle-these-in">Trade-off vocabulary (sprinkle these in)</h3>
 <ul>
   <li>Consistency vs availability (CAP) and latency (PACELC)</li>
   <li>Read performance vs write performance (indexes, denormalization)</li>
@@ -1439,7 +1554,7 @@ Storage (5 years of tweets):
   <li>Cost vs performance vs complexity</li>
 </ul>
 
-<h3>Serverless &amp; FaaS</h3>
+<h3 id="serverless-amp-faas">Serverless &amp; FaaS</h3>
 <p>Serverless platforms (<strong>AWS Lambda</strong>, <strong>Google Cloud Run</strong>, <strong>Azure Container Apps</strong>, <strong>Cloudflare Workers</strong>) run your code without you managing servers. You're billed per request and per ms of CPU; idle costs nothing. Two flavors: pure FaaS (Lambda — function per event) and container-on-demand (Cloud Run, ACA — your image, scaled by traffic). Per-cloud detail: <a href="aws-guide.html">AWS Lambda</a>, <a href="gcp-guide.html">GCP Cloud Run</a>, <a href="azure-guide.html">Azure Container Apps</a>.</p>
 <ul>
   <li><strong>Use when</strong>: spiky or unpredictable traffic, event-driven glue (S3 → Lambda → DynamoDB), low-volume background jobs, prototypes. Scale-to-zero saves money for &lt; ~30% utilization workloads.</li>
@@ -1447,7 +1562,7 @@ Storage (5 years of tweets):
   <li><strong>Avoid for</strong>: sustained high QPS (you'll pay more than EC2/Kubernetes), long-lived connections (WebSocket), low-latency real-time (cold starts), or anything needing local state.</li>
 </ul>
 
-<h3>Kubernetes &amp; orchestration</h3>
+<h3 id="kubernetes-amp-orchestration">Kubernetes &amp; orchestration</h3>
 <p>Kubernetes is the standard for running containerized workloads at scale. You declare desired state (3 replicas of this image, exposed on port 80, autoscale 5–50) and the control plane reconciles toward it. Managed flavors: <a href="aws-guide.html">EKS on AWS</a>, <a href="azure-guide.html">AKS on Azure</a>, <a href="gcp-guide.html">GKE on GCP</a>.</p>
 <ul>
   <li><strong>Control plane</strong>: API server, etcd (state store), scheduler, controller manager. Workers run the kubelet + container runtime.</li>
@@ -1456,7 +1571,7 @@ Storage (5 years of tweets):
   <li><strong>Service mesh</strong> (Istio, Linkerd, Cilium): sidecar or eBPF-based data plane that adds mTLS, retries, circuit breaking, and traces between services without app changes. Worth it past ~20 services; overkill before.</li>
 </ul>
 
-<h3>Consensus &amp; coordination (Raft, Paxos)</h3>
+<h3 id="consensus-amp-coordination-raft-paxos">Consensus &amp; coordination (Raft, Paxos)</h3>
 <p>How do N machines agree on a single value (a leader, a config, the next log entry) despite crashes and delays? That's <strong>consensus</strong>, and it underpins every reliable distributed system.</p>
 <ul>
   <li><strong>Raft</strong> is the modern default — designed for understandability. A leader is elected by majority vote; the leader appends entries to a replicated log; an entry is committed once a majority has it. Powers <strong>etcd</strong> (Kubernetes' state store), Consul, TiKV, CockroachDB, MongoDB replica sets.</li>
@@ -1466,7 +1581,7 @@ Storage (5 years of tweets):
   <li>Use a consensus service when you need linearizable config, leader election, or coordination — don't roll your own.</li>
 </ul>
 
-<h3>AI inference serving</h3>
+<h3 id="ai-inference-serving">AI inference serving</h3>
 <p>Serving LLMs and other large models has its own architectural shape: GPUs are expensive, model weights are huge, and requests are bursty and long-running. The <a href="llm-inference-guide.html">LLM inference guide</a> goes deep on engines, batching, and KV-cache math.</p>
 <ul>
   <li><strong>Inference engines</strong>: <strong>vLLM</strong> (continuous batching, PagedAttention — the open default), <strong>TensorRT-LLM</strong> (NVIDIA-optimized), <strong>SGLang</strong> (structured/agentic workloads), <strong>Triton Inference Server</strong> (multi-framework). They batch incoming requests dynamically to keep the GPU saturated.</li>
@@ -1478,7 +1593,7 @@ Storage (5 years of tweets):
   <li><strong>Semantic caching</strong>: hash by embedding similarity (e.g., GPTCache) to return a cached LLM response for near-duplicate queries — huge cost lever for FAQ-style traffic.</li>
 </ul>
 
-<h3>Agent orchestration &amp; durable execution</h3>
+<h3 id="agent-orchestration-amp-durable-execution">Agent orchestration &amp; durable execution</h3>
 <p>Long-running agent flows (multi-step LLM calls, tool use, human approvals) are hard to express as plain request/response — a process crash mid-flow shouldn't lose state. <strong>Durable execution</strong> frameworks persist every step so the workflow resumes exactly where it left off. See the <a href="agentic-ai-guide.html">agentic AI guide</a> for the agent-side patterns (planner/executor loops, tool calling, memory).</p>
 <ul>
   <li><strong>Temporal</strong> — the leading workflow engine; you write code that looks synchronous, the engine checkpoints each step's result so retries and replays are automatic. Used by Stripe, Snap, Datadog.</li>
@@ -1487,7 +1602,7 @@ Storage (5 years of tweets):
   <li>Pattern fits anywhere you have multi-step processes with external calls: agent loops, payment orchestration, onboarding flows, ETL with retries.</li>
 </ul>
 
-<h3>Vector databases (for RAG)</h3>
+<h3 id="vector-databases-for-rag">Vector databases (for RAG)</h3>
 <p>Vector DBs store high-dimensional embeddings and do approximate-nearest-neighbor (ANN) search — the substrate for retrieval-augmented generation (RAG) and semantic search. The <a href="ai-engineering-guide.html">AI engineering guide</a> covers the full RAG pipeline (chunking, embeddings, retrieval, reranking, eval).</p>
 <ul>
   <li><strong>pgvector</strong> — Postgres extension; great default when you already run Postgres and want vectors alongside relational data.</li>
@@ -1508,19 +1623,19 @@ Storage (5 years of tweets):
 
 <p>A great warm-up problem that touches encoding, storage, caching, and read-heavy scale.</p>
 
-<h3>1. Requirements</h3>
+<h3 id="1-requirements">1. Requirements</h3>
 <ul>
   <li><strong>Functional</strong>: shorten a long URL; redirect a short URL to the original; optional custom alias and expiry.</li>
   <li><strong>Non-functional</strong>: highly available, low-latency redirects, short codes, massively read-heavy.</li>
 </ul>
 
-<h3>2. Estimation</h3>
+<h3 id="2-estimation">2. Estimation</h3>
 <pre><code>100M new URLs/day -> ~1,200 writes/sec
 Read:write ~= 100:1 -> ~120,000 redirects/sec  (READ-HEAVY)
 Store 5 years: 100M * 365 * 5 ~= 180B URLs
 Each record ~500 bytes -> ~90 TB</code></pre>
 
-<h3>3. The core question: how to generate the short code?</h3>
+<h3 id="3-the-core-question-how-to-generate-the-short-code">3. The core question: how to generate the short code?</h3>
 <p>A short code is just the long URL's ID encoded in base62 (<code>a-z A-Z 0-9</code>). Base62 packs more values into fewer characters than base10.</p>
 <div class="ascii">  62^6 = ~56 billion   6 chars
   62^7 = ~3.5 trillion 7 chars   -> plenty of space
@@ -1533,14 +1648,14 @@ Each record ~500 bytes -> ~90 TB</code></pre>
      Service (KGS) and hand them out -> no collisions,
      no encoding at write time. (often preferred)</div>
 
-<h3>4. API &amp; data model</h3>
+<h3 id="4-api-amp-data-model">4. API &amp; data model</h3>
 <pre><code>POST /shorten   { long_url, custom_alias?, expiry? }  -> { short_url }
 GET  /{code}    -> 301/302 redirect to long_url
 
 Table urls:
   short_code (PK)  | long_url | created_at | expiry | user_id</code></pre>
 
-<h3>5. High-level design</h3>
+<h3 id="5-high-level-design">5. High-level design</h3>
 <div class="ascii">  CREATE:
    client -> LB -> app -> get key from KGS
                        -> store {code -> long_url} in DB
@@ -1560,7 +1675,7 @@ Table urls:
                           | DB (key-value store) |
                           +----------------------+</div>
 
-<h3>6. Scale &amp; trade-offs</h3>
+<h3 id="6-scale-amp-trade-offs">6. Scale &amp; trade-offs</h3>
 <ul>
   <li>Redirects are read-heavy → aggressive caching (Redis) + CDN; cache hit serves in single-digit ms.</li>
   <li>Data is simple key→value at huge scale → a NoSQL key-value store (DynamoDB/Cassandra) shards naturally by code.</li>
@@ -1574,13 +1689,13 @@ Table urls:
 
 <p>The canonical "fan-out" problem. The whole interview hinges on one decision: compute the feed on write or on read?</p>
 
-<h3>1. Requirements</h3>
+<h3 id="1-requirements-2">1. Requirements</h3>
 <ul>
   <li><strong>Functional</strong>: post content; follow users; view a home feed of followees' posts, newest first.</li>
   <li><strong>Non-functional</strong>: feed loads fast (&lt; 200ms), read-heavy, eventual consistency is fine (a post can appear a few seconds late).</li>
 </ul>
 
-<h3>2. The central decision: fan-out on write vs read</h3>
+<h3 id="2-the-central-decision-fan-out-on-write-vs-read">2. The central decision: fan-out on write vs read</h3>
 <div class="ascii">  FAN-OUT ON WRITE (push):
     when Alice posts, immediately insert that post into
     the precomputed feed cache of EVERY follower.
@@ -1603,7 +1718,7 @@ Table urls:
     + Writes are cheap (just store the post once)
     - Reads are expensive &amp; slow (query many users live)</div>
 
-<h3>3. The hybrid answer (what to actually say)</h3>
+<h3 id="3-the-hybrid-answer-what-to-actually-say">3. The hybrid answer (what to actually say)</h3>
 <p>Use <strong>fan-out on write for most users</strong> (fast reads), but <strong>fan-out on read for celebrities</strong> (avoid millions of writes per post). At read time, merge a user's precomputed feed with the latest posts from the few celebrities they follow.</p>
 
 <div class="ascii">  normal followee posts -> pushed into your feed cache
@@ -1616,7 +1731,7 @@ Table urls:
   
   Best of both: cheap celebrity writes, fast normal reads.</div>
 
-<h3>4. High-level design</h3>
+<h3 id="4-high-level-design">4. High-level design</h3>
 <div class="ascii">  WRITE PATH:
    post -> post service -> store in DB
                         -> enqueue fan-out job
@@ -1633,7 +1748,7 @@ Table urls:
                                                  ^
    client -> [feed svc] ----------------------- + -> DB</div>
 
-<h3>5. Scale &amp; trade-offs</h3>
+<h3 id="5-scale-amp-trade-offs">5. Scale &amp; trade-offs</h3>
 <ul>
   <li>Feed cache (Redis) stores post IDs only; hydrate full content separately so cache stays small.</li>
   <li>Fan-out is async via a queue so posting feels instant and spikes are absorbed.</li>
@@ -1648,13 +1763,13 @@ Table urls:
 
 <p>Tests real-time delivery, connection management, and presence — a different flavor from request/response systems.</p>
 
-<h3>1. Requirements</h3>
+<h3 id="1-requirements-3">1. Requirements</h3>
 <ul>
   <li><strong>Functional</strong>: 1:1 messaging, group chat, delivery/read receipts, online presence, message history.</li>
   <li><strong>Non-functional</strong>: real-time (low latency), reliable delivery (no lost messages), ordered within a conversation.</li>
 </ul>
 
-<h3>2. The key insight: persistent connections</h3>
+<h3 id="2-the-key-insight-persistent-connections">2. The key insight: persistent connections</h3>
 <p>HTTP request/response can't push a message to a user the instant it arrives. Chat needs a <strong>persistent bidirectional connection</strong> — typically WebSocket — so the server can push to the client at any time.</p>
 <div class="ascii">  POLLING (bad):  client repeatedly asks "anything new?"
      wasteful, laggy.
@@ -1669,7 +1784,7 @@ Table urls:
   Server holds millions of open connections, mapping
   user_id -> which server holds their connection.</div>
 
-<h3>3. How a message flows</h3>
+<h3 id="3-how-a-message-flows">3. How a message flows</h3>
 <div class="ascii">  1. A sends msg over its WebSocket to chat-server-1
   2. server persists msg (so it's not lost) + assigns ID
   3. look up: which server holds B's connection?
@@ -1681,7 +1796,7 @@ Table urls:
   If B is OFFLINE: store in B's inbox/queue; deliver
   when B reconnects (and send a push notification).</div>
 
-<h3>4. Core components</h3>
+<h3 id="4-core-components">4. Core components</h3>
 <ul>
   <li><strong>Connection/gateway servers</strong> — hold the WebSocket connections (stateful; one user pinned to one server).</li>
   <li><strong>Session registry</strong> — maps <code>user_id → connection server</code> (Redis), so servers can route to each other.</li>
@@ -1690,7 +1805,7 @@ Table urls:
   <li><strong>Push notification service</strong> — for offline users (APNs/FCM).</li>
 </ul>
 
-<h3>5. Scale &amp; trade-offs</h3>
+<h3 id="5-scale-amp-trade-offs-2">5. Scale &amp; trade-offs</h3>
 <ul>
   <li>Connection servers are stateful — use a load balancer that supports sticky WebSocket connections, and a registry so any server can reach any user.</li>
   <li>Ordering: assign a per-conversation sequence number; clients sort by it. A single partition per conversation preserves order.</li>
@@ -1703,7 +1818,7 @@ Table urls:
 
 <h2 id="part-18">Part 18 — More worked designs (rate limiter, typeahead, notifications) <span class="tag tag-concept">◆ CONCEPT</span></h2>
 
-<h3>Distributed rate limiter</h3>
+<h3 id="distributed-rate-limiter">Distributed rate limiter</h3>
 <p><em>Limit each user to N requests per window across a fleet of servers.</em> The challenge: the count must be shared, or each server enforces its own limit and the global rate is N × servers.</p>
 <div class="ascii">  Per-server counters (WRONG): user gets N * serverCount
   
@@ -1719,7 +1834,7 @@ Table urls:
   Lua script) keeps it correct under concurrency.</div>
 <p>Put the limiter at the API gateway, fail fast with HTTP 429, and use a sliding window or token bucket for smoothness. Accept tiny inaccuracy for performance.</p>
 
-<h3>Typeahead / autocomplete</h3>
+<h3 id="typeahead-autocomplete">Typeahead / autocomplete</h3>
 <p><em>Suggest completions as the user types, in &lt; 100ms.</em> The data structure is a <strong>trie</strong> (prefix tree); precompute the top-K suggestions at each node so a lookup is a quick descent, not a search.</p>
 <div class="ascii">  trie for "ca", "cat", "car", "card":
         (root)
@@ -1736,7 +1851,7 @@ Table urls:
   top-K list. Build offline from search-frequency logs;
   refresh periodically. Cache hot prefixes in Redis.</div>
 
-<h3>Notification system</h3>
+<h3 id="notification-system">Notification system</h3>
 <p><em>Send email / SMS / push to millions of users.</em> Decouple producers from senders with queues, and isolate each channel so one slow provider doesn't block the others.</p>
 <div class="ascii">  event -> notification service -> [ queue per channel ]
                                       |        |       |
@@ -1759,7 +1874,7 @@ Table urls:
 
 <h2 id="part-19">Part 19 — Final checklist &amp; numbers to memorize</h2>
 
-<h3>The interview checklist</h3>
+<h3 id="the-interview-checklist">The interview checklist</h3>
 <ol>
   <li>Clarify functional + non-functional requirements; state scope.</li>
   <li>Estimate scale (QPS, storage, bandwidth); identify read vs write heavy.</li>
@@ -1771,7 +1886,7 @@ Table urls:
   <li>State trade-offs out loud; mention what you'd do with more time.</li>
 </ol>
 
-<h3>Numbers worth memorizing</h3>
+<h3 id="numbers-worth-memorizing">Numbers worth memorizing</h3>
 <table>
   <tr><th scope="col">Quantity</th><th scope="col">Value</th></tr>
   <tr><td>Memory reference</td><td>~100 ns</td></tr>
@@ -1786,7 +1901,7 @@ Table urls:
   <tr><td>99.9% availability</td><td>~8.7 hrs downtime/year</td></tr>
 </table>
 
-<h3>The mantras</h3>
+<h3 id="the-mantras">The mantras</h3>
 <ul>
   <li><strong>Clarify before you design.</strong> Wrong assumptions waste the whole interview.</li>
   <li><strong>Read-heavy? Cache and replicate. Write-heavy? Partition and queue.</strong></li>
@@ -1906,6 +2021,151 @@ Table urls:
 </script>
 
 <button class="scroll-top" id="scroll-top" aria-label="Scroll to top">↑</button>
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/styles/default.min.css" disabled>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/highlight.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  if (typeof hljs !== 'undefined') {
+    document.querySelectorAll('pre code').forEach(b => {
+      try { hljs.highlightElement(b); } catch (e) {}
+    });
+  }
+  document.querySelectorAll('pre').forEach(pre => {
+    if (pre.classList.contains('ascii')) return;
+    const btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.type = 'button';
+    btn.textContent = 'Copy';
+    btn.setAttribute('aria-label', 'Copy code to clipboard');
+    btn.addEventListener('click', async () => {
+      const code = pre.querySelector('code')?.innerText ?? pre.innerText;
+      try {
+        await navigator.clipboard.writeText(code);
+        btn.textContent = 'Copied'; btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1400);
+      } catch (e) { btn.textContent = 'Err'; }
+    });
+    pre.appendChild(btn);
+  });
+});
+</script>
+
+
+<div class="search-overlay" id="search-overlay" role="dialog" aria-modal="true" aria-label="Search">
+  <div class="search-modal">
+    <input type="text" class="search-input" id="search-input" placeholder="Search all guides…  (Esc to close, ↑↓ to navigate)" autocomplete="off" spellcheck="false">
+    <div class="search-results" id="search-results"></div>
+  </div>
+</div>
+
+<script>
+(function() {
+  const overlay = document.getElementById('search-overlay');
+  const input = document.getElementById('search-input');
+  const results = document.getElementById('search-results');
+  const trigger = document.getElementById('search-trigger');
+  if (!overlay || !input || !results) return;
+  let idx = null;
+  let active = 0;
+
+  async function loadIndex() {
+    if (idx) return idx;
+    try {
+      const r = await fetch('search-index.json');
+      idx = await r.json();
+    } catch (e) { idx = []; }
+    return idx;
+  }
+  function escapeHTML(s) { return s.replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c])); }
+  function escapeRE(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+  function highlight(s, terms) {
+    let h = escapeHTML(s);
+    for (const t of terms) {
+      if (!t) continue;
+      h = h.replace(new RegExp('(' + escapeRE(t) + ')', 'gi'), '<mark>$1</mark>');
+    }
+    return h;
+  }
+  function score(sec, terms) {
+    let s = 0;
+    const title = sec.t.toLowerCase();
+    const text = sec.x.toLowerCase();
+    for (const t of terms) {
+      if (!t) continue;
+      if (title === t) s += 50;
+      if (title.includes(t)) s += 10;
+      if (title.startsWith(t)) s += 5;
+      if (text.includes(t)) s += 1;
+    }
+    return s;
+  }
+  async function render(q) {
+    await loadIndex();
+    const terms = q.toLowerCase().split(/\s+/).filter(Boolean);
+    if (!terms.length) {
+      results.innerHTML = '<div class="search-empty">Type to search across all guides.</div>';
+      return;
+    }
+    let hits = [];
+    for (const g of idx) {
+      for (const sec of g.s) {
+        const sc = score(sec, terms);
+        if (sc > 0) hits.push({g, sec, sc});
+      }
+    }
+    hits.sort((a, b) => b.sc - a.sc);
+    hits = hits.slice(0, 20);
+    if (!hits.length) {
+      results.innerHTML = '<div class="search-empty">No matches.</div>';
+      return;
+    }
+    results.innerHTML = hits.map((h, i) => '<a class="search-result' + (i === 0 ? ' active' : '') + '" href="' + h.g.f + '#' + h.sec.i + '" data-i="' + i + '">' +
+      '<div class="search-result-title">' + highlight(h.sec.t, terms) + '</div>' +
+      '<div class="search-result-meta">' + escapeHTML(h.g.g) + ' · ' + h.sec.l + '</div>' +
+      '<div class="search-result-text">' + highlight(h.sec.x.substring(0, 200), terms) + '</div>' +
+    '</a>').join('');
+    active = 0;
+  }
+  function open() {
+    overlay.classList.add('open');
+    input.focus();
+    render(input.value);
+  }
+  function close() { overlay.classList.remove('open'); }
+  function moveActive(d) {
+    const items = results.querySelectorAll('.search-result');
+    if (!items.length) return;
+    items[active]?.classList.remove('active');
+    active = (active + d + items.length) % items.length;
+    items[active].classList.add('active');
+    items[active].scrollIntoView({block: 'nearest'});
+  }
+  if (trigger) trigger.addEventListener('click', open);
+  overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+  input.addEventListener('input', e => render(e.target.value));
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Escape') close();
+    else if (e.key === 'ArrowDown') { e.preventDefault(); moveActive(1); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); moveActive(-1); }
+    else if (e.key === 'Enter') {
+      const items = results.querySelectorAll('.search-result');
+      if (items[active]) items[active].click();
+    }
+  });
+  document.addEventListener('keydown', e => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      e.preventDefault();
+      overlay.classList.contains('open') ? close() : open();
+    } else if (e.key === '/' && !overlay.classList.contains('open') &&
+               !['INPUT','TEXTAREA'].includes(e.target.tagName) &&
+               !e.target.isContentEditable) {
+      e.preventDefault(); open();
+    }
+  });
+})();
+</script>
 
 </body>
 </html>

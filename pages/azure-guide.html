@@ -461,6 +461,120 @@
     .sidebar-toc { font-size: 0.74em; padding: 14px 14px; }
   }
 
+
+  /* code-block enhancements: hljs theme using CSS vars + copy button */
+  pre code.hljs { display: block; padding: 0; background: transparent; color: var(--code-fg); }
+  .hljs-keyword, .hljs-built_in, .hljs-type, .hljs-class .hljs-title { color: var(--accent); font-weight: 600; }
+  .hljs-string, .hljs-attr { color: #4a7ba6; }
+  .hljs-number, .hljs-literal, .hljs-symbol { color: #b8453a; }
+  .hljs-comment, .hljs-meta, .hljs-doctag { color: var(--muted); font-style: italic; }
+  .hljs-function .hljs-title, .hljs-title.function_ { color: var(--accent); }
+  .hljs-variable, .hljs-name { color: var(--code-fg); }
+  html.dark .hljs-string, html.dark .hljs-attr { color: #8db4d9; }
+  html.dark .hljs-number, html.dark .hljs-literal { color: #d18883; }
+  pre { position: relative; }
+  .copy-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+    font-size: 0.7em;
+    padding: 3px 9px;
+    border-radius: 4px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    letter-spacing: 0.02em;
+  }
+  pre:hover .copy-btn, .copy-btn:focus { opacity: 1; }
+  .copy-btn:hover { color: var(--accent); border-color: var(--accent); }
+  .copy-btn.copied { color: var(--tip-bd); border-color: var(--tip-bd); }
+
+  /* search overlay */
+  .search-trigger {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 0.78em;
+    padding: 2px 9px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-left: auto;
+    margin-right: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    flex-shrink: 0;
+    transition: color 0.15s ease, border-color 0.15s ease;
+  }
+  .search-trigger:hover { color: var(--accent); border-color: var(--accent); }
+  .search-trigger kbd {
+    font-family: -apple-system, sans-serif;
+    background: var(--code-bg);
+    padding: 0 5px;
+    border-radius: 3px;
+    font-size: 0.9em;
+    color: var(--muted);
+    border: none;
+  }
+  .booknav .theme-toggle-inline { margin-left: 0; }
+  .search-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 2000;
+    display: none;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 12vh;
+    backdrop-filter: blur(2px);
+  }
+  .search-overlay.open { display: flex; }
+  .search-modal {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    width: min(640px, 92%);
+    max-height: 70vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+  .search-input {
+    border: none;
+    outline: none;
+    padding: 16px 20px;
+    font-size: 1.05em;
+    background: transparent;
+    color: var(--fg);
+    border-bottom: 1px solid var(--border);
+    font-family: inherit;
+  }
+  .search-input::placeholder { color: var(--muted); }
+  .search-results { overflow-y: auto; padding: 6px 0; }
+  .search-result {
+    display: block;
+    padding: 10px 20px;
+    color: var(--fg);
+    text-decoration: none;
+    border-left: 3px solid transparent;
+    font-size: 0.92em;
+  }
+  .search-result:hover, .search-result.active {
+    background: var(--accent-soft);
+    border-left-color: var(--accent);
+  }
+  .search-result-title { font-weight: 600; color: var(--fg); }
+  .search-result-meta { font-size: 0.78em; color: var(--muted); margin-top: 2px; letter-spacing: 0.02em; }
+  .search-result-text { font-size: 0.82em; color: var(--muted); margin-top: 4px; line-height: 1.4; max-height: 2.9em; overflow: hidden; }
+  .search-empty { padding: 24px 20px; color: var(--muted); text-align: center; font-size: 0.9em; }
+  .search-result mark { background: var(--accent-soft); color: var(--accent); padding: 0 2px; border-radius: 2px; font-weight: 600; }
 </style>
 </head>
 <body>
@@ -483,6 +597,7 @@
   <a href="dsa-guide.html">DSA</a>
   <a href="system-design-guide.html">System Design</a>
   <a href="interview-prep.html">Interview Prep</a>
+  <button class="search-trigger" id="search-trigger" type="button" aria-label="Search guides">Search <kbd>⌘K</kbd></button>
   <button class="theme-toggle-inline" id="theme-toggle" aria-label="Toggle dark mode">🌙</button>
 </nav>
 
@@ -524,7 +639,7 @@
 
 <p>Azure is Microsoft's cloud platform: a global network of datacenters offering compute, storage, networking, databases, and higher-level managed services on demand. Its strength is deep enterprise and Microsoft-ecosystem integration (Windows, Active Directory, Office 365, .NET).</p>
 
-<h3>The geographic hierarchy</h3>
+<h3 id="the-geographic-hierarchy">The geographic hierarchy</h3>
 <p>Understanding how Azure is physically organized explains availability, latency, and compliance choices.</p>
 <div class="ascii">  GEOGRAPHY (e.g. "United States" — for data residency)
     +-- REGION (e.g. "East US" — a metro area of datacenters)
@@ -546,7 +661,7 @@
   <tr><td>Region pair</td><td>Two regions linked for replication/DR</td><td>Disaster, sequential updates</td></tr>
 </table>
 
-<h3>How you interact with Azure</h3>
+<h3 id="how-you-interact-with-azure">How you interact with Azure</h3>
 <ul>
   <li><strong>Azure Portal</strong> — the web GUI (good for learning &amp; exploration).</li>
   <li><strong>Azure CLI</strong> (<code>az</code>) — cross-platform command line.</li>
@@ -571,7 +686,7 @@ az vm create --resource-group myRG --name myVM \
 
 <h2 id="part-1">Part 1 — Accounts, subscriptions &amp; governance <span class="tag tag-concept">◆ CONCEPT</span></h2>
 
-<h3>The management hierarchy</h3>
+<h3 id="the-management-hierarchy">The management hierarchy</h3>
 <div class="ascii">  Microsoft Entra Tenant  (your organization's identity)
         |
    Management Groups   (group subscriptions, apply policy)
@@ -593,7 +708,7 @@ az vm create --resource-group myRG --name myVM \
   <tr><td>Resource</td><td>An individual service instance</td></tr>
 </table>
 
-<h3>Governance tools</h3>
+<h3 id="governance-tools">Governance tools</h3>
 <ul>
   <li><strong>Azure Policy</strong> — enforce rules (e.g., "only allow these regions", "require tags", "no public IPs").</li>
   <li><strong>Blueprints / Landing Zones</strong> — repeatable, compliant environment setups.</li>
@@ -618,7 +733,7 @@ az vm create --resource-group myRG --name myVM \
   Despite the old name, Entra ID is a cloud identity service for web/SaaS apps (OAuth, SAML, OIDC), not a drop-in replacement for on-prem AD (which uses LDAP/Kerberos for domain-joined machines). They're often synced together via Entra Connect in hybrid setups.
 </div>
 
-<h3>Authentication vs authorization</h3>
+<h3 id="authentication-vs-authorization">Authentication vs authorization</h3>
 <div class="ascii">  AUTHENTICATION (Entra ID): who are you?
      sign-in, MFA, conditional access, SSO
 
@@ -628,7 +743,7 @@ az vm create --resource-group myRG --name myVM \
   identity --(authn)--> proven identity --(authz/RBAC)-->
                                           allowed actions</div>
 
-<h3>Azure RBAC: the three pieces</h3>
+<h3 id="azure-rbac-the-three-pieces">Azure RBAC: the three pieces</h3>
 <p>A role assignment = <strong>who</strong> (security principal) + <strong>what</strong> (role definition) + <strong>where</strong> (scope).</p>
 <div class="ascii">  WHO              WHAT (role)            WHERE (scope)
   ------------     -----------------      -----------------
@@ -648,7 +763,7 @@ az vm create --resource-group myRG --name myVM \
   <tr><td>User Access Administrator</td><td>Manage access only</td></tr>
 </table>
 
-<h3>Managed identities (use these, not passwords)</h3>
+<h3 id="managed-identities-use-these-not-passwords">Managed identities (use these, not passwords)</h3>
 <p>A managed identity gives an Azure resource (like a VM or Function) its own Entra identity, so it can authenticate to other services <em>without</em> storing credentials in code. Azure rotates the secret automatically.</p>
 <div class="ascii">  WITHOUT (bad):  app holds a secret/key in config
                   -> leaks, rotation pain
@@ -679,7 +794,7 @@ az vm create --resource-group myRG --name myVM \
   you patch                                Azure runs it
   the OS                                   all for you</div>
 
-<h3>Virtual Machines (IaaS)</h3>
+<h3 id="virtual-machines-iaas">Virtual Machines (IaaS)</h3>
 <p>Full control over a virtual server — choose OS, size, disks. You manage patching, scaling, and availability. VM families are optimized for different workloads:</p>
 <table>
   <tr><th scope="col">Series</th><th scope="col">Optimized for</th></tr>
@@ -691,7 +806,7 @@ az vm create --resource-group myRG --name myVM \
   <tr><td>L</td><td>Storage-optimized (high disk throughput)</td></tr>
 </table>
 
-<h3>Scaling: VM Scale Sets</h3>
+<h3 id="scaling-vm-scale-sets">Scaling: VM Scale Sets</h3>
 <p>A VMSS manages a group of identical VMs that scale automatically based on demand, behind a load balancer. This is how you run resilient, elastic workloads on IaaS.</p>
 <div class="ascii">          Load Balancer
          /     |      \
@@ -700,10 +815,10 @@ az vm create --resource-group myRG --name myVM \
       
   scale OUT (more VMs) under load, scale IN when idle.</div>
 
-<h3>App Service (PaaS)</h3>
+<h3 id="app-service-paas">App Service (PaaS)</h3>
 <p>A managed platform for hosting web apps and APIs — push code (or a container) and Azure handles the OS, patching, load balancing, and autoscale. Ideal when you want to deploy an app without managing servers.</p>
 
-<h3>Pricing models</h3>
+<h3 id="pricing-models">Pricing models</h3>
 <table>
   <tr><th scope="col">Model</th><th scope="col">Best for</th><th scope="col">Savings</th></tr>
   <tr><td>Pay-as-you-go</td><td>Variable / short-term</td><td>—</td></tr>
@@ -724,7 +839,7 @@ az vm create --resource-group myRG --name myVM \
   <tr><td>Azure Kubernetes Service (AKS)</td><td>Managed Kubernetes control plane</td><td>Full K8s control, complex orchestration</td></tr>
 </table>
 
-<h3>Choosing a container service</h3>
+<h3 id="choosing-a-container-service">Choosing a container service</h3>
 <div class="ascii">  Need full Kubernetes control / existing K8s skills?
      |
      +-- YES --> AKS (managed K8s, you run the workloads)
@@ -742,7 +857,7 @@ az vm create --resource-group myRG --name myVM \
   AKS is powerful but you own upgrades, node pools, networking, and scaling config. Azure Container Apps gives you containers, autoscaling (including to zero), revisions, and Dapr integration without managing the cluster. Reach for AKS only when you need raw Kubernetes control.
 </div>
 
-<h3>AKS Automatic (GA Sep 2025)</h3>
+<h3 id="aks-automatic-ga-sep-2025">AKS Automatic (GA Sep 2025)</h3>
 <p>A new "easy mode" SKU for AKS: Microsoft manages the control plane and applies opinionated production defaults so teams can ship without becoming Kubernetes operators. Key traits:</p>
 <ul>
   <li><strong>Networking</strong>: Azure CNI Overlay with Cilium dataplane by default (eBPF policy/observability).</li>
@@ -751,7 +866,7 @@ az vm create --resource-group myRG --name myVM \
   <li>Billing transition for existing preview clusters landed Oct 19, 2025. Positioned as a middle ground between Container Apps and full Standard AKS.</li>
 </ul>
 
-<h3>ACA Serverless GPU (GA Apr 2025)</h3>
+<h3 id="aca-serverless-gpu-ga-apr-2025">ACA Serverless GPU (GA Apr 2025)</h3>
 <p>Container Apps now offers serverless GPU workloads — bring a GPU container, scale to zero, pay per second of use. Useful for inference, fine-tuning steps, and batch ML without standing up an AKS GPU pool. See the <a href="llm-inference-guide.html">LLM inference guide</a> for sizing GPU serving (batching, KV cache, throughput vs latency).</p>
 <ul>
   <li>Hardware: NVIDIA <strong>A100</strong> and <strong>T4</strong> SKUs.</li>
@@ -759,7 +874,7 @@ az vm create --resource-group myRG --name myVM \
   <li>Build 2025 added <strong>Dedicated GPU</strong> profiles (GA); Ignite 2025 expanded to 11 additional regions.</li>
 </ul>
 
-<h3>Container Apps Flex Consumption (GA 2024)</h3>
+<h3 id="container-apps-flex-consumption-ga-2024">Container Apps Flex Consumption (GA 2024)</h3>
 <p>The recommended successor to the original Consumption plan: keeps scale-to-zero and per-second billing but largely eliminates cold starts through always-ready / pre-provisioned instances and faster startup paths. Prefer Flex Consumption for new ACA workloads where cold-start latency matters.</p>
 
 <hr>
@@ -768,7 +883,7 @@ az vm create --resource-group myRG --name myVM \
 
 <p>Serverless means you deploy code or workflows and pay only for execution — no servers to provision or scale. Azure scales it automatically, including to zero when idle.</p>
 
-<h3>Azure Functions (FaaS)</h3>
+<h3 id="azure-functions-faas">Azure Functions (FaaS)</h3>
 <p>Event-driven functions triggered by HTTP, timers, queues, blobs, and many other events. Bindings connect inputs/outputs declaratively without boilerplate SDK code.</p>
 <div class="ascii">  TRIGGER (one)            FUNCTION         BINDINGS (in/out)
   ------------             --------         ----------------
@@ -780,7 +895,7 @@ az vm create --resource-group myRG --name myVM \
   Scales out automatically per event volume; pay per
   execution + execution time + memory.</div>
 
-<h3>Hosting plans</h3>
+<h3 id="hosting-plans">Hosting plans</h3>
 <table>
   <tr><th scope="col">Plan</th><th scope="col">Behavior</th></tr>
   <tr><td>Consumption</td><td>True serverless, scale to zero, pay per use (cold starts)</td></tr>
@@ -788,7 +903,7 @@ az vm create --resource-group myRG --name myVM \
   <tr><td>Dedicated (App Service)</td><td>Runs on your App Service plan, predictable cost</td></tr>
 </table>
 
-<h3>Logic Apps &amp; Durable Functions</h3>
+<h3 id="logic-apps-amp-durable-functions">Logic Apps &amp; Durable Functions</h3>
 <ul>
   <li><strong>Logic Apps</strong> — low-code visual workflow orchestration across 1000+ connectors (great for integration).</li>
   <li><strong>Durable Functions</strong> — write stateful, long-running orchestrations in code (fan-out/fan-in, human approval, chaining).</li>
@@ -814,7 +929,7 @@ az vm create --resource-group myRG --name myVM \
   <tr><td>Managed Disks</td><td>Block storage for VMs</td><td>VM OS &amp; data disks</td></tr>
 </table>
 
-<h3>Blob storage tiers (cost vs access speed)</h3>
+<h3 id="blob-storage-tiers-cost-vs-access-speed">Blob storage tiers (cost vs access speed)</h3>
 <div class="ascii">  HOT      frequent access, highest storage cost, lowest
            access cost      -> active data
   COOL     infrequent (>30 days), lower storage cost
@@ -826,7 +941,7 @@ az vm create --resource-group myRG --name myVM \
   Lifecycle policies auto-move blobs hot -> cool ->
   archive as they age, cutting cost automatically.</div>
 
-<h3>Redundancy options</h3>
+<h3 id="redundancy-options">Redundancy options</h3>
 <table>
   <tr><th scope="col">Option</th><th scope="col">Copies</th><th scope="col">Survives</th></tr>
   <tr><td>LRS (locally redundant)</td><td>3 copies in one DC</td><td>Disk/rack failure</td></tr>
@@ -844,7 +959,7 @@ az vm create --resource-group myRG --name myVM \
 
 <h2 id="part-7">Part 7 — Databases <span class="tag tag-core">★ CORE</span></h2>
 
-<h3>Relational (SQL)</h3>
+<h3 id="relational-sql">Relational (SQL)</h3>
 <table>
   <tr><th scope="col">Service</th><th scope="col">What it is</th></tr>
   <tr><td>Azure SQL Database</td><td>Fully managed SQL Server (PaaS); auto patch/backup/scale</td></tr>
@@ -853,7 +968,7 @@ az vm create --resource-group myRG --name myVM \
   <tr><td>Azure Database for MySQL</td><td>Managed MySQL</td></tr>
 </table>
 
-<h3>Azure SQL deployment options</h3>
+<h3 id="azure-sql-deployment-options">Azure SQL deployment options</h3>
 <div class="ascii">  Single Database   one isolated DB, simplest
   Elastic Pool      many DBs share a budget of resources
                     (good for SaaS multi-tenant)
@@ -862,7 +977,7 @@ az vm create --resource-group myRG --name myVM \
   Purchasing: vCore (flexible) or DTU (bundled) model.
   Serverless tier: auto-pause when idle, pay per second.</div>
 
-<h3>NoSQL: Azure Cosmos DB</h3>
+<h3 id="nosql-azure-cosmos-db">NoSQL: Azure Cosmos DB</h3>
 <p>A globally distributed, multi-model database with single-digit-millisecond latency and turnkey global replication. It supports multiple APIs so you can use familiar interfaces.</p>
 <div class="ascii">  Cosmos DB APIs (pick one per account):
     - NoSQL (core, document/JSON)
@@ -876,7 +991,7 @@ az vm create --resource-group myRG --name myVM \
   Strong -> Bounded Staleness -> Session -> Consistent
   Prefix -> Eventual   (stronger = more latency/cost)</div>
 
-<h3>Caching &amp; in-memory</h3>
+<h3 id="caching-amp-in-memory">Caching &amp; in-memory</h3>
 <ul>
   <li><strong>Azure Cache for Redis</strong> — managed Redis for caching, sessions, leaderboards, pub/sub.</li>
 </ul>
@@ -890,7 +1005,7 @@ az vm create --resource-group myRG --name myVM \
 
 <h2 id="part-8">Part 8 — Networking <span class="tag tag-core">★ CORE</span></h2>
 
-<h3>Virtual Network (VNet) — your private network</h3>
+<h3 id="virtual-network-vnet-your-private-network">Virtual Network (VNet) — your private network</h3>
 <p>A VNet is your isolated network in Azure. You divide it into subnets, control traffic with security rules, and connect it to other networks or on-prem.</p>
 <div class="ascii">  Virtual Network  10.0.0.0/16
     +-- Subnet "web"   10.0.1.0/24  [ VMs / App ]
@@ -902,7 +1017,7 @@ az vm create --resource-group myRG --name myVM \
   NSG = firewall rules (allow/deny by IP, port, protocol)
         applied to subnets or NICs.</div>
 
-<h3>Core networking services</h3>
+<h3 id="core-networking-services">Core networking services</h3>
 <table>
   <tr><th scope="col">Service</th><th scope="col">Role</th></tr>
   <tr><td>Network Security Group (NSG)</td><td>Allow/deny traffic rules (stateful firewall)</td></tr>
@@ -915,7 +1030,7 @@ az vm create --resource-group myRG --name myVM \
   <tr><td>Private Link / Endpoint</td><td>Reach PaaS services over private IP</td></tr>
 </table>
 
-<h3>Connecting to on-premises</h3>
+<h3 id="connecting-to-on-premises">Connecting to on-premises</h3>
 <div class="ascii">  VPN Gateway:   on-prem ==(encrypted over internet)== Azure
                  cheaper, variable latency
 
@@ -942,7 +1057,7 @@ az vm create --resource-group myRG --name myVM \
   <tr><td>Queue Storage</td><td>Simple, cheap queue</td><td>Basic background job decoupling</td></tr>
 </table>
 
-<h3>Service Bus vs Event Grid vs Event Hubs</h3>
+<h3 id="service-bus-vs-event-grid-vs-event-hubs">Service Bus vs Event Grid vs Event Hubs</h3>
 <div class="ascii">  SERVICE BUS (messages, commands):
     "process this order" -> queue -> one worker handles it
     rich features: ordering (FIFO), sessions, dead-letter,
@@ -1002,7 +1117,7 @@ az vm create --resource-group myRG --name myVM \
 
 <p>Azure's AI portfolio spans pre-built APIs, the OpenAI partnership, and a full ML platform. This is a key strength given the Microsoft-OpenAI relationship.</p>
 
-<h3>The three layers of Azure AI</h3>
+<h3 id="the-three-layers-of-azure-ai">The three layers of Azure AI</h3>
 <div class="ascii">  1. PRE-BUILT AI (call an API, no ML needed)
      Azure AI Services (formerly Cognitive Services):
        Vision, Speech, Language, Translator,
@@ -1020,7 +1135,7 @@ az vm create --resource-group myRG --name myVM \
      Azure Machine Learning: full MLOps platform
        (train, tune, deploy, monitor, pipelines)</div>
 
-<h3>Azure AI Foundry (the umbrella)</h3>
+<h3 id="azure-ai-foundry-the-umbrella">Azure AI Foundry (the umbrella)</h3>
 <p>Azure AI Foundry replaced Azure AI Studio in November 2024 and is now the canonical place to build, evaluate, deploy, and govern generative AI applications and agents on Azure. See the <a href="ai-engineering-guide.html">AI engineering guide</a> for cloud-agnostic RAG/eval patterns and the <a href="agentic-ai-guide.html">agentic AI guide</a> for the agent frameworks that plug into the Agents Service. It bundles:</p>
 <ul>
   <li><strong>Model catalog</strong> — Azure OpenAI plus first/third-party models: Llama, Mistral, <strong>Phi</strong>, DeepSeek, and more, deployable as Standard (PAYG) or Provisioned (PTU) endpoints.</li>
@@ -1030,7 +1145,7 @@ az vm create --resource-group myRG --name myVM \
   <li><strong>Content Safety integration</strong> — prompt shields, groundedness detection, protected-material checks wired in by default.</li>
 </ul>
 
-<h3>Azure OpenAI: current model lineup (2026)</h3>
+<h3 id="azure-openai-current-model-lineup-2026">Azure OpenAI: current model lineup (2026)</h3>
 <table>
   <tr><th scope="col">Family</th><th scope="col">Notes</th></tr>
   <tr><td>GPT-5, GPT-5 mini, GPT-5 nano</td><td>Current flagship general-purpose chat/completion family</td></tr>
@@ -1041,7 +1156,7 @@ az vm create --resource-group myRG --name myVM \
 </table>
 <p><strong>Retired:</strong> GPT-4 (non-turbo) is retired in Azure OpenAI. GPT-4o remains available in some regions but new builds should target GPT-5 / o-series.</p>
 
-<h3>Microsoft Phi (small language models)</h3>
+<h3 id="microsoft-phi-small-language-models">Microsoft Phi (small language models)</h3>
 <p>The <strong>Phi family</strong> (Phi-3, Phi-3.5, Phi-4) is Microsoft's flagship open-weight SLM line: strong reasoning per parameter, small enough for edge / on-device / CPU inference, and available in the AI Foundry model catalog as managed deployments. Common picks when you need cheap latency-sensitive inference or fine-tuning on a small base.</p>
 
 <table>
@@ -1055,7 +1170,7 @@ az vm create --resource-group myRG --name myVM \
   <tr><td>Microsoft Copilot Studio</td><td>Low-code builder for custom Copilots / agents that ground in your data and call tools (M365 + Azure)</td></tr>
 </table>
 
-<h3>Azure AI Search — what's worth knowing</h3>
+<h3 id="azure-ai-search-whats-worth-knowing">Azure AI Search — what's worth knowing</h3>
 <ul>
   <li>Renamed from Azure Cognitive Search; now the primary retrieval engine for RAG and agentic apps.</li>
   <li><strong>Integrated vectorization</strong>: indexer can chunk + embed documents end-to-end using a configured embedding model (no separate pipeline needed).</li>
@@ -1064,7 +1179,7 @@ az vm create --resource-group myRG --name myVM \
   <li><strong>Hybrid + semantic reranker</strong>: combine BM25 keyword + vector recall, then re-rank top-k with a cross-encoder for relevance gains.</li>
 </ul>
 
-<h3>A typical RAG architecture on Azure</h3>
+<h3 id="a-typical-rag-architecture-on-azure">A typical RAG architecture on Azure</h3>
 <div class="ascii">  docs -> Document Intelligence (extract) -> chunk
         -> Azure AI Search (integrated vectorization
                             calls embeddings model)
@@ -1091,7 +1206,7 @@ az vm create --resource-group myRG --name myVM \
 
 <h2 id="part-12">Part 12 — DevOps, IaC &amp; monitoring <span class="tag tag-prod">▲ PROD</span></h2>
 
-<h3>Infrastructure as Code (IaC)</h3>
+<h3 id="infrastructure-as-code-iac">Infrastructure as Code (IaC)</h3>
 <table>
   <tr><th scope="col">Tool</th><th scope="col">Notes</th></tr>
   <tr><td>ARM templates</td><td>Native JSON; verbose, foundational</td></tr>
@@ -1111,13 +1226,13 @@ resource sa 'Microsoft.Storage/storageAccounts@2024-01-01' = {
   }
 }</code></pre>
 
-<h3>CI/CD</h3>
+<h3 id="cicd">CI/CD</h3>
 <ul>
   <li><strong>Azure DevOps</strong> — Repos, Pipelines, Boards, Artifacts (full ALM suite).</li>
   <li><strong>GitHub Actions</strong> — Microsoft-owned; deeply integrated with Azure deploy actions.</li>
 </ul>
 
-<h3>Monitoring: Azure Monitor</h3>
+<h3 id="monitoring-azure-monitor">Monitoring: Azure Monitor</h3>
 <div class="ascii">  Azure Monitor (the umbrella)
     +-- Metrics       numeric time-series (CPU, latency)
     +-- Logs          -> Log Analytics (query with KQL)
@@ -1139,7 +1254,7 @@ resource sa 'Microsoft.Storage/storageAccounts@2024-01-01' = {
 
 <h2 id="part-13">Part 13 — Security &amp; cost management <span class="tag tag-core">★ CORE</span> <span class="tag tag-prod">▲ PROD</span></h2>
 
-<h3>Security services</h3>
+<h3 id="security-services">Security services</h3>
 <table>
   <tr><th scope="col">Service</th><th scope="col">Role</th></tr>
   <tr><td>Microsoft Defender for Cloud</td><td>Posture management + workload threat protection (CSPM/CWPP)</td></tr>
@@ -1150,7 +1265,7 @@ resource sa 'Microsoft.Storage/storageAccounts@2024-01-01' = {
   <tr><td>DDoS Protection / WAF</td><td>Network + application layer attack defense</td></tr>
 </table>
 
-<h3>The security mantras</h3>
+<h3 id="the-security-mantras">The security mantras</h3>
 <ul>
   <li><strong>Identity is the perimeter</strong> — secure with MFA, Conditional Access, least privilege.</li>
   <li><strong>Secrets in Key Vault</strong>, never in code; use managed identities to access them.</li>
@@ -1159,7 +1274,7 @@ resource sa 'Microsoft.Storage/storageAccounts@2024-01-01' = {
   <li><strong>Defender + Sentinel</strong> for continuous monitoring and response.</li>
 </ul>
 
-<h3>Cost management</h3>
+<h3 id="cost-management">Cost management</h3>
 <ul>
   <li><strong>Right-size</strong> — match VM/DB SKUs to actual usage; downscale idle resources.</li>
   <li><strong>Commit</strong> — Reserved Instances / Savings Plans for steady workloads (up to ~70%).</li>
@@ -1180,7 +1295,7 @@ resource sa 'Microsoft.Storage/storageAccounts@2024-01-01' = {
 
 <p>For cloud-agnostic distributed-systems patterns (load balancing, caching, queues, consistency) behind the architectures below, see the <a href="system-design-guide.html">system design guide</a>.</p>
 
-<h3>Reference: a typical 3-tier web app on Azure</h3>
+<h3 id="reference-a-typical-3-tier-web-app-on-azure">Reference: a typical 3-tier web app on Azure</h3>
 <div class="ascii">          Azure Front Door (global LB + CDN + WAF)
                         |
               Application Gateway (regional L7 + WAF)
@@ -1198,7 +1313,7 @@ resource sa 'Microsoft.Storage/storageAccounts@2024-01-01' = {
   Azure Monitor + App Insights (observability),
   Private Endpoints (private connectivity).</div>
 
-<h3>The Well-Architected Framework (5 pillars)</h3>
+<h3 id="the-well-architected-framework-5-pillars">The Well-Architected Framework (5 pillars)</h3>
 <table>
   <tr><th scope="col">Pillar</th><th scope="col">Question it answers</th></tr>
   <tr><td>Reliability</td><td>Does it recover from failure? (zones, regions, retries)</td></tr>
@@ -1208,7 +1323,7 @@ resource sa 'Microsoft.Storage/storageAccounts@2024-01-01' = {
   <tr><td>Performance Efficiency</td><td>Does it scale to demand?</td></tr>
 </table>
 
-<h3>Service selection cheat sheet</h3>
+<h3 id="service-selection-cheat-sheet">Service selection cheat sheet</h3>
 <table>
   <tr><th scope="col">Need</th><th scope="col">Reach for</th></tr>
   <tr><td>Run a web app without servers</td><td>App Service / Container Apps</td></tr>
@@ -1336,6 +1451,151 @@ resource sa 'Microsoft.Storage/storageAccounts@2024-01-01' = {
 </script>
 
 <button class="scroll-top" id="scroll-top" aria-label="Scroll to top">↑</button>
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/styles/default.min.css" disabled>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/highlight.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  if (typeof hljs !== 'undefined') {
+    document.querySelectorAll('pre code').forEach(b => {
+      try { hljs.highlightElement(b); } catch (e) {}
+    });
+  }
+  document.querySelectorAll('pre').forEach(pre => {
+    if (pre.classList.contains('ascii')) return;
+    const btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.type = 'button';
+    btn.textContent = 'Copy';
+    btn.setAttribute('aria-label', 'Copy code to clipboard');
+    btn.addEventListener('click', async () => {
+      const code = pre.querySelector('code')?.innerText ?? pre.innerText;
+      try {
+        await navigator.clipboard.writeText(code);
+        btn.textContent = 'Copied'; btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1400);
+      } catch (e) { btn.textContent = 'Err'; }
+    });
+    pre.appendChild(btn);
+  });
+});
+</script>
+
+
+<div class="search-overlay" id="search-overlay" role="dialog" aria-modal="true" aria-label="Search">
+  <div class="search-modal">
+    <input type="text" class="search-input" id="search-input" placeholder="Search all guides…  (Esc to close, ↑↓ to navigate)" autocomplete="off" spellcheck="false">
+    <div class="search-results" id="search-results"></div>
+  </div>
+</div>
+
+<script>
+(function() {
+  const overlay = document.getElementById('search-overlay');
+  const input = document.getElementById('search-input');
+  const results = document.getElementById('search-results');
+  const trigger = document.getElementById('search-trigger');
+  if (!overlay || !input || !results) return;
+  let idx = null;
+  let active = 0;
+
+  async function loadIndex() {
+    if (idx) return idx;
+    try {
+      const r = await fetch('search-index.json');
+      idx = await r.json();
+    } catch (e) { idx = []; }
+    return idx;
+  }
+  function escapeHTML(s) { return s.replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c])); }
+  function escapeRE(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+  function highlight(s, terms) {
+    let h = escapeHTML(s);
+    for (const t of terms) {
+      if (!t) continue;
+      h = h.replace(new RegExp('(' + escapeRE(t) + ')', 'gi'), '<mark>$1</mark>');
+    }
+    return h;
+  }
+  function score(sec, terms) {
+    let s = 0;
+    const title = sec.t.toLowerCase();
+    const text = sec.x.toLowerCase();
+    for (const t of terms) {
+      if (!t) continue;
+      if (title === t) s += 50;
+      if (title.includes(t)) s += 10;
+      if (title.startsWith(t)) s += 5;
+      if (text.includes(t)) s += 1;
+    }
+    return s;
+  }
+  async function render(q) {
+    await loadIndex();
+    const terms = q.toLowerCase().split(/\s+/).filter(Boolean);
+    if (!terms.length) {
+      results.innerHTML = '<div class="search-empty">Type to search across all guides.</div>';
+      return;
+    }
+    let hits = [];
+    for (const g of idx) {
+      for (const sec of g.s) {
+        const sc = score(sec, terms);
+        if (sc > 0) hits.push({g, sec, sc});
+      }
+    }
+    hits.sort((a, b) => b.sc - a.sc);
+    hits = hits.slice(0, 20);
+    if (!hits.length) {
+      results.innerHTML = '<div class="search-empty">No matches.</div>';
+      return;
+    }
+    results.innerHTML = hits.map((h, i) => '<a class="search-result' + (i === 0 ? ' active' : '') + '" href="' + h.g.f + '#' + h.sec.i + '" data-i="' + i + '">' +
+      '<div class="search-result-title">' + highlight(h.sec.t, terms) + '</div>' +
+      '<div class="search-result-meta">' + escapeHTML(h.g.g) + ' · ' + h.sec.l + '</div>' +
+      '<div class="search-result-text">' + highlight(h.sec.x.substring(0, 200), terms) + '</div>' +
+    '</a>').join('');
+    active = 0;
+  }
+  function open() {
+    overlay.classList.add('open');
+    input.focus();
+    render(input.value);
+  }
+  function close() { overlay.classList.remove('open'); }
+  function moveActive(d) {
+    const items = results.querySelectorAll('.search-result');
+    if (!items.length) return;
+    items[active]?.classList.remove('active');
+    active = (active + d + items.length) % items.length;
+    items[active].classList.add('active');
+    items[active].scrollIntoView({block: 'nearest'});
+  }
+  if (trigger) trigger.addEventListener('click', open);
+  overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+  input.addEventListener('input', e => render(e.target.value));
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Escape') close();
+    else if (e.key === 'ArrowDown') { e.preventDefault(); moveActive(1); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); moveActive(-1); }
+    else if (e.key === 'Enter') {
+      const items = results.querySelectorAll('.search-result');
+      if (items[active]) items[active].click();
+    }
+  });
+  document.addEventListener('keydown', e => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      e.preventDefault();
+      overlay.classList.contains('open') ? close() : open();
+    } else if (e.key === '/' && !overlay.classList.contains('open') &&
+               !['INPUT','TEXTAREA'].includes(e.target.tagName) &&
+               !e.target.isContentEditable) {
+      e.preventDefault(); open();
+    }
+  });
+})();
+</script>
 
 </body>
 </html>

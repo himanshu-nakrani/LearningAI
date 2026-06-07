@@ -461,6 +461,120 @@
     .sidebar-toc { font-size: 0.74em; padding: 14px 14px; }
   }
 
+
+  /* code-block enhancements: hljs theme using CSS vars + copy button */
+  pre code.hljs { display: block; padding: 0; background: transparent; color: var(--code-fg); }
+  .hljs-keyword, .hljs-built_in, .hljs-type, .hljs-class .hljs-title { color: var(--accent); font-weight: 600; }
+  .hljs-string, .hljs-attr { color: #4a7ba6; }
+  .hljs-number, .hljs-literal, .hljs-symbol { color: #b8453a; }
+  .hljs-comment, .hljs-meta, .hljs-doctag { color: var(--muted); font-style: italic; }
+  .hljs-function .hljs-title, .hljs-title.function_ { color: var(--accent); }
+  .hljs-variable, .hljs-name { color: var(--code-fg); }
+  html.dark .hljs-string, html.dark .hljs-attr { color: #8db4d9; }
+  html.dark .hljs-number, html.dark .hljs-literal { color: #d18883; }
+  pre { position: relative; }
+  .copy-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+    font-size: 0.7em;
+    padding: 3px 9px;
+    border-radius: 4px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    letter-spacing: 0.02em;
+  }
+  pre:hover .copy-btn, .copy-btn:focus { opacity: 1; }
+  .copy-btn:hover { color: var(--accent); border-color: var(--accent); }
+  .copy-btn.copied { color: var(--tip-bd); border-color: var(--tip-bd); }
+
+  /* search overlay */
+  .search-trigger {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 0.78em;
+    padding: 2px 9px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-left: auto;
+    margin-right: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    flex-shrink: 0;
+    transition: color 0.15s ease, border-color 0.15s ease;
+  }
+  .search-trigger:hover { color: var(--accent); border-color: var(--accent); }
+  .search-trigger kbd {
+    font-family: -apple-system, sans-serif;
+    background: var(--code-bg);
+    padding: 0 5px;
+    border-radius: 3px;
+    font-size: 0.9em;
+    color: var(--muted);
+    border: none;
+  }
+  .booknav .theme-toggle-inline { margin-left: 0; }
+  .search-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 2000;
+    display: none;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 12vh;
+    backdrop-filter: blur(2px);
+  }
+  .search-overlay.open { display: flex; }
+  .search-modal {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    width: min(640px, 92%);
+    max-height: 70vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+  .search-input {
+    border: none;
+    outline: none;
+    padding: 16px 20px;
+    font-size: 1.05em;
+    background: transparent;
+    color: var(--fg);
+    border-bottom: 1px solid var(--border);
+    font-family: inherit;
+  }
+  .search-input::placeholder { color: var(--muted); }
+  .search-results { overflow-y: auto; padding: 6px 0; }
+  .search-result {
+    display: block;
+    padding: 10px 20px;
+    color: var(--fg);
+    text-decoration: none;
+    border-left: 3px solid transparent;
+    font-size: 0.92em;
+  }
+  .search-result:hover, .search-result.active {
+    background: var(--accent-soft);
+    border-left-color: var(--accent);
+  }
+  .search-result-title { font-weight: 600; color: var(--fg); }
+  .search-result-meta { font-size: 0.78em; color: var(--muted); margin-top: 2px; letter-spacing: 0.02em; }
+  .search-result-text { font-size: 0.82em; color: var(--muted); margin-top: 4px; line-height: 1.4; max-height: 2.9em; overflow: hidden; }
+  .search-empty { padding: 24px 20px; color: var(--muted); text-align: center; font-size: 0.9em; }
+  .search-result mark { background: var(--accent-soft); color: var(--accent); padding: 0 2px; border-radius: 2px; font-weight: 600; }
 </style>
 </head>
 <body>
@@ -483,6 +597,7 @@
   <a href="dsa-guide.html" class="current">DSA</a>
   <a href="system-design-guide.html">System Design</a>
   <a href="interview-prep.html">Interview Prep</a>
+  <button class="search-trigger" id="search-trigger" type="button" aria-label="Search guides">Search <kbd>⌘K</kbd></button>
   <button class="theme-toggle-inline" id="theme-toggle" aria-label="Toggle dark mode">🌙</button>
 </nav>
 
@@ -528,7 +643,7 @@
 
 <p>Most basic-to-medium interview problems are variations on a small set of patterns. Once you recognize the pattern, the solution follows. This guide teaches you to map a problem to its pattern, then implement cleanly. For the broader interview loop (behavioral, system design, take-homes), see the <a href="interview-prep.html">interview prep guide</a>.</p>
 
-<h3>The interview loop (say this out loud)</h3>
+<h3 id="the-interview-loop-say-this-out-loud">The interview loop (say this out loud)</h3>
 <ol>
   <li><strong>Clarify</strong> — restate the problem, ask about input size, types, duplicates, empty input, sorted or not.</li>
   <li><strong>Examples</strong> — walk a small example by hand. Find an edge case.</li>
@@ -544,7 +659,7 @@
   Always state the brute force first with its complexity, then improve it. Interviewers grade your problem-solving process, not just the final answer. A working brute force beats a broken clever solution.
 </div>
 
-<h3>How to recognize a pattern fast</h3>
+<h3 id="how-to-recognize-a-pattern-fast">How to recognize a pattern fast</h3>
 <table>
   <tr><th scope="col">If you see…</th><th scope="col">Reach for…</th></tr>
   <tr><td>"Find pair / count / seen before"</td><td>Hash map / set</td></tr>
@@ -568,7 +683,7 @@
 
 <p>Think of it as answering: "If I double the input, what happens to the running time?" For O(n) it doubles. For O(n²) it quadruples. For O(log n) it barely moves. That single question separates a solution that scales from one that falls over in production.</p>
 
-<h3>How the curves diverge as n grows</h3>
+<h3 id="how-the-curves-diverge-as-n-grows">How the curves diverge as n grows</h3>
 <p>The chart below shows roughly how many operations each complexity class needs. Notice how O(n²) and O(2ⁿ) explode while O(log n) stays nearly flat — this is why the "right" algorithm matters far more than fast hardware.</p>
 <div class="ascii">operations
   ^
@@ -591,7 +706,7 @@
 At small n the differences barely matter. At large n they
 decide whether your program finishes in milliseconds or never.</div>
 
-<h3>The complexity ladder (best to worst)</h3>
+<h3 id="the-complexity-ladder-best-to-worst">The complexity ladder (best to worst)</h3>
 <table>
   <tr><th scope="col">Notation</th><th scope="col">Name</th><th scope="col">Example</th></tr>
   <tr><td><code>O(1)</code></td><td>Constant</td><td>Hash lookup, array index</td></tr>
@@ -603,7 +718,7 @@ decide whether your program finishes in milliseconds or never.</div>
   <tr><td><code>O(n!)</code></td><td>Factorial</td><td>Permutations</td></tr>
 </table>
 
-<h3>What input size implies about the target complexity</h3>
+<h3 id="what-input-size-implies-about-the-target-complexity">What input size implies about the target complexity</h3>
 <p>Interviewers often hint at the expected solution via the constraints:</p>
 <table>
   <tr><th scope="col">n up to</th><th scope="col">Acceptable complexity</th></tr>
@@ -615,7 +730,7 @@ decide whether your program finishes in milliseconds or never.</div>
   <tr><td>~10⁹+</td><td>O(log n) or O(1) — typically binary search on the <em>answer space</em>, not on the input</td></tr>
 </table>
 
-<h3>How to count complexity in practice</h3>
+<h3 id="how-to-count-complexity-in-practice">How to count complexity in practice</h3>
 <p>Two rules cover almost everything you'll meet:</p>
 <ul>
   <li><strong>Sequential code adds:</strong> a loop followed by another loop is <code>O(n) + O(n) = O(n)</code>.</li>
@@ -631,10 +746,10 @@ for j in range(n):        # plus this:  n
     work()                # total: 2n  ->  O(n)</div>
 <p>When a loop's bound shrinks by a constant factor each step (halving, like binary search), that's the signature of <code>O(log n)</code> — you can only halve n about log₂(n) times before reaching 1.</p>
 
-<h3>Time vs space</h3>
+<h3 id="time-vs-space">Time vs space</h3>
 <p>Complexity comes in two flavors. <strong>Time</strong> is how many operations run. <strong>Space</strong> is how much extra memory you allocate beyond the input. A hash map that stores every element is O(n) space; reversing an array with two pointers is O(1) space. Interviewers often ask for both, and sometimes ask you to trade one for the other.</p>
 
-<h3>Amortized vs worst case</h3>
+<h3 id="amortized-vs-worst-case">Amortized vs worst case</h3>
 <p>A Python list <code>append</code> is <code>O(1)</code> <em>amortized</em>: most appends are constant, but occasionally the list resizes (copy all elements). Averaged over many appends, it's still O(1). Mention "amortized" when discussing dynamic arrays and hash tables.</p>
 
 <div class="callout callout-warn">
@@ -653,7 +768,7 @@ for j in range(n):        # plus this:  n
 
 <p>Arrays (Python <code>list</code>) and strings are the most common interview substrate. Strings in Python are immutable — any "modification" creates a new string.</p>
 
-<h3>How an array is laid out in memory</h3>
+<h3 id="how-an-array-is-laid-out-in-memory">How an array is laid out in memory</h3>
 <p>An array stores elements in one contiguous block. Because every element is the same size and they sit side by side, the computer can jump straight to element <code>i</code> by computing <code>base_address + i × element_size</code> — no scanning required. That's why indexing is O(1).</p>
 <div class="ascii">index:     0     1     2     3     4
         +-----+-----+-----+-----+-----+
@@ -672,7 +787,7 @@ before  |  1  |  4  |  1  |  5  |        slides right ->
 after   |  x  |  1  |  4  |  1  |  5  |
         +-----+-----+-----+-----+-----+</div>
 
-<h3>Core operations &amp; costs</h3>
+<h3 id="core-operations-amp-costs">Core operations &amp; costs</h3>
 <table>
   <tr><th scope="col">Operation</th><th scope="col">Cost</th></tr>
   <tr><td>Index access <code>a[i]</code></td><td>O(1)</td></tr>
@@ -682,7 +797,7 @@ after   |  x  |  1  |  4  |  1  |  5  |
   <tr><td>Slice <code>a[i:j]</code></td><td>O(j−i)</td></tr>
 </table>
 
-<h3>Essential idioms</h3>
+<h3 id="essential-idioms">Essential idioms</h3>
 <pre><code>nums = [3, 1, 4, 1, 5]
 
 # Iterate with index
@@ -707,7 +822,7 @@ for c in something:
     chars.append(c)
 result = "".join(chars)            # O(n), not O(n^2)</code></pre>
 
-<h3>Worked example: reverse a string in place (char array)</h3>
+<h3 id="worked-example-reverse-a-string-in-place-char-array">Worked example: reverse a string in place (char array)</h3>
 <pre><code>def reverse(s: list[str]) -> None:
     left, right = 0, len(s) - 1
     while left &lt; right:
@@ -727,7 +842,7 @@ result = "".join(chars)            # O(n), not O(n^2)</code></pre>
 
 <p>Hash maps trade space for time: O(1) average lookup, insert, and delete. This single idea converts many O(n²) problems into O(n). If a problem asks "have I seen X?" or "how many times?", reach for a dict or set.</p>
 
-<h3>How a hash map works</h3>
+<h3 id="how-a-hash-map-works">How a hash map works</h3>
 <p>A hash function turns a key into an array index. The value is stored in a backing array (the "buckets") at that index. Looking up a key recomputes the hash and jumps straight to the bucket — no scanning. That's the O(1) magic.</p>
 <div class="ascii">key "apple"  --hash()-->  3251  --% 8-->  bucket 3
 key "pear"   --hash()-->  9982  --% 8-->  bucket 6
@@ -751,7 +866,7 @@ lookup("apple"): hash -> bucket 3 -> found in O(1)</div>
   Most hash-map problems work in one pass: as you scan the array, you record what you've seen in a dict, and for each new element you check whether its "complement" or partner is already recorded. One loop, O(n), instead of comparing every pair in O(n²).
 </div>
 
-<h3>Python tools</h3>
+<h3 id="python-tools">Python tools</h3>
 <pre><code>from collections import Counter, defaultdict
 
 seen = set()                 # membership in O(1)
@@ -766,7 +881,7 @@ d[key].append(val)           # no KeyError
 d = defaultdict(int)         # missing key -> 0
 d[key] += 1                  # frequency counting</code></pre>
 
-<h3>Canonical problem: Two Sum</h3>
+<h3 id="canonical-problem-two-sum">Canonical problem: Two Sum</h3>
 <p><em>Given an array and a target, return indices of two numbers that add to target.</em></p>
 <pre><code>def two_sum(nums, target):
     seen = {}                      # value -> index
@@ -786,7 +901,7 @@ i=1  x=7   need=2   2 in seen? YES   -> return [0, 1]
 We never had to compare 7 against 11 or 15.
 Each element is checked once against a O(1) lookup.</div>
 
-<h3>Other classic hashing problems</h3>
+<h3 id="other-classic-hashing-problems">Other classic hashing problems</h3>
 <ul>
   <li><strong>Group anagrams</strong> — key each word by its sorted letters (or letter-count tuple).</li>
   <li><strong>Contains duplicate</strong> — <code>len(set(nums)) != len(nums)</code>.</li>
@@ -799,7 +914,7 @@ Each element is checked once against a O(1) lookup.</div>
   If the array is sorted, two pointers may be O(1) space vs the hash map's O(n). And dict keys must be hashable — lists can't be keys, but tuples can.
 </div>
 
-<h3>Trie (prefix tree) — for string prefix queries</h3>
+<h3 id="trie-prefix-tree-for-string-prefix-queries">Trie (prefix tree) — for string prefix queries</h3>
 <p>A trie is a tree where each edge is one character of a key. Words sharing a prefix share the same root-to-internal-node path. Insert, search, and <code>startsWith</code> are all O(L) where L is the word length — independent of how many words you've stored. Classic uses: autocomplete, spell check, word search II, IP routing, and the "longest common prefix" family.</p>
 <div class="ascii">insert "cat", "car", "card", "do"
 
@@ -848,7 +963,7 @@ so one path stores both. startsWith("ca") walks two edges.</div>
 
 <p>Use two indices that move toward each other (or in the same direction) to avoid a nested loop. Works best on <strong>sorted</strong> arrays or when comparing from both ends.</p>
 
-<h3>Why it works: the sorted-array insight</h3>
+<h3 id="why-it-works-the-sorted-array-insight">Why it works: the sorted-array insight</h3>
 <p>On a sorted array, the sum of the two ends tells you which way to move. If the sum is too small, the only way to increase it is to move the left pointer right (to a bigger value). If it's too big, move the right pointer left. Each move permanently eliminates one candidate, so you scan the whole array just once — O(n) instead of O(n²).</p>
 <div class="ascii">target = 9     sorted: [1, 2, 4, 7, 11, 15]
                         lo                hi
@@ -868,7 +983,7 @@ step 3:  1 +  7 =  8  < 9   too small -> move lo right
 step 4:  2 +  7 =  9  == 9  FOUND!
          The pointers met the answer from both sides.</div>
 
-<h3>Variant A: opposite ends (converging)</h3>
+<h3 id="variant-a-opposite-ends-converging">Variant A: opposite ends (converging)</h3>
 <pre><code># Two Sum on a SORTED array, O(1) space
 def two_sum_sorted(nums, target):
     lo, hi = 0, len(nums) - 1
@@ -882,7 +997,7 @@ def two_sum_sorted(nums, target):
             hi -= 1          # need smaller sum
     return []</code></pre>
 
-<h3>Variant B: same direction (fast/slow, read/write)</h3>
+<h3 id="variant-b-same-direction-fastslow-readwrite">Variant B: same direction (fast/slow, read/write)</h3>
 <pre><code># Remove duplicates from sorted array in place
 def remove_dups(nums):
     if not nums:
@@ -894,7 +1009,7 @@ def remove_dups(nums):
             write += 1
     return write             # new length</code></pre>
 
-<h3>Classic two-pointer problems</h3>
+<h3 id="classic-two-pointer-problems">Classic two-pointer problems</h3>
 <ul>
   <li><strong>Valid palindrome</strong> — converge from both ends, skip non-alphanumerics.</li>
   <li><strong>3Sum</strong> — sort, fix one element, two-pointer the rest <span class="tag tag-medium">MEDIUM</span>.</li>
@@ -914,7 +1029,7 @@ def remove_dups(nums):
 
 <p>For problems about a <strong>contiguous</strong> subarray or substring that satisfies a condition. Instead of recomputing every window from scratch (O(n²)), grow the right edge and shrink the left edge, maintaining a running state — O(n).</p>
 
-<h3>The key idea: don't throw away work</h3>
+<h3 id="the-key-idea-dont-throw-away-work">The key idea: don't throw away work</h3>
 <p>A brute-force approach recomputes each window independently. Sliding window reuses the previous window's result: when the window slides right by one, you <em>add</em> the entering element and <em>subtract</em> the leaving one. The shared middle is never recomputed.</p>
 <div class="ascii">Brute force (recompute each window of size 3):
   [2, 1, 5, 1, 3, 2]
@@ -930,7 +1045,7 @@ Sliding window (reuse the overlap):
 
 Same answers, but O(n) instead of O(n*k).</div>
 
-<h3>Fixed-size window</h3>
+<h3 id="fixed-size-window">Fixed-size window</h3>
 <pre><code># Max sum of any subarray of size k
 def max_sum_k(nums, k):
     window = sum(nums[:k])
@@ -940,7 +1055,7 @@ def max_sum_k(nums, k):
         best = max(best, window)
     return best</code></pre>
 
-<h3>Variable-size window (the general template)</h3>
+<h3 id="variable-size-window-the-general-template">Variable-size window (the general template)</h3>
 <pre><code># Longest substring without repeating characters
 def longest_unique(s):
     seen = set()
@@ -955,7 +1070,7 @@ def longest_unique(s):
     return best
 # O(n) time, O(min(n, charset)) space</code></pre>
 
-<h3>The mental model</h3>
+<h3 id="the-mental-model">The mental model</h3>
 <div class="ascii">[ . . . ( window ) . . . ]
        left      right-->
 
@@ -963,7 +1078,7 @@ def longest_unique(s):
 2. While window is invalid, advance left.
 3. Record the answer when window is valid.</div>
 
-<h3>Trace: longest substring without repeats</h3>
+<h3 id="trace-longest-substring-without-repeats">Trace: longest substring without repeats</h3>
 <p>On <code>s = "abcabcbb"</code>, watch the window stretch until a duplicate forces the left edge forward:</p>
 <div class="ascii">"a b c a b c b b"
  ^                left=0 right=0  window="a"      best=1
@@ -976,7 +1091,7 @@ def longest_unique(s):
 The window only ever moves forward -> each character is
 added once and removed at most once -> O(n).</div>
 
-<h3>Classic sliding-window problems</h3>
+<h3 id="classic-sliding-window-problems">Classic sliding-window problems</h3>
 <ul>
   <li>Longest substring without repeating characters</li>
   <li>Minimum size subarray sum ≥ target</li>
@@ -991,7 +1106,7 @@ added once and removed at most once -> O(n).</div>
 
 <p>Precompute cumulative sums so any range sum is O(1). <code>prefix[i]</code> = sum of first <code>i</code> elements, so <code>sum(a..b) = prefix[b+1] - prefix[a]</code>.</p>
 
-<h3>The picture</h3>
+<h3 id="the-picture">The picture</h3>
 <p>Each prefix entry holds the total of everything before it. To get the sum of a slice, subtract the prefix at the start from the prefix just past the end — the shared front cancels out, leaving exactly the middle.</p>
 <div class="ascii">nums:          [ 2,  4,  1,  3,  5 ]
 index:           0   1   2   3   4
@@ -1017,7 +1132,7 @@ def build_prefix(nums):
 # sum of nums[a..b] inclusive:
 # prefix[b + 1] - prefix[a]</code></pre>
 
-<h3>Killer combo: prefix sum + hash map</h3>
+<h3 id="killer-combo-prefix-sum-hash-map">Killer combo: prefix sum + hash map</h3>
 <p><em>Count subarrays whose sum equals K.</em> Track running sum; if <code>running - K</code> was seen before, those positions form valid subarrays.</p>
 <pre><code>def subarray_sum_k(nums, k):
     count = 0
@@ -1041,7 +1156,7 @@ def build_prefix(nums):
 
 <p>A <strong>stack</strong> is LIFO (last in, first out). A <strong>queue</strong> is FIFO (first in, first out). In Python, use a <code>list</code> for a stack and <code>collections.deque</code> for a queue (front pops are O(1) on a deque, O(n) on a list). See the <a href="python-guide.html">Python guide</a> for the broader stdlib container toolkit.</p>
 
-<h3>Visualizing the two</h3>
+<h3 id="visualizing-the-two">Visualizing the two</h3>
 <div class="ascii">STACK (LIFO)              QUEUE (FIFO)
 push/pop same end         add back, remove front
 
@@ -1069,7 +1184,7 @@ q = deque()
 q.append(x)          # enqueue back
 q.popleft()          # dequeue front, O(1)</code></pre>
 
-<h3>Canonical stack problem: valid parentheses</h3>
+<h3 id="canonical-stack-problem-valid-parentheses">Canonical stack problem: valid parentheses</h3>
 <pre><code>def is_valid(s):
     pairs = {')': '(', ']': '[', '}': '{'}
     stack = []
@@ -1092,7 +1207,7 @@ end: stack empty -> VALID
 On "([)]" the ')' would pop '[' -> mismatch -> INVALID.
 The stack naturally enforces correct nesting order.</div>
 
-<h3>Monotonic stack: next greater element</h3>
+<h3 id="monotonic-stack-next-greater-element">Monotonic stack: next greater element</h3>
 <p>A stack that stays sorted (increasing or decreasing) solves "next greater/smaller" in O(n).</p>
 <pre><code>def next_greater(nums):
     res = [-1] * len(nums)
@@ -1103,7 +1218,7 @@ The stack naturally enforces correct nesting order.</div>
         stack.append(i)
     return res</code></pre>
 
-<h3>Other classics</h3>
+<h3 id="other-classics">Other classics</h3>
 <ul>
   <li>Min stack (track min alongside each push)</li>
   <li>Evaluate reverse Polish notation</li>
@@ -1117,7 +1232,7 @@ The stack naturally enforces correct nesting order.</div>
 
 <p>A chain of nodes, each pointing to the next. No O(1) random access, but O(1) insert/delete given a node. Interview favorites because pointer manipulation reveals careful thinking.</p>
 
-<h3>The structure</h3>
+<h3 id="the-structure">The structure</h3>
 <div class="ascii">head
   |
   v
@@ -1137,7 +1252,7 @@ No index jump -> finding the k-th node is O(k).</div>
         self.val = val
         self.next = next</code></pre>
 
-<h3>The two techniques that solve most LL problems</h3>
+<h3 id="the-two-techniques-that-solve-most-ll-problems">The two techniques that solve most LL problems</h3>
 
 <h4>1. Dummy head (simplifies edge cases)</h4>
 <pre><code># Reverse a linked list
@@ -1197,7 +1312,7 @@ def middle(head):
         fast = fast.next.next
     return slow</code></pre>
 
-<h3>Classic linked-list problems</h3>
+<h3 id="classic-linked-list-problems">Classic linked-list problems</h3>
 <ul>
   <li>Reverse a linked list (iterative + recursive)</li>
   <li>Merge two sorted lists</li>
@@ -1217,7 +1332,7 @@ def middle(head):
 
 <p>On a <strong>sorted</strong> array, halve the search space each step: O(log n). The hard part is getting the boundaries right.</p>
 
-<h3>Why halving is so powerful</h3>
+<h3 id="why-halving-is-so-powerful">Why halving is so powerful</h3>
 <p>Each comparison eliminates half the remaining candidates. Searching 1,000,000 items takes only about 20 steps, because 2²⁰ ≈ 1,000,000. Doubling the data adds just one step. That's the difference between log and linear.</p>
 <div class="ascii">search target = 7 in sorted [1, 3, 5, 7, 9, 11, 13]
                               0  1  2  3  4   5   6
@@ -1245,13 +1360,13 @@ def binary_search(nums, target):
             hi = mid - 1
     return -1</code></pre>
 
-<h3>Find the boundary (leftmost position)</h3>
+<h3 id="find-the-boundary-leftmost-position">Find the boundary (leftmost position)</h3>
 <p>More useful than exact match: "first index where condition is true." Python's <code>bisect</code> does this for you.</p>
 <pre><code>import bisect
 i = bisect.bisect_left(nums, target)   # first index >= target
 i = bisect.bisect_right(nums, target)  # first index > target</code></pre>
 
-<h3>Binary search on the answer</h3>
+<h3 id="binary-search-on-the-answer">Binary search on the answer</h3>
 <p>When the array isn't the thing you search — you search a <em>range of possible answers</em> and check feasibility. Examples: minimum eating speed (Koko bananas), split array largest sum, capacity to ship packages in D days.</p>
 <pre><code># Template
 def min_feasible(lo, hi, feasible):
@@ -1283,7 +1398,7 @@ def min_feasible(lo, hi, feasible):
   <tr><td>Counting sort</td><td>O(n+k)</td><td>O(n+k)</td><td>O(k)</td><td>Yes</td></tr>
 </table>
 
-<h3>Custom sorting in Python</h3>
+<h3 id="custom-sorting-in-python">Custom sorting in Python</h3>
 <pre><code># Sort by multiple keys: by age asc, then name asc
 people.sort(key=lambda p: (p.age, p.name))
 
@@ -1294,7 +1409,7 @@ nums.sort(reverse=True)
 from functools import cmp_to_key
 nums.sort(key=cmp_to_key(lambda a, b: a - b))</code></pre>
 
-<h3>Know merge sort's merge step</h3>
+<h3 id="know-merge-sorts-merge-step">Know merge sort's merge step</h3>
 <p>Merge sort splits the array in half repeatedly until each piece is a single element (trivially sorted), then merges pairs back together in order. The split tree has log n levels, and each level does O(n) merging work — hence O(n log n).</p>
 <div class="ascii">                [5, 2, 8, 1]
                  /         \         split
@@ -1327,7 +1442,7 @@ and there are log n levels -> O(n log n).</div>
 
 <p><strong>Recursion</strong>: a function calls itself on a smaller input until a base case. <strong>Backtracking</strong>: build a candidate solution incrementally, abandon ("backtrack") as soon as it can't lead to a valid answer.</p>
 
-<h3>Recursion anatomy</h3>
+<h3 id="recursion-anatomy">Recursion anatomy</h3>
 <ul>
   <li><strong>Base case</strong> — when to stop (prevents infinite recursion).</li>
   <li><strong>Recursive case</strong> — reduce the problem and call yourself.</li>
@@ -1338,7 +1453,7 @@ and there are log n levels -> O(n log n).</div>
         return 1
     return n * factorial(n - 1)   # recursive case</code></pre>
 
-<h3>The backtracking template</h3>
+<h3 id="the-backtracking-template">The backtracking template</h3>
 <pre><code>def backtrack(path, choices):
     if is_solution(path):
         result.append(path[:])     # copy!
@@ -1350,7 +1465,7 @@ and there are log n levels -> O(n log n).</div>
         backtrack(path, next_choices)
         path.pop()                 # un-choose (backtrack)</code></pre>
 
-<h3>Worked example: subsets</h3>
+<h3 id="worked-example-subsets">Worked example: subsets</h3>
 <pre><code>def subsets(nums):
     res = []
     def bt(start, path):
@@ -1380,7 +1495,7 @@ Every node is recorded as a subset. We descend (choose),
 collect, then pop back up (un-choose) to try siblings.
 8 = 2^3 subsets total.</div>
 
-<h3>Classic backtracking problems</h3>
+<h3 id="classic-backtracking-problems">Classic backtracking problems</h3>
 <ul>
   <li>Subsets, permutations, combinations</li>
   <li>Combination sum</li>
@@ -1407,7 +1522,7 @@ collect, then pop back up (un-choose) to try siblings.
         self.left = left
         self.right = right</code></pre>
 
-<h3>Anatomy of a binary tree</h3>
+<h3 id="anatomy-of-a-binary-tree">Anatomy of a binary tree</h3>
 <div class="ascii">                root
                  (1)         depth 0
                /     \
@@ -1425,7 +1540,7 @@ collect, then pop back up (un-choose) to try siblings.
   structure. It does NOT satisfy the BST property — see
   the BST diagram further down for that.</div>
 
-<h3>The four traversals</h3>
+<h3 id="the-four-traversals">The four traversals</h3>
 <table>
   <tr><th scope="col">Traversal</th><th scope="col">Order</th><th scope="col">Use</th></tr>
   <tr><td>Pre-order</td><td>Node, Left, Right</td><td>Copy/serialize tree</td></tr>
@@ -1471,7 +1586,7 @@ def level_order(root):
         res.append(level)
     return res</code></pre>
 
-<h3>Binary Search Tree property</h3>
+<h3 id="binary-search-tree-property">Binary Search Tree property</h3>
 <p>For every node: all values in the left subtree are smaller, all in the right are larger. This makes search/insert/delete O(h) where h is height (O(log n) if balanced). An <strong>in-order traversal of a BST yields sorted values</strong> — remember this.</p>
 <div class="ascii">              (8)
             /     \
@@ -1487,7 +1602,7 @@ Every comparison discards an entire subtree, just like
 binary search on an array -> O(height).
 Warning: an unbalanced BST degrades to a linked list, O(n).</div>
 
-<h3>Classic tree problems</h3>
+<h3 id="classic-tree-problems">Classic tree problems</h3>
 <ul>
   <li>Max depth / height, balanced check</li>
   <li>Invert / mirror a tree</li>
@@ -1509,7 +1624,7 @@ Warning: an unbalanced BST degrades to a linked list, O(n).</div>
 
 <p>A graph is nodes + edges. Represent it as an <strong>adjacency list</strong> (dict of node → neighbors). Trees and grids are special graphs. The same structures power real systems — social graphs, dependency resolution, rate-limit relationship graphs — covered in the <a href="system-design-guide.html">system design guide</a>.</p>
 
-<h3>Representing a graph</h3>
+<h3 id="representing-a-graph">Representing a graph</h3>
 <div class="ascii">The graph:              Adjacency list:
                           0: [1, 2]
     (0)---(1)             1: [0, 3]
@@ -1526,7 +1641,7 @@ for u, v in edges:
     graph[u].append(v)
     graph[v].append(u)        # omit for directed</code></pre>
 
-<h3>DFS vs BFS — two ways to explore</h3>
+<h3 id="dfs-vs-bfs-two-ways-to-explore">DFS vs BFS — two ways to explore</h3>
 <p>DFS plunges down one path as far as possible before backtracking (uses a stack / recursion). BFS explores all immediate neighbors first, then their neighbors, rippling outward in layers (uses a queue). BFS finds the shortest path in an unweighted graph because it reaches nodes in order of distance.</p>
 <div class="ascii">          (A)
          /   \
@@ -1542,7 +1657,7 @@ BFS from A (go wide first):  A B C D E F
    layer 1: B C        (distance 1 from A)
    layer 2: D E F      (distance 2 from A)</div>
 
-<h3>DFS — go deep (recursion or stack)</h3>
+<h3 id="dfs-go-deep-recursion-or-stack">DFS — go deep (recursion or stack)</h3>
 <pre><code>def dfs(node, visited):
     if node in visited:
         return
@@ -1550,7 +1665,7 @@ BFS from A (go wide first):  A B C D E F
     for nbr in graph[node]:
         dfs(nbr, visited)</code></pre>
 
-<h3>BFS — go wide (queue, finds shortest path in unweighted graphs)</h3>
+<h3 id="bfs-go-wide-queue-finds-shortest-path-in-unweighted-graphs">BFS — go wide (queue, finds shortest path in unweighted graphs)</h3>
 <pre><code>def bfs(start):
     visited = {start}
     q = deque([start])
@@ -1561,7 +1676,7 @@ BFS from A (go wide first):  A B C D E F
                 visited.add(nbr)
                 q.append(nbr)</code></pre>
 
-<h3>Grid traversal (very common)</h3>
+<h3 id="grid-traversal-very-common">Grid traversal (very common)</h3>
 <pre><code># Number of islands: DFS flood fill
 def num_islands(grid):
     rows, cols = len(grid), len(grid[0])
@@ -1590,7 +1705,7 @@ def num_islands(grid):
         grid[r][c] = '0'
         stack.extend([(r+1,c),(r-1,c),(r,c+1),(r,c-1)])</code></pre>
 
-<h3>Must-know graph topics</h3>
+<h3 id="must-know-graph-topics">Must-know graph topics</h3>
 <ul>
   <li>Connected components count (DFS/BFS/union-find)</li>
   <li>Cycle detection (directed vs undirected)</li>
@@ -1604,7 +1719,7 @@ def num_islands(grid):
   Forgetting the visited set causes infinite loops on cyclic graphs. For grids, you can mark cells in place to save space.
 </div>
 
-<h3>Union-Find (Disjoint Set Union)</h3>
+<h3 id="union-find-disjoint-set-union">Union-Find (Disjoint Set Union)</h3>
 <p>Union-Find tracks which elements belong to the same group. Two operations: <code>find(x)</code> returns the representative ("root") of x's group, and <code>union(a, b)</code> merges the two groups. With <strong>path compression</strong> (during <code>find</code>, point every node directly at the root) and <strong>union by rank/size</strong> (always hang the smaller tree under the larger), both operations are effectively O(α(n)) — inverse Ackermann, basically constant.</p>
 <p>Use it for: counting connected components on a stream of edges, Kruskal's MST, redundant-connection detection, "accounts merge", and "number of provinces". When edges arrive one at a time and you need fast "are these in the same group?", DSU usually beats BFS/DFS.</p>
 <pre><code>class DSU:
@@ -1631,7 +1746,7 @@ def num_islands(grid):
         return True
 # find/union: ~O(α(n)) ≈ O(1) amortized.</code></pre>
 
-<h3>Topological sort — Kahn's algorithm (BFS)</h3>
+<h3 id="topological-sort-kahns-algorithm-bfs">Topological sort — Kahn's algorithm (BFS)</h3>
 <p>For a DAG, return nodes in an order where every edge points forward. Kahn's idea: repeatedly pick a node with in-degree 0 (no remaining prerequisites), output it, and decrement its neighbors' in-degrees. If you can't visit all nodes, the graph has a cycle — which is exactly how "Course Schedule" detects impossibility.</p>
 <pre><code>from collections import deque, defaultdict
 
@@ -1661,7 +1776,7 @@ def topo_sort(n, edges):
 
 <p>A heap gives O(1) access to the min (or max) and O(log n) insert/remove. Python's <code>heapq</code> is a <strong>min-heap</strong>. Use it for "top K", "Kth largest", "merge K lists", and streaming-median problems. Two heaps powering a streaming median is also how you'd build a real-time leaderboard or percentile tracker — see the <a href="system-design-guide.html">system design guide</a> for the production version. (For the API itself, see <code>heapq</code> in the <a href="python-guide.html">Python guide</a>'s stdlib section.)</p>
 
-<h3>What a heap actually is</h3>
+<h3 id="what-a-heap-actually-is">What a heap actually is</h3>
 <p>A binary heap is a complete binary tree where every parent is ≤ its children (min-heap). The smallest element is always at the root, so peeking the min is O(1). It's stored compactly in a plain array — no node objects — using index arithmetic to find parents and children.</p>
 <div class="ascii">min-heap tree:            stored as array:
         (1)               index:  0  1  2  3  4  5
@@ -1687,7 +1802,7 @@ heapq.heapify(nums)              # O(n) build in place
 heapq.heappush(h, -x)
 largest = -heapq.heappop(h)</code></pre>
 
-<h3>Kth largest element</h3>
+<h3 id="kth-largest-element">Kth largest element</h3>
 <pre><code>def kth_largest(nums, k):
     # assumes 1 &lt;= k &lt;= len(nums)
     h = nums[:k]
@@ -1698,7 +1813,7 @@ largest = -heapq.heappop(h)</code></pre>
     return h[0]
 # O(n log k) time, O(k) space</code></pre>
 
-<h3>Quickselect — average O(n) alternative</h3>
+<h3 id="quickselect-average-on-alternative">Quickselect — average O(n) alternative</h3>
 <p>When you only need the Kth value (not the top K sorted), quickselect beats the heap on average. It's quicksort's partition step, but you only recurse into the side that contains the Kth index, giving expected O(n) — worst case O(n²) with bad pivots. Python's <code>random.shuffle</code> first, or median-of-three pivot, keeps the worst case unlikely.</p>
 <pre><code>import random
 def kth_largest_qs(nums, k):
@@ -1726,7 +1841,7 @@ def partition(a, lo, hi):
     return i
 # Average O(n), worst O(n^2), in-place O(1) extra space.</code></pre>
 
-<h3>Top K frequent elements</h3>
+<h3 id="top-k-frequent-elements">Top K frequent elements</h3>
 <pre><code>def top_k_frequent(nums, k):
     count = Counter(nums)
     return heapq.nlargest(k, count.keys(), key=count.get)</code></pre>
@@ -1742,7 +1857,7 @@ def partition(a, lo, hi):
 
 <p>DP solves problems by breaking them into overlapping subproblems and storing each subproblem's answer (so you never recompute). Two signals: (1) "count the number of ways" or "find min/max", and (2) the same subproblem recurs.</p>
 
-<h3>Why DP works: kill the repeated work</h3>
+<h3 id="why-dp-works-kill-the-repeated-work">Why DP works: kill the repeated work</h3>
 <p>Naive recursion for Fibonacci recomputes the same values exponentially many times. Memoizing each result collapses the call tree into a linear chain of unique subproblems.</p>
 <div class="ascii">Naive fib(5) -- same nodes computed over and over:
                 fib(5)
@@ -1760,13 +1875,13 @@ With memo -- each fib(k) computed once, then cached:
      0      1     1      2      3      5
    -> O(n) calls.  Store once, reuse forever.</div>
 
-<h3>Two styles</h3>
+<h3 id="two-styles">Two styles</h3>
 <ul>
   <li><strong>Top-down (memoization)</strong> — recursion + cache. Natural to write.</li>
   <li><strong>Bottom-up (tabulation)</strong> — fill a table iteratively. Often faster, no recursion limit.</li>
 </ul>
 
-<h3>Fibonacci — the "hello world" of DP</h3>
+<h3 id="fibonacci-the-hello-world-of-dp">Fibonacci — the "hello world" of DP</h3>
 <pre><code># Top-down with memo
 from functools import lru_cache
 @lru_cache(None)
@@ -1781,7 +1896,7 @@ def fib(n):
         a, b = b, a + b
     return a</code></pre>
 
-<h3>The DP recipe</h3>
+<h3 id="the-dp-recipe">The DP recipe</h3>
 <ol>
   <li><strong>Define the state</strong> — what does <code>dp[i]</code> mean? (e.g. "max sum ending at i").</li>
   <li><strong>Recurrence</strong> — how does <code>dp[i]</code> relate to earlier states?</li>
@@ -1790,7 +1905,7 @@ def fib(n):
   <li><strong>Answer</strong> — which cell holds the result?</li>
 </ol>
 
-<h3>Worked example: climbing stairs (= Fibonacci)</h3>
+<h3 id="worked-example-climbing-stairs-fibonacci">Worked example: climbing stairs (= Fibonacci)</h3>
 <pre><code># Ways to reach step n taking 1 or 2 steps
 def climb(n):
     if n &lt;= 2: return n
@@ -1799,7 +1914,7 @@ def climb(n):
         a, b = b, a + b
     return b</code></pre>
 
-<h3>Starter DP problems (1D → 2D)</h3>
+<h3 id="starter-dp-problems-1d-2d">Starter DP problems (1D → 2D)</h3>
 <ul>
   <li>Climbing stairs, house robber, min cost climbing stairs</li>
   <li>Coin change (min coins), max subarray (Kadane's)</li>
@@ -1809,7 +1924,7 @@ def climb(n):
   <li>Edit distance (2D, harder)</li>
 </ul>
 
-<h3>Kadane's algorithm (max subarray — know this cold)</h3>
+<h3 id="kadanes-algorithm-max-subarray-know-this-cold">Kadane's algorithm (max subarray — know this cold)</h3>
 <pre><code>def max_subarray(nums):
     best = cur = nums[0]
     for x in nums[1:]:
@@ -1844,7 +1959,7 @@ Answer: 6. One pass, O(1) memory.</div>
 
 <p>A greedy algorithm makes the locally best choice at each step. It's fast but only correct when the problem has the "greedy choice property." Interval problems are the most common greedy category.</p>
 
-<h3>Interval template: sort first</h3>
+<h3 id="interval-template-sort-first">Interval template: sort first</h3>
 <p>Sorting by start time means any overlap must be with the interval you just kept — you never have to look further back. Walk left to right; if the current interval starts before the last kept one ends, they overlap, so extend. Otherwise it's a new separate interval.</p>
 <div class="ascii">intervals: [1,3] [2,6] [8,10] [9,12]   (already sorted by start)
 
@@ -1871,7 +1986,7 @@ def merge(intervals):
             res.append([start, end])
     return res</code></pre>
 
-<h3>Non-overlapping intervals (remove fewest)</h3>
+<h3 id="non-overlapping-intervals-remove-fewest">Non-overlapping intervals (remove fewest)</h3>
 <pre><code># Sort by END, greedily keep earliest-finishing
 def erase_overlap(intervals):
     intervals.sort(key=lambda x: x[1])
@@ -1883,7 +1998,7 @@ def erase_overlap(intervals):
             end = e
     return len(intervals) - keep</code></pre>
 
-<h3>Common greedy/interval problems</h3>
+<h3 id="common-greedyinterval-problems">Common greedy/interval problems</h3>
 <ul>
   <li>Merge intervals, insert interval</li>
   <li>Non-overlapping intervals, meeting rooms (I &amp; II)</li>
@@ -1913,7 +2028,7 @@ def erase_overlap(intervals):
   <tr><td><code>a &gt;&gt; n</code></td><td>shift right = divide by 2ⁿ</td></tr>
 </table>
 
-<h3>Handy tricks</h3>
+<h3 id="handy-tricks">Handy tricks</h3>
 <pre><code>x &amp; 1            # is x odd?
 x &amp; (x - 1)      # clears lowest set bit (count bits)
 x ^ x == 0       # any value XOR itself is 0
@@ -1926,7 +2041,7 @@ def single(nums):
         res ^= x        # pairs cancel out
     return res</code></pre>
 
-<h3>Math you should remember</h3>
+<h3 id="math-you-should-remember">Math you should remember</h3>
 <ul>
   <li>GCD via Euclid: <code>gcd(a,b) = gcd(b, a % b)</code>; <code>math.gcd</code> exists.</li>
   <li>Sieve of Eratosthenes for primes up to n: O(n log log n).</li>
@@ -1938,7 +2053,7 @@ def single(nums):
 
 <h2 id="part-18">Part 18 — Pattern cheat sheet &amp; problem list</h2>
 
-<h3>One-page pattern recognition</h3>
+<h3 id="one-page-pattern-recognition">One-page pattern recognition</h3>
 <table>
   <tr><th scope="col">Pattern</th><th scope="col">Trigger phrase</th><th scope="col">Typical complexity</th></tr>
   <tr><td>Hash map</td><td>seen before, count, pair sum</td><td>O(n)</td></tr>
@@ -1955,7 +2070,7 @@ def single(nums):
   <tr><td>Greedy</td><td>intervals, local optimal</td><td>O(n log n)</td></tr>
 </table>
 
-<h3>A 30-problem starter set (do these in order)</h3>
+<h3 id="a-30-problem-starter-set-do-these-in-order">A 30-problem starter set (do these in order)</h3>
 <ol>
   <li>Two Sum <span class="tag tag-easy">EASY</span></li>
   <li>Valid Parentheses <span class="tag tag-easy">EASY</span></li>
@@ -2098,6 +2213,151 @@ def single(nums):
 </script>
 
 <button class="scroll-top" id="scroll-top" aria-label="Scroll to top">↑</button>
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/styles/default.min.css" disabled>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/highlight.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  if (typeof hljs !== 'undefined') {
+    document.querySelectorAll('pre code').forEach(b => {
+      try { hljs.highlightElement(b); } catch (e) {}
+    });
+  }
+  document.querySelectorAll('pre').forEach(pre => {
+    if (pre.classList.contains('ascii')) return;
+    const btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.type = 'button';
+    btn.textContent = 'Copy';
+    btn.setAttribute('aria-label', 'Copy code to clipboard');
+    btn.addEventListener('click', async () => {
+      const code = pre.querySelector('code')?.innerText ?? pre.innerText;
+      try {
+        await navigator.clipboard.writeText(code);
+        btn.textContent = 'Copied'; btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1400);
+      } catch (e) { btn.textContent = 'Err'; }
+    });
+    pre.appendChild(btn);
+  });
+});
+</script>
+
+
+<div class="search-overlay" id="search-overlay" role="dialog" aria-modal="true" aria-label="Search">
+  <div class="search-modal">
+    <input type="text" class="search-input" id="search-input" placeholder="Search all guides…  (Esc to close, ↑↓ to navigate)" autocomplete="off" spellcheck="false">
+    <div class="search-results" id="search-results"></div>
+  </div>
+</div>
+
+<script>
+(function() {
+  const overlay = document.getElementById('search-overlay');
+  const input = document.getElementById('search-input');
+  const results = document.getElementById('search-results');
+  const trigger = document.getElementById('search-trigger');
+  if (!overlay || !input || !results) return;
+  let idx = null;
+  let active = 0;
+
+  async function loadIndex() {
+    if (idx) return idx;
+    try {
+      const r = await fetch('search-index.json');
+      idx = await r.json();
+    } catch (e) { idx = []; }
+    return idx;
+  }
+  function escapeHTML(s) { return s.replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c])); }
+  function escapeRE(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+  function highlight(s, terms) {
+    let h = escapeHTML(s);
+    for (const t of terms) {
+      if (!t) continue;
+      h = h.replace(new RegExp('(' + escapeRE(t) + ')', 'gi'), '<mark>$1</mark>');
+    }
+    return h;
+  }
+  function score(sec, terms) {
+    let s = 0;
+    const title = sec.t.toLowerCase();
+    const text = sec.x.toLowerCase();
+    for (const t of terms) {
+      if (!t) continue;
+      if (title === t) s += 50;
+      if (title.includes(t)) s += 10;
+      if (title.startsWith(t)) s += 5;
+      if (text.includes(t)) s += 1;
+    }
+    return s;
+  }
+  async function render(q) {
+    await loadIndex();
+    const terms = q.toLowerCase().split(/\s+/).filter(Boolean);
+    if (!terms.length) {
+      results.innerHTML = '<div class="search-empty">Type to search across all guides.</div>';
+      return;
+    }
+    let hits = [];
+    for (const g of idx) {
+      for (const sec of g.s) {
+        const sc = score(sec, terms);
+        if (sc > 0) hits.push({g, sec, sc});
+      }
+    }
+    hits.sort((a, b) => b.sc - a.sc);
+    hits = hits.slice(0, 20);
+    if (!hits.length) {
+      results.innerHTML = '<div class="search-empty">No matches.</div>';
+      return;
+    }
+    results.innerHTML = hits.map((h, i) => '<a class="search-result' + (i === 0 ? ' active' : '') + '" href="' + h.g.f + '#' + h.sec.i + '" data-i="' + i + '">' +
+      '<div class="search-result-title">' + highlight(h.sec.t, terms) + '</div>' +
+      '<div class="search-result-meta">' + escapeHTML(h.g.g) + ' · ' + h.sec.l + '</div>' +
+      '<div class="search-result-text">' + highlight(h.sec.x.substring(0, 200), terms) + '</div>' +
+    '</a>').join('');
+    active = 0;
+  }
+  function open() {
+    overlay.classList.add('open');
+    input.focus();
+    render(input.value);
+  }
+  function close() { overlay.classList.remove('open'); }
+  function moveActive(d) {
+    const items = results.querySelectorAll('.search-result');
+    if (!items.length) return;
+    items[active]?.classList.remove('active');
+    active = (active + d + items.length) % items.length;
+    items[active].classList.add('active');
+    items[active].scrollIntoView({block: 'nearest'});
+  }
+  if (trigger) trigger.addEventListener('click', open);
+  overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+  input.addEventListener('input', e => render(e.target.value));
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Escape') close();
+    else if (e.key === 'ArrowDown') { e.preventDefault(); moveActive(1); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); moveActive(-1); }
+    else if (e.key === 'Enter') {
+      const items = results.querySelectorAll('.search-result');
+      if (items[active]) items[active].click();
+    }
+  });
+  document.addEventListener('keydown', e => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      e.preventDefault();
+      overlay.classList.contains('open') ? close() : open();
+    } else if (e.key === '/' && !overlay.classList.contains('open') &&
+               !['INPUT','TEXTAREA'].includes(e.target.tagName) &&
+               !e.target.isContentEditable) {
+      e.preventDefault(); open();
+    }
+  });
+})();
+</script>
 
 </body>
 </html>

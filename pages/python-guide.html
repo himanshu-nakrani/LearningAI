@@ -461,6 +461,120 @@
     .sidebar-toc { font-size: 0.74em; padding: 14px 14px; }
   }
 
+
+  /* code-block enhancements: hljs theme using CSS vars + copy button */
+  pre code.hljs { display: block; padding: 0; background: transparent; color: var(--code-fg); }
+  .hljs-keyword, .hljs-built_in, .hljs-type, .hljs-class .hljs-title { color: var(--accent); font-weight: 600; }
+  .hljs-string, .hljs-attr { color: #4a7ba6; }
+  .hljs-number, .hljs-literal, .hljs-symbol { color: #b8453a; }
+  .hljs-comment, .hljs-meta, .hljs-doctag { color: var(--muted); font-style: italic; }
+  .hljs-function .hljs-title, .hljs-title.function_ { color: var(--accent); }
+  .hljs-variable, .hljs-name { color: var(--code-fg); }
+  html.dark .hljs-string, html.dark .hljs-attr { color: #8db4d9; }
+  html.dark .hljs-number, html.dark .hljs-literal { color: #d18883; }
+  pre { position: relative; }
+  .copy-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+    font-size: 0.7em;
+    padding: 3px 9px;
+    border-radius: 4px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    letter-spacing: 0.02em;
+  }
+  pre:hover .copy-btn, .copy-btn:focus { opacity: 1; }
+  .copy-btn:hover { color: var(--accent); border-color: var(--accent); }
+  .copy-btn.copied { color: var(--tip-bd); border-color: var(--tip-bd); }
+
+  /* search overlay */
+  .search-trigger {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 0.78em;
+    padding: 2px 9px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-left: auto;
+    margin-right: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    flex-shrink: 0;
+    transition: color 0.15s ease, border-color 0.15s ease;
+  }
+  .search-trigger:hover { color: var(--accent); border-color: var(--accent); }
+  .search-trigger kbd {
+    font-family: -apple-system, sans-serif;
+    background: var(--code-bg);
+    padding: 0 5px;
+    border-radius: 3px;
+    font-size: 0.9em;
+    color: var(--muted);
+    border: none;
+  }
+  .booknav .theme-toggle-inline { margin-left: 0; }
+  .search-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 2000;
+    display: none;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 12vh;
+    backdrop-filter: blur(2px);
+  }
+  .search-overlay.open { display: flex; }
+  .search-modal {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    width: min(640px, 92%);
+    max-height: 70vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+  .search-input {
+    border: none;
+    outline: none;
+    padding: 16px 20px;
+    font-size: 1.05em;
+    background: transparent;
+    color: var(--fg);
+    border-bottom: 1px solid var(--border);
+    font-family: inherit;
+  }
+  .search-input::placeholder { color: var(--muted); }
+  .search-results { overflow-y: auto; padding: 6px 0; }
+  .search-result {
+    display: block;
+    padding: 10px 20px;
+    color: var(--fg);
+    text-decoration: none;
+    border-left: 3px solid transparent;
+    font-size: 0.92em;
+  }
+  .search-result:hover, .search-result.active {
+    background: var(--accent-soft);
+    border-left-color: var(--accent);
+  }
+  .search-result-title { font-weight: 600; color: var(--fg); }
+  .search-result-meta { font-size: 0.78em; color: var(--muted); margin-top: 2px; letter-spacing: 0.02em; }
+  .search-result-text { font-size: 0.82em; color: var(--muted); margin-top: 4px; line-height: 1.4; max-height: 2.9em; overflow: hidden; }
+  .search-empty { padding: 24px 20px; color: var(--muted); text-align: center; font-size: 0.9em; }
+  .search-result mark { background: var(--accent-soft); color: var(--accent); padding: 0 2px; border-radius: 2px; font-weight: 600; }
 </style>
 </head>
 <body>
@@ -483,6 +597,7 @@
   <a href="dsa-guide.html">DSA</a>
   <a href="system-design-guide.html">System Design</a>
   <a href="interview-prep.html">Interview Prep</a>
+  <button class="search-trigger" id="search-trigger" type="button" aria-label="Search guides">Search <kbd>⌘K</kbd></button>
   <button class="theme-toggle-inline" id="theme-toggle" aria-label="Toggle dark mode">🌙</button>
 </nav>
 
@@ -527,13 +642,13 @@
 
 <p>Python is an interpreted, dynamically typed, garbage-collected language. You write <code>.py</code> files and run them with the interpreter. Everything in Python is an <strong>object</strong> — numbers, functions, classes, even modules.</p>
 
-<h3>Running Python</h3>
+<h3 id="running-python">Running Python</h3>
 <pre><code>python script.py          # run a file
 python -m module_name     # run a module
 python                    # interactive REPL
 python -c "print(2+2)"    # one-liner</code></pre>
 
-<h3>Virtual environments &amp; project setup (use <code>uv</code>)</h3>
+<h3 id="virtual-environments-amp-project-setup-use-uv">Virtual environments &amp; project setup (use <code>uv</code>)</h3>
 <p>In 2026 the dominant Python tooling is <a href="https://github.com/astral-sh/uv"><code>uv</code></a> — a fast, all-in-one replacement for <code>venv</code> + <code>pip</code> + <code>pip-tools</code> + (most of) <code>poetry</code>. It creates environments, resolves and installs dependencies, and writes a reproducible <code>uv.lock</code> file alongside your <code>pyproject.toml</code>.</p>
 <pre><code>uv venv                       # create .venv in the project
 uv add requests               # add a dep to pyproject.toml + lockfile
@@ -556,7 +671,7 @@ deactivate                    # leave the venv</code></pre>
   They isolate each project's dependencies so version conflicts can't happen across projects. Never <code>pip install</code> into the system Python. <code>uv</code> handles env + deps + lockfile in one tool; <code>poetry</code> is a viable alternative with a similar feature set.
 </div>
 
-<h3>The mental model: names point to objects</h3>
+<h3 id="the-mental-model-names-point-to-objects">The mental model: names point to objects</h3>
 <p>A variable in Python is a <em>name</em> bound to an object, not a box holding a value. Assignment binds a name; it never copies. This explains most "surprising" behavior later (mutable defaults, aliasing).</p>
 <div class="ascii">x = [1, 2, 3]
 y = x            # y points to the SAME list
@@ -567,7 +682,7 @@ print(x)         # [1, 2, 3, 4]  -- both names see it
        ├──> [1, 2, 3, 4]
    y ──┘</div>
 
-<h3>Mutable vs immutable — the dividing line</h3>
+<h3 id="mutable-vs-immutable-the-dividing-line">Mutable vs immutable — the dividing line</h3>
 <p>This single distinction underlies a huge share of Python bugs. <strong>Immutable</strong> objects (int, float, str, tuple, frozenset) can never change after creation — "modifying" one actually makes a new object. <strong>Mutable</strong> objects (list, dict, set, most class instances) can change in place, and every name pointing at them sees the change.</p>
 <div class="ascii">IMMUTABLE (int):              MUTABLE (list):
   a = 5                         a = [1, 2]
@@ -594,7 +709,7 @@ print(x)         # [1, 2, 3, 4]  -- both names see it
 
 <h2 id="part-1">Part 1 — Variables, types &amp; operators <span class="tag tag-basic">BASIC</span></h2>
 
-<h3>Built-in scalar types</h3>
+<h3 id="built-in-scalar-types">Built-in scalar types</h3>
 <table>
   <tr><th scope="col">Type</th><th scope="col">Example</th><th scope="col">Notes</th></tr>
   <tr><td><code>int</code></td><td><code>42</code></td><td>Unbounded precision</td></tr>
@@ -605,7 +720,7 @@ print(x)         # [1, 2, 3, 4]  -- both names see it
   <tr><td><code>complex</code></td><td><code>2 + 3j</code></td><td>Rarely used</td></tr>
 </table>
 
-<h3>Operators</h3>
+<h3 id="operators">Operators</h3>
 <pre><code>7 / 2      # 3.5   true division (always float)
 7 // 2     # 3     floor division
 7 % 2      # 1     modulo
@@ -619,7 +734,7 @@ if 0 &lt; x &lt; 100:
 if (n := len(data)) &gt; 10:
     print(f"{n} items")</code></pre>
 
-<h3>Truthiness</h3>
+<h3 id="truthiness">Truthiness</h3>
 <p>Empty containers, <code>0</code>, <code>""</code>, and <code>None</code> are <em>falsy</em>; almost everything else is <em>truthy</em>. Use this directly: write <code>if items:</code>, not <code>if len(items) &gt; 0:</code>.</p>
 
 <div class="callout callout-warn">
@@ -627,7 +742,7 @@ if (n := len(data)) &gt; 10:
   <code>0.1 + 0.2 == 0.3</code> is <code>False</code>. Floats are binary approximations. For money, use <code>decimal.Decimal</code>; for comparisons, use <code>math.isclose(a, b)</code>.
 </div>
 
-<h3>None comparisons and identity</h3>
+<h3 id="none-comparisons-and-identity">None comparisons and identity</h3>
 <pre><code>x is None        # correct: identity check
 x == None        # works but discouraged
 a is b           # same object in memory?
@@ -639,14 +754,14 @@ a == b           # same value?</code></pre>
 
 <p>Strings are immutable sequences of Unicode characters. Any operation that "changes" a string returns a new one.</p>
 
-<h3>f-strings (the modern way to format)</h3>
+<h3 id="f-strings-the-modern-way-to-format">f-strings (the modern way to format)</h3>
 <pre><code>name, score = "Ada", 97.5
 f"{name} scored {score:.1f}%"      # 'Ada scored 97.5%'
 f"{score:>10}"                     # right-align in 10 cols
 f"{1000000:,}"                     # '1,000,000'
 f"{x=}"                            # 'x=42'  debug form (3.8+)</code></pre>
 
-<h3>Essential string methods</h3>
+<h3 id="essential-string-methods">Essential string methods</h3>
 <pre><code>s.strip()             # trim whitespace (lstrip/rstrip variants)
 s.lower() / s.upper()
 s.split(",")          # -> list of parts
@@ -658,7 +773,7 @@ s.find("x")           # index or -1
 s.zfill(5)            # pad with zeros
 s.encode("utf-8")     # str -> bytes</code></pre>
 
-<h3>Slicing (works on any sequence)</h3>
+<h3 id="slicing-works-on-any-sequence">Slicing (works on any sequence)</h3>
 <pre><code>s = "abcdef"
 s[1:4]      # 'bcd'   [start:stop)
 s[:3]       # 'abc'
@@ -675,7 +790,7 @@ s[::2]      # 'ace'    every other char</code></pre>
 
 <h2 id="part-3">Part 3 — Collections: list, tuple, set, dict <span class="tag tag-basic">BASIC</span></h2>
 
-<h3>The four core containers</h3>
+<h3 id="the-four-core-containers">The four core containers</h3>
 <table>
   <tr><th scope="col">Type</th><th scope="col">Ordered</th><th scope="col">Mutable</th><th scope="col">Use for</th></tr>
   <tr><td><code>list</code></td><td>Yes</td><td>Yes</td><td>Ordered sequence, may change</td></tr>
@@ -685,7 +800,7 @@ s[::2]      # 'ace'    every other char</code></pre>
 </table>
 <p>*Dicts preserve insertion order since Python 3.7.</p>
 
-<h3>Which container should I use?</h3>
+<h3 id="which-container-should-i-use">Which container should I use?</h3>
 <div class="ascii">Do you map keys to values?
    |
    +-- YES ----------------------------> dict   {k: v}
@@ -704,7 +819,7 @@ s[::2]      # 'ace'    every other char</code></pre>
 
 <p>The mutability and ordering columns drive the choice. Need O(1) "have I seen this?" → set. Need a key the dict can hash → tuple, never list. Need order plus the ability to grow → list.</p>
 
-<h3>Lists</h3>
+<h3 id="lists">Lists</h3>
 <pre><code>a = [1, 2, 3]
 a.append(4)            # add to end
 a.extend([5, 6])       # add multiple
@@ -714,13 +829,13 @@ a.remove(2)            # remove first matching value
 a.sort() / sorted(a)   # in place / new list
 a[1:3] = [9]           # slice assignment</code></pre>
 
-<h3>Tuples (immutable, often used for grouping)</h3>
+<h3 id="tuples-immutable-often-used-for-grouping">Tuples (immutable, often used for grouping)</h3>
 <pre><code>point = (3, 4)
 x, y = point           # unpacking
 a, *rest = [1, 2, 3, 4]   # a=1, rest=[2,3,4]
 single = (42,)         # one-element needs trailing comma</code></pre>
 
-<h3>Sets</h3>
+<h3 id="sets">Sets</h3>
 <pre><code>s = {1, 2, 3}
 s.add(4)
 s & t                  # intersection
@@ -729,7 +844,7 @@ s - t                  # difference
 s ^ t                  # symmetric difference
 3 in s                 # O(1) membership</code></pre>
 
-<h3>Dicts</h3>
+<h3 id="dicts">Dicts</h3>
 <pre><code>d = {"a": 1, "b": 2}
 d["c"] = 3
 d.get("z", 0)          # default if missing (no KeyError)
@@ -764,7 +879,7 @@ shallow = original[:]        deep = copy.deepcopy(original)
 
 <h2 id="part-4">Part 4 — Control flow <span class="tag tag-basic">BASIC</span></h2>
 
-<h3>Conditionals</h3>
+<h3 id="conditionals">Conditionals</h3>
 <pre><code>if score &gt;= 90:
     grade = "A"
 elif score &gt;= 80:
@@ -775,7 +890,7 @@ else:
 # Ternary expression
 status = "pass" if score &gt;= 50 else "fail"</code></pre>
 
-<h3>Loops</h3>
+<h3 id="loops">Loops</h3>
 <pre><code>for i in range(5):         # 0..4
     ...
 for i in range(2, 10, 2):  # start, stop, step
@@ -790,7 +905,7 @@ break        # exit loop
 continue     # skip to next iteration
 else:        # runs if loop finished without break</code></pre>
 
-<h3>Structural pattern matching (3.10+)</h3>
+<h3 id="structural-pattern-matching-310">Structural pattern matching (3.10+)</h3>
 <pre><code>match command.split():
     case ["go", direction]:
         move(direction)
@@ -830,7 +945,7 @@ match value:
 greet("Sam")                  # positional
 greet("Sam", greeting="Hi")   # keyword</code></pre>
 
-<h3>Flexible arguments</h3>
+<h3 id="flexible-arguments">Flexible arguments</h3>
 <pre><code>def f(*args, **kwargs):
     # args   -> tuple of positional extras
     # kwargs -> dict of keyword extras
@@ -840,7 +955,7 @@ def f(a, b, /, c, *, d):
     # a, b: positional-only
     # d:    keyword-only</code></pre>
 
-<h3>Return values &amp; multiple returns</h3>
+<h3 id="return-values-amp-multiple-returns">Return values &amp; multiple returns</h3>
 <pre><code>def min_max(nums):
     return min(nums), max(nums)   # returns a tuple
 
@@ -854,12 +969,12 @@ lo, hi = min_max([3, 1, 9])</code></pre>
         items = []</code></pre>
 </div>
 
-<h3>Lambdas (small anonymous functions)</h3>
+<h3 id="lambdas-small-anonymous-functions">Lambdas (small anonymous functions)</h3>
 <pre><code>sorted(words, key=lambda w: len(w))
 nums.sort(key=lambda x: (x % 2, x))   # even-odd then value</code></pre>
 <p>Use lambdas only for tiny one-liners passed as arguments. For anything longer, define a named function.</p>
 
-<h3>Scope: how Python resolves a name (LEGB)</h3>
+<h3 id="scope-how-python-resolves-a-name-legb">Scope: how Python resolves a name (LEGB)</h3>
 <p>When you reference a name, Python searches four scopes in order — <strong>L</strong>ocal, <strong>E</strong>nclosing, <strong>G</strong>lobal, <strong>B</strong>uilt-in — and stops at the first match. Understanding this order explains why functions can read outer variables but need <code>global</code>/<code>nonlocal</code> to rebind them.</p>
 <div class="ascii">          +-----------------------------------+
           |  Built-in   (print, len, range)   |
@@ -893,7 +1008,7 @@ def outer():
 
 <p>Comprehensions build collections concisely and are faster than equivalent loops.</p>
 
-<h3>How to read a comprehension</h3>
+<h3 id="how-to-read-a-comprehension">How to read a comprehension</h3>
 <p>A comprehension packs a loop, an optional filter, and a transformation into one expression. Read it as "give me <em>expression</em> for each <em>item</em> in <em>iterable</em> where <em>condition</em>." It maps directly onto the equivalent <code>for</code> loop:</p>
 <div class="ascii">  [ x*x   for x in range(10)   if x % 2 == 0 ]
     \_/    \______________/     \__________/
@@ -921,7 +1036,7 @@ sq_map = {x: x*x for x in range(5)}
 # Set comprehension
 unique_lengths = {len(w) for w in words}</code></pre>
 
-<h3>Generator expressions (lazy, memory-efficient)</h3>
+<h3 id="generator-expressions-lazy-memory-efficient">Generator expressions (lazy, memory-efficient)</h3>
 <pre><code># Parentheses instead of brackets -> a generator
 gen = (x*x for x in range(1_000_000))   # nothing computed yet
 total = sum(x*x for x in range(1_000_000))  # streamed, low memory</code></pre>
@@ -931,7 +1046,7 @@ total = sum(x*x for x in range(1_000_000))  # streamed, low memory</code></pre>
   Use a list comprehension when you need the whole collection (indexing, reuse, length). Use a generator when you iterate once and want to avoid building a big list in memory — ideal for large or infinite streams and pipelines.
 </div>
 
-<h3>Generator functions with <code>yield</code></h3>
+<h3 id="generator-functions-with-yield">Generator functions with <code>yield</code></h3>
 <p>A generator function looks like a normal function but uses <code>yield</code>. Calling it doesn't run the body — it returns a generator object that runs lazily, pausing at each <code>yield</code> and resuming where it left off on the next request. State is preserved between resumes automatically.</p>
 <div class="ascii">def countdown(n):
     while n > 0:
@@ -962,14 +1077,14 @@ for x in countdown(3):     # 3, 2, 1
 
 <h2 id="part-7">Part 7 — Modules, packages &amp; the import system <span class="tag tag-inter">INTERMEDIATE</span></h2>
 
-<h3>Imports</h3>
+<h3 id="imports">Imports</h3>
 <pre><code>import math                  # math.sqrt(2)
 from math import sqrt, pi    # sqrt(2)
 from math import sqrt as s   # alias
 import numpy as np           # conventional alias
 from . import sibling        # relative (within a package)</code></pre>
 
-<h3>A package is a directory of modules</h3>
+<h3 id="a-package-is-a-directory-of-modules">A package is a directory of modules</h3>
 <div class="ascii">myapp/
 ├── __init__.py        # marks dir as a package
 ├── core.py
@@ -978,7 +1093,7 @@ from . import sibling        # relative (within a package)</code></pre>
     ├── __init__.py
     └── loader.py</div>
 
-<h3>The <code>__main__</code> guard</h3>
+<h3 id="the-main-guard">The <code>__main__</code> guard</h3>
 <pre><code>def main():
     ...
 
@@ -1026,7 +1141,7 @@ else:
 finally:
     cleanup()        # always runs</code></pre>
 
-<h3>The exception hierarchy</h3>
+<h3 id="the-exception-hierarchy">The exception hierarchy</h3>
 <p>Exceptions form a class tree. Catching a parent type also catches its children, which is why catching <code>Exception</code> is so broad and bare <code>except:</code> (which catches even <code>SystemExit</code>) is dangerous.</p>
 <div class="ascii">BaseException
  ├── SystemExit, KeyboardInterrupt   (don't usually catch these)
@@ -1043,7 +1158,7 @@ finally:
 Catching ValueError also catches its subclasses.
 Catch the most specific type you can handle.</div>
 
-<h3>Raising and custom exceptions</h3>
+<h3 id="raising-and-custom-exceptions">Raising and custom exceptions</h3>
 <pre><code>raise ValueError("amount must be positive")
 
 class InsufficientFundsError(Exception):
@@ -1052,7 +1167,7 @@ class InsufficientFundsError(Exception):
 
 raise InsufficientFundsError("balance too low")</code></pre>
 
-<h3>Exception chaining and groups</h3>
+<h3 id="exception-chaining-and-groups">Exception chaining and groups</h3>
 <pre><code>try:
     parse()
 except ValueError as e:
@@ -1067,7 +1182,7 @@ except ValueError as e:
 
 <h2 id="part-9">Part 9 — Files, context managers &amp; I/O <span class="tag tag-inter">INTERMEDIATE</span></h2>
 
-<h3>Reading and writing</h3>
+<h3 id="reading-and-writing">Reading and writing</h3>
 <p>The <code>with</code> statement is the right way to handle files (and any resource that must be released). It guarantees the file is closed even if an exception fires inside the block — no leaked file handles.</p>
 <div class="ascii">  with open("data.txt") as f:
       data = f.read()
@@ -1096,7 +1211,7 @@ with open("data.txt") as f:
 with open("out.txt", "w", encoding="utf-8") as f:
     f.write("hello\n")</code></pre>
 
-<h3>Modern path handling with <code>pathlib</code></h3>
+<h3 id="modern-path-handling-with-pathlib">Modern path handling with <code>pathlib</code></h3>
 <pre><code>from pathlib import Path
 p = Path("data") / "file.txt"   # OS-agnostic join
 p.exists()
@@ -1105,7 +1220,7 @@ p.write_text("hi")
 for f in Path(".").glob("*.py"):
     print(f.name)</code></pre>
 
-<h3>Structured formats</h3>
+<h3 id="structured-formats">Structured formats</h3>
 <pre><code>import json
 data = json.loads(text)          # str -> dict
 text = json.dumps(data, indent=2)
@@ -1115,7 +1230,7 @@ with open("d.csv", newline="") as f:
     for row in csv.DictReader(f):
         print(row["name"])</code></pre>
 
-<h3>Writing your own context manager</h3>
+<h3 id="writing-your-own-context-manager">Writing your own context manager</h3>
 <pre><code>from contextlib import contextmanager
 
 @contextmanager
@@ -1166,7 +1281,7 @@ with timer():
     def __repr__(self):           # developer-friendly string
         return f"Account({self.owner!r}, {self.balance})"</code></pre>
 
-<h3>Inheritance &amp; <code>super()</code></h3>
+<h3 id="inheritance-amp-super">Inheritance &amp; <code>super()</code></h3>
 <p>A subclass inherits everything from its parent and can add or override behavior. <code>super()</code> calls the parent's version of a method — essential in <code>__init__</code> so the parent can set up its part of the object before you add yours.</p>
 <div class="ascii">         Account  (base / parent)
          | owner, balance, deposit()
@@ -1188,7 +1303,7 @@ with timer():
     def add_interest(self):
         self.deposit(self.balance * self.rate)</code></pre>
 
-<h3>Method types</h3>
+<h3 id="method-types">Method types</h3>
 <pre><code>class C:
     @staticmethod
     def helper(x):            # no self/cls, just namespaced
@@ -1202,7 +1317,7 @@ with timer():
     def computed(self):       # access like an attribute
         return self._x * 2</code></pre>
 
-<h3>Dataclasses (less boilerplate)</h3>
+<h3 id="dataclasses-less-boilerplate">Dataclasses (less boilerplate)</h3>
 <pre><code>from dataclasses import dataclass, field
 
 @dataclass
@@ -1224,7 +1339,7 @@ p = Point(3, 4)        # auto __init__, __repr__, __eq__</code></pre>
 
 <p>The <code>for</code> loop is sugar over the iterator protocol. Understanding it unlocks lazy pipelines and custom iterable objects.</p>
 
-<h3>Iterable vs iterator</h3>
+<h3 id="iterable-vs-iterator">Iterable vs iterator</h3>
 <ul>
   <li>An <strong>iterable</strong> has <code>__iter__()</code> that returns an iterator (lists, strings, dicts).</li>
   <li>An <strong>iterator</strong> has <code>__next__()</code> that yields the next item or raises <code>StopIteration</code>.</li>
@@ -1262,7 +1377,7 @@ class Countdown:
         self.n -= 1
         return self.n + 1</code></pre>
 
-<h3>Generators are iterators you get for free</h3>
+<h3 id="generators-are-iterators-you-get-for-free">Generators are iterators you get for free</h3>
 <pre><code># Infinite generator -- only computes what's consumed
 def naturals():
     n = 1
@@ -1273,7 +1388,7 @@ def naturals():
 import itertools
 first_five = list(itertools.islice(naturals(), 5))  # [1,2,3,4,5]</code></pre>
 
-<h3><code>itertools</code> — the lazy toolkit</h3>
+<h3 id="itertools-the-lazy-toolkit"><code>itertools</code> — the lazy toolkit</h3>
 <pre><code>itertools.chain(a, b)          # concatenate iterables
 itertools.count(10, 2)         # 10, 12, 14, ...
 itertools.cycle("AB")          # A B A B ...
@@ -1288,7 +1403,7 @@ itertools.accumulate(nums)     # running totals</code></pre>
 
 <p>A <strong>closure</strong> is a function that captures variables from its enclosing scope. A <strong>decorator</strong> is a function that takes a function and returns a modified function — used to add behavior without changing the original.</p>
 
-<h3>What @decorator really does</h3>
+<h3 id="what-decorator-really-does">What @decorator really does</h3>
 <p>The <code>@</code> syntax is pure sugar. <code>@log_calls</code> above a function definition simply reassigns the name to the decorated version. The decorator wraps the original in an outer function that runs extra code before and after calling it.</p>
 <div class="ascii">  @log_calls
   def add(a, b):
@@ -1314,7 +1429,7 @@ The wrapper "surrounds" the original:
         v
    you get 5, plus the logging side effects</div>
 
-<h3>Closure</h3>
+<h3 id="closure">Closure</h3>
 <pre><code>def make_multiplier(factor):
     def multiply(x):
         return x * factor     # captures 'factor'
@@ -1323,7 +1438,7 @@ The wrapper "surrounds" the original:
 triple = make_multiplier(3)
 triple(10)                    # 30</code></pre>
 
-<h3>A basic decorator</h3>
+<h3 id="a-basic-decorator">A basic decorator</h3>
 <pre><code>import functools
 
 def log_calls(func):
@@ -1341,7 +1456,7 @@ def add(a, b):
 
 add(2, 3)     # logs the call, returns 5</code></pre>
 
-<h3>Decorators with arguments</h3>
+<h3 id="decorators-with-arguments">Decorators with arguments</h3>
 <pre><code>def retry(times):
     def decorator(func):
         @functools.wraps(func)
@@ -1359,7 +1474,7 @@ add(2, 3)     # logs the call, returns 5</code></pre>
 def flaky():
     ...</code></pre>
 
-<h3>Decorators you'll see often</h3>
+<h3 id="decorators-youll-see-often">Decorators you'll see often</h3>
 <ul>
   <li><code>@functools.lru_cache</code> — memoize results</li>
   <li><code>@functools.cached_property</code> — compute once, store</li>
@@ -1396,7 +1511,7 @@ def flaky():
   <tr><td><code>enum</code></td><td>Named constants</td></tr>
 </table>
 
-<h3>Examples worth memorizing</h3>
+<h3 id="examples-worth-memorizing">Examples worth memorizing</h3>
 <pre><code>from collections import Counter, defaultdict, deque
 
 Counter("mississippi").most_common(2)   # [('i',4),('s',4)]
@@ -1432,7 +1547,7 @@ scores: dict[str, list[float]] = {}
 handler: Callable[[int, str], bool]
 maybe: Optional[int] = None          # same as int | None</code></pre>
 
-<h3>Useful typing constructs</h3>
+<h3 id="useful-typing-constructs">Useful typing constructs</h3>
 <pre><code>from typing import TypedDict, Protocol, Literal, TypeVar, Generic, Self
 from typing import NotRequired, Required
 
@@ -1455,7 +1570,7 @@ class Builder:
         ...
         return self</code></pre>
 
-<h3>PEP 695 generic syntax (3.12+)</h3>
+<h3 id="pep-695-generic-syntax-312">PEP 695 generic syntax (3.12+)</h3>
 <p>Python 3.12 added a lightweight generic syntax that avoids the explicit <code>TypeVar</code> and <code>Generic[T]</code> boilerplate. Prefer it for new code on 3.12+.</p>
 <pre><code># Old style                       # New (3.12+)
 T = TypeVar("T")                   def first[T](items: list[T]) -> T:
@@ -1471,7 +1586,7 @@ type Vector = list[float]
 type Json = dict[str, "Json"] | list["Json"] | str | int | float | bool | None</code></pre>
 <p>Use <code>X | Y</code> (3.10+) as the canonical union form rather than <code>typing.Union[X, Y]</code>, and <code>X | None</code> rather than <code>Optional[X]</code>.</p>
 
-<h3>Runtime validation: Pydantic v2</h3>
+<h3 id="runtime-validation-pydantic-v2">Runtime validation: Pydantic v2</h3>
 <p>For runtime validation aligned with your type hints, <a href="https://docs.pydantic.dev/"><code>pydantic</code> v2</a> is the universal choice in 2026 — FastAPI, LangChain, and most modern Python frameworks build on it. The core is a Rust-backed validator, so it's fast. Pydantic models are also how you get <em>structured outputs</em> from LLMs in modern frameworks — see the <a href="ai-engineering-guide.html">AI engineering guide</a> for how this powers tool calling and JSON-mode responses.</p>
 <pre><code>from pydantic import BaseModel, Field
 
@@ -1494,7 +1609,7 @@ u.model_dump_json()                                   # serialize</code></pre>
 
 <p>Choosing the right concurrency model is about whether your work is <strong>I/O-bound</strong> (waiting on network/disk) or <strong>CPU-bound</strong> (crunching numbers).</p>
 
-<h3>I/O-bound vs CPU-bound — the deciding question</h3>
+<h3 id="io-bound-vs-cpu-bound-the-deciding-question">I/O-bound vs CPU-bound — the deciding question</h3>
 <p>If your program spends most of its time <em>waiting</em> (network calls, disk reads, database queries), it's I/O-bound — concurrency helps because you can wait on many things at once. If it spends its time <em>computing</em> (math, parsing, image processing), it's CPU-bound — you need real parallelism across CPU cores.</p>
 <div class="ascii">I/O-BOUND (waiting dominates):
   task A: |--wait for network--|
@@ -1510,10 +1625,10 @@ CPU-BOUND (computing dominates):
   core1: |####A####|
   core2: |####B####|   truly parallel -> faster</div>
 
-<h3>The GIL in one paragraph</h3>
+<h3 id="the-gil-in-one-paragraph">The GIL in one paragraph</h3>
 <p>CPython has a Global Interpreter Lock: only one thread executes Python bytecode at a time. So threads give no speedup for CPU-bound work, but they're great for I/O-bound work because the GIL is released while waiting. For CPU parallelism, use multiple processes.</p>
 
-<h3>Free-threaded (no-GIL) Python — officially supported in 3.14</h3>
+<h3 id="free-threaded-no-gil-python-officially-supported-in-314">Free-threaded (no-GIL) Python — officially supported in 3.14</h3>
 <p>Free-threaded CPython is <strong>officially supported as of Python 3.14</strong> (Oct 2025) via <a href="https://peps.python.org/pep-0779/">PEP 779</a> — Phase II of the no-GIL rollout that began as experimental in 3.13 (<a href="https://peps.python.org/pep-0703/">PEP 703</a>). It's still an <em>optional</em> build (you opt in via <code>python3.14t</code> / a <code>--free-threading</code> install), not the default, but it's no longer flagged as experimental. Single-thread overhead has dropped to <strong>~5–10%</strong> in 3.14 (from ~40% in 3.13), making it practical to use in production for CPU-bound multi-threaded workloads. Most non-C-extension code "just works" on a free-threaded build; C extensions must opt in by declaring free-threading support.</p>
 
 <table>
@@ -1523,7 +1638,7 @@ CPU-BOUND (computing dominates):
   <tr><td>Mixed / simple parallel calls</td><td><code>concurrent.futures</code></td></tr>
 </table>
 
-<h3>Threads &amp; processes via the same API</h3>
+<h3 id="threads-amp-processes-via-the-same-api">Threads &amp; processes via the same API</h3>
 <pre><code>from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 
 with ThreadPoolExecutor(max_workers=8) as ex:   # I/O-bound
@@ -1532,7 +1647,7 @@ with ThreadPoolExecutor(max_workers=8) as ex:   # I/O-bound
 with ProcessPoolExecutor() as ex:               # CPU-bound
     results = list(ex.map(heavy_compute, chunks))</code></pre>
 
-<h3>asyncio — single-threaded cooperative concurrency</h3>
+<h3 id="asyncio-single-threaded-cooperative-concurrency">asyncio — single-threaded cooperative concurrency</h3>
 <pre><code>import asyncio
 
 async def fetch(session, url):
@@ -1546,7 +1661,7 @@ async def main(urls):
 
 asyncio.run(main(urls))</code></pre>
 
-<h3><code>TaskGroup</code> and <code>asyncio.timeout()</code> — the modern API (3.11+)</h3>
+<h3 id="taskgroup-and-asynciotimeout-the-modern-api-311"><code>TaskGroup</code> and <code>asyncio.timeout()</code> — the modern API (3.11+)</h3>
 <p>Since 3.11, prefer <code>asyncio.TaskGroup</code> over <code>gather()</code>: it's a structured-concurrency context manager that cancels sibling tasks if one fails and re-raises errors as an <code>ExceptionGroup</code> — no silently-lost exceptions or orphaned tasks. Pair it with the <code>asyncio.timeout()</code> context manager for clean cancellation deadlines. This pattern is foundational for <a href="agentic-ai-guide.html">agent tool execution</a> (fan-out parallel tool calls with a deadline) and for <a href="llm-inference-guide.html">async LLM batching</a> (overlapping many in-flight requests to a serving endpoint).</p>
 <pre><code>import asyncio
 
@@ -1570,7 +1685,7 @@ asyncio.run(main(urls))</code></pre>
 
 <h2 id="part-16">Part 16 — Testing &amp; tooling <span class="tag tag-inter">INTERMEDIATE</span></h2>
 
-<h3>pytest (the de facto standard)</h3>
+<h3 id="pytest-the-de-facto-standard">pytest (the de facto standard)</h3>
 <pre><code># test_math.py
 def add(a, b):
     return a + b
@@ -1596,7 +1711,7 @@ pytest -v              # verbose
 pytest -k "add"        # filter by name
 pytest --cov=myapp     # coverage (needs pytest-cov)</code></pre>
 
-<h3>Fixtures for setup/teardown</h3>
+<h3 id="fixtures-for-setupteardown">Fixtures for setup/teardown</h3>
 <pre><code>@pytest.fixture
 def db():
     conn = connect()
@@ -1606,7 +1721,7 @@ def db():
 def test_query(db):
     assert db.count() == 0</code></pre>
 
-<h3>The modern toolchain</h3>
+<h3 id="the-modern-toolchain">The modern toolchain</h3>
 <table>
   <tr><th scope="col">Tool</th><th scope="col">Purpose</th></tr>
   <tr><td><code>uv</code></td><td>Env + dependency management + lockfile (primary in 2026)</td></tr>
@@ -1621,7 +1736,7 @@ def test_query(db):
 
 <h2 id="part-17">Part 17 — Performance &amp; memory <span class="tag tag-adv">ADVANCED</span></h2>
 
-<h3>Measure before optimizing</h3>
+<h3 id="measure-before-optimizing">Measure before optimizing</h3>
 <pre><code>import timeit
 timeit.timeit("sum(range(100))", number=10000)
 
@@ -1630,7 +1745,7 @@ cProfile.run("expensive_function()")
 
 # Line-level: pip install line_profiler, py-spy for sampling</code></pre>
 
-<h3>Practical speed wins</h3>
+<h3 id="practical-speed-wins">Practical speed wins</h3>
 <ul>
   <li>Use built-ins (<code>sum</code>, <code>map</code>, <code>sorted</code>) — they run in C.</li>
   <li>Prefer comprehensions/generators over manual loops.</li>
@@ -1640,7 +1755,7 @@ cProfile.run("expensive_function()")
   <li>Memoize pure functions with <code>functools.lru_cache</code>.</li>
 </ul>
 
-<h3>Memory tools</h3>
+<h3 id="memory-tools">Memory tools</h3>
 <pre><code>import sys
 sys.getsizeof(obj)            # shallow size in bytes
 
@@ -1650,7 +1765,7 @@ class Point:
     def __init__(self, x, y):
         self.x, self.y = x, y</code></pre>
 
-<h3>What's coming from the interpreter (3.13+)</h3>
+<h3 id="whats-coming-from-the-interpreter-313">What's coming from the interpreter (3.13+)</h3>
 <ul>
   <li><strong>Experimental JIT</strong> (<a href="https://peps.python.org/pep-0744/">PEP 744</a>, 3.13+) — a copy-and-patch JIT compiler shipping behind a build flag. Modest wins today; the foundation for future speedups. Enable with <code>--enable-experimental-jit</code> at build time.</li>
   <li><strong>Per-interpreter GIL / subinterpreters</strong> (<a href="https://peps.python.org/pep-0734/">PEP 734</a>, 3.13+) — multiple Python interpreters in one process, each with its own GIL. Gives true parallelism without the memory cost of full processes. Exposed via the <code>interpreters</code> stdlib module (still maturing).</li>
@@ -1666,7 +1781,7 @@ class Point:
 
 <h2 id="part-18">Part 18 — Idioms, gotchas &amp; best practices <span class="tag tag-inter">INTERMEDIATE</span></h2>
 
-<h3>Pythonic idioms</h3>
+<h3 id="pythonic-idioms">Pythonic idioms</h3>
 <pre><code># Swap without temp
 a, b = b, a
 
@@ -1689,7 +1804,7 @@ mapping = dict(zip(keys, values))
 # Flatten one level
 flat = [x for row in matrix for x in row]</code></pre>
 
-<h3>Common gotchas (interview &amp; real-world)</h3>
+<h3 id="common-gotchas-interview-amp-real-world">Common gotchas (interview &amp; real-world)</h3>
 <table>
   <tr><th scope="col">Gotcha</th><th scope="col">Reality</th></tr>
   <tr><td>Mutable default arg</td><td>Shared across calls — use <code>None</code> sentinel</td></tr>
@@ -1701,7 +1816,7 @@ flat = [x for row in matrix for x in row]</code></pre>
   <tr><td>Shallow copy of nested data</td><td>Inner objects still shared</td></tr>
 </table>
 
-<h3>The Zen and style</h3>
+<h3 id="the-zen-and-style">The Zen and style</h3>
 <ul>
   <li>Run <code>import this</code> to read the Zen of Python.</li>
   <li>Follow PEP 8: <code>snake_case</code> for functions/variables, <code>PascalCase</code> for classes, <code>UPPER_CASE</code> for constants.</li>
@@ -1819,6 +1934,151 @@ flat = [x for row in matrix for x in row]</code></pre>
 </script>
 
 <button class="scroll-top" id="scroll-top" aria-label="Scroll to top">↑</button>
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/styles/default.min.css" disabled>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/highlight.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  if (typeof hljs !== 'undefined') {
+    document.querySelectorAll('pre code').forEach(b => {
+      try { hljs.highlightElement(b); } catch (e) {}
+    });
+  }
+  document.querySelectorAll('pre').forEach(pre => {
+    if (pre.classList.contains('ascii')) return;
+    const btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.type = 'button';
+    btn.textContent = 'Copy';
+    btn.setAttribute('aria-label', 'Copy code to clipboard');
+    btn.addEventListener('click', async () => {
+      const code = pre.querySelector('code')?.innerText ?? pre.innerText;
+      try {
+        await navigator.clipboard.writeText(code);
+        btn.textContent = 'Copied'; btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1400);
+      } catch (e) { btn.textContent = 'Err'; }
+    });
+    pre.appendChild(btn);
+  });
+});
+</script>
+
+
+<div class="search-overlay" id="search-overlay" role="dialog" aria-modal="true" aria-label="Search">
+  <div class="search-modal">
+    <input type="text" class="search-input" id="search-input" placeholder="Search all guides…  (Esc to close, ↑↓ to navigate)" autocomplete="off" spellcheck="false">
+    <div class="search-results" id="search-results"></div>
+  </div>
+</div>
+
+<script>
+(function() {
+  const overlay = document.getElementById('search-overlay');
+  const input = document.getElementById('search-input');
+  const results = document.getElementById('search-results');
+  const trigger = document.getElementById('search-trigger');
+  if (!overlay || !input || !results) return;
+  let idx = null;
+  let active = 0;
+
+  async function loadIndex() {
+    if (idx) return idx;
+    try {
+      const r = await fetch('search-index.json');
+      idx = await r.json();
+    } catch (e) { idx = []; }
+    return idx;
+  }
+  function escapeHTML(s) { return s.replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c])); }
+  function escapeRE(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+  function highlight(s, terms) {
+    let h = escapeHTML(s);
+    for (const t of terms) {
+      if (!t) continue;
+      h = h.replace(new RegExp('(' + escapeRE(t) + ')', 'gi'), '<mark>$1</mark>');
+    }
+    return h;
+  }
+  function score(sec, terms) {
+    let s = 0;
+    const title = sec.t.toLowerCase();
+    const text = sec.x.toLowerCase();
+    for (const t of terms) {
+      if (!t) continue;
+      if (title === t) s += 50;
+      if (title.includes(t)) s += 10;
+      if (title.startsWith(t)) s += 5;
+      if (text.includes(t)) s += 1;
+    }
+    return s;
+  }
+  async function render(q) {
+    await loadIndex();
+    const terms = q.toLowerCase().split(/\s+/).filter(Boolean);
+    if (!terms.length) {
+      results.innerHTML = '<div class="search-empty">Type to search across all guides.</div>';
+      return;
+    }
+    let hits = [];
+    for (const g of idx) {
+      for (const sec of g.s) {
+        const sc = score(sec, terms);
+        if (sc > 0) hits.push({g, sec, sc});
+      }
+    }
+    hits.sort((a, b) => b.sc - a.sc);
+    hits = hits.slice(0, 20);
+    if (!hits.length) {
+      results.innerHTML = '<div class="search-empty">No matches.</div>';
+      return;
+    }
+    results.innerHTML = hits.map((h, i) => '<a class="search-result' + (i === 0 ? ' active' : '') + '" href="' + h.g.f + '#' + h.sec.i + '" data-i="' + i + '">' +
+      '<div class="search-result-title">' + highlight(h.sec.t, terms) + '</div>' +
+      '<div class="search-result-meta">' + escapeHTML(h.g.g) + ' · ' + h.sec.l + '</div>' +
+      '<div class="search-result-text">' + highlight(h.sec.x.substring(0, 200), terms) + '</div>' +
+    '</a>').join('');
+    active = 0;
+  }
+  function open() {
+    overlay.classList.add('open');
+    input.focus();
+    render(input.value);
+  }
+  function close() { overlay.classList.remove('open'); }
+  function moveActive(d) {
+    const items = results.querySelectorAll('.search-result');
+    if (!items.length) return;
+    items[active]?.classList.remove('active');
+    active = (active + d + items.length) % items.length;
+    items[active].classList.add('active');
+    items[active].scrollIntoView({block: 'nearest'});
+  }
+  if (trigger) trigger.addEventListener('click', open);
+  overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+  input.addEventListener('input', e => render(e.target.value));
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Escape') close();
+    else if (e.key === 'ArrowDown') { e.preventDefault(); moveActive(1); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); moveActive(-1); }
+    else if (e.key === 'Enter') {
+      const items = results.querySelectorAll('.search-result');
+      if (items[active]) items[active].click();
+    }
+  });
+  document.addEventListener('keydown', e => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      e.preventDefault();
+      overlay.classList.contains('open') ? close() : open();
+    } else if (e.key === '/' && !overlay.classList.contains('open') &&
+               !['INPUT','TEXTAREA'].includes(e.target.tagName) &&
+               !e.target.isContentEditable) {
+      e.preventDefault(); open();
+    }
+  });
+})();
+</script>
 
 </body>
 </html>

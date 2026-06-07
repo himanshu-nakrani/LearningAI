@@ -483,6 +483,120 @@
     .sidebar-toc { font-size: 0.74em; padding: 14px 14px; }
   }
 
+
+  /* code-block enhancements: hljs theme using CSS vars + copy button */
+  pre code.hljs { display: block; padding: 0; background: transparent; color: var(--code-fg); }
+  .hljs-keyword, .hljs-built_in, .hljs-type, .hljs-class .hljs-title { color: var(--accent); font-weight: 600; }
+  .hljs-string, .hljs-attr { color: #4a7ba6; }
+  .hljs-number, .hljs-literal, .hljs-symbol { color: #b8453a; }
+  .hljs-comment, .hljs-meta, .hljs-doctag { color: var(--muted); font-style: italic; }
+  .hljs-function .hljs-title, .hljs-title.function_ { color: var(--accent); }
+  .hljs-variable, .hljs-name { color: var(--code-fg); }
+  html.dark .hljs-string, html.dark .hljs-attr { color: #8db4d9; }
+  html.dark .hljs-number, html.dark .hljs-literal { color: #d18883; }
+  pre { position: relative; }
+  .copy-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+    font-size: 0.7em;
+    padding: 3px 9px;
+    border-radius: 4px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    letter-spacing: 0.02em;
+  }
+  pre:hover .copy-btn, .copy-btn:focus { opacity: 1; }
+  .copy-btn:hover { color: var(--accent); border-color: var(--accent); }
+  .copy-btn.copied { color: var(--tip-bd); border-color: var(--tip-bd); }
+
+  /* search overlay */
+  .search-trigger {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 0.78em;
+    padding: 2px 9px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-left: auto;
+    margin-right: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    flex-shrink: 0;
+    transition: color 0.15s ease, border-color 0.15s ease;
+  }
+  .search-trigger:hover { color: var(--accent); border-color: var(--accent); }
+  .search-trigger kbd {
+    font-family: -apple-system, sans-serif;
+    background: var(--code-bg);
+    padding: 0 5px;
+    border-radius: 3px;
+    font-size: 0.9em;
+    color: var(--muted);
+    border: none;
+  }
+  .booknav .theme-toggle-inline { margin-left: 0; }
+  .search-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 2000;
+    display: none;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 12vh;
+    backdrop-filter: blur(2px);
+  }
+  .search-overlay.open { display: flex; }
+  .search-modal {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    width: min(640px, 92%);
+    max-height: 70vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+  .search-input {
+    border: none;
+    outline: none;
+    padding: 16px 20px;
+    font-size: 1.05em;
+    background: transparent;
+    color: var(--fg);
+    border-bottom: 1px solid var(--border);
+    font-family: inherit;
+  }
+  .search-input::placeholder { color: var(--muted); }
+  .search-results { overflow-y: auto; padding: 6px 0; }
+  .search-result {
+    display: block;
+    padding: 10px 20px;
+    color: var(--fg);
+    text-decoration: none;
+    border-left: 3px solid transparent;
+    font-size: 0.92em;
+  }
+  .search-result:hover, .search-result.active {
+    background: var(--accent-soft);
+    border-left-color: var(--accent);
+  }
+  .search-result-title { font-weight: 600; color: var(--fg); }
+  .search-result-meta { font-size: 0.78em; color: var(--muted); margin-top: 2px; letter-spacing: 0.02em; }
+  .search-result-text { font-size: 0.82em; color: var(--muted); margin-top: 4px; line-height: 1.4; max-height: 2.9em; overflow: hidden; }
+  .search-empty { padding: 24px 20px; color: var(--muted); text-align: center; font-size: 0.9em; }
+  .search-result mark { background: var(--accent-soft); color: var(--accent); padding: 0 2px; border-radius: 2px; font-weight: 600; }
 </style>
 </head>
 <body>
@@ -505,6 +619,7 @@
   <a href="dsa-guide.html">DSA</a>
   <a href="system-design-guide.html">System Design</a>
   <a href="interview-prep.html" class="current">Interview Prep</a>
+  <button class="search-trigger" id="search-trigger" type="button" aria-label="Search guides">Search <kbd>⌘K</kbd></button>
   <button class="theme-toggle-inline" id="theme-toggle" aria-label="Toggle dark mode">🌙</button>
 </nav>
 
@@ -545,7 +660,7 @@
 
 <h2 id="part-0">Part 0 — Strategic overview &amp; how to use this guide</h2>
 
-<h3>Read this first</h3>
+<h3 id="read-this-first">Read this first</h3>
 <p>You are interviewing for a <strong>Lead</strong> role at a <strong>FTSE 100 company</strong>. The bar is high but the JD is unusually specific — they tell you exactly what to prepare. Treat the JD as your study guide:</p>
 <ul>
   <li><strong>Agentic systems for data engineering</strong> — the central theme. Every answer should connect back.</li>
@@ -554,7 +669,7 @@
   <li><strong>"Reverse engineer legacy pipelines"</strong> — this is the killer scenario. Be ready to whiteboard it.</li>
 </ul>
 
-<h3>Your edge</h3>
+<h3 id="your-edge">Your edge</h3>
 <ul>
   <li>Production agentic platform (Agent Forge) — directly aligned with what they want to build.</li>
   <li>1B-param model pretraining on TPU — proves distributed-systems depth.</li>
@@ -562,7 +677,7 @@
   <li>OTEL observability + guardrails — production maturity.</li>
 </ul>
 
-<h3>Your gaps (be honest, prepare deliberately)</h3>
+<h3 id="your-gaps-be-honest-prepare-deliberately">Your gaps (be honest, prepare deliberately)</h3>
 <ol>
   <li><strong>AWS stack depth</strong> — your background is Azure/GCP/OCI heavy.</li>
   <li><strong>PySpark</strong> — listed as required, not on resume.</li>
@@ -575,7 +690,7 @@
   Frame every Agent Forge / Alpha Copilot story as <em>"AI applied to engineering problems at scale"</em>. The JD is about using AI to do DE work — same fundamental skill as using AI to do SQL or platform work. You've already done this; just connect the dots.
 </div>
 
-<h3>How to use this guide</h3>
+<h3 id="how-to-use-this-guide">How to use this guide</h3>
 <ul>
   <li>Each section is self-contained — you can study out of order.</li>
   <li><strong>CORE</strong> tagged sections are non-negotiable.</li>
@@ -595,12 +710,12 @@
 
 <p>This is named explicitly in the JD. If you walk in not knowing what AgentCore is, you lose the interview. Spend 4 hours on this minimum. (For the broader agent design patterns and frameworks, see the <a href="agentic-ai-guide.html">agentic AI guide</a>; for the surrounding AWS services it composes with, see the <a href="aws-guide.html">AWS guide</a>.)</p>
 
-<h3>1.1 What is AWS Bedrock AgentCore?</h3>
+<h3 id="11-what-is-aws-bedrock-agentcore">1.1 What is AWS Bedrock AgentCore?</h3>
 <p>AgentCore is AWS's framework for building, deploying, and operating production AI agents. It was announced in <strong>preview on July 16 2025</strong> and went <strong>GA on October 13 2025</strong>. As of 2026 it is available in <strong>9 regions</strong> and ships <strong>7 services</strong> (Runtime, Memory, Identity, Gateway, Code Interpreter, Browser, Observability). It is <strong>framework-agnostic</strong> — you can use LangGraph, CrewAI, Strands, or your own code; AgentCore provides the runtime and the supporting services.</p>
 
 <p>Think of it as <em>"managed infra for agents"</em>, the way ECS/Fargate is managed infra for containers. It is not a single product — it's a collection of services under the AgentCore umbrella.</p>
 
-<h3>1.2 The seven AgentCore primitives</h3>
+<h3 id="12-the-seven-agentcore-primitives">1.2 The seven AgentCore primitives</h3>
 
 <table>
 <tr><th scope="col">Service</th><th scope="col">What it does</th><th scope="col">When to use</th></tr>
@@ -646,7 +761,7 @@
   Mnemonic: <strong>"R-MIG-BCO"</strong> — Runtime, Memory, Identity, Gateway, Browser, Code-interpreter, Observability.
 </div>
 
-<h3>1.3 AgentCore vs. Bedrock Agents vs. self-hosted</h3>
+<h3 id="13-agentcore-vs-bedrock-agents-vs-self-hosted">1.3 AgentCore vs. Bedrock Agents vs. self-hosted</h3>
 
 <table>
 <tr><th scope="col">Option</th><th scope="col">Abstraction level</th><th scope="col">Flexibility</th><th scope="col">Best for</th></tr>
@@ -655,7 +770,7 @@
 <tr><td>Self-hosted (LangGraph on ECS)</td><td>Low — you build everything</td><td>Total</td><td>Strict customization, multi-cloud</td></tr>
 </table>
 
-<h3>1.4 AgentCore vs. LangGraph / CrewAI</h3>
+<h3 id="14-agentcore-vs-langgraph-crewai">1.4 AgentCore vs. LangGraph / CrewAI</h3>
 <p>This is a common interview trap. They are <strong>not competitors</strong> — they layer.</p>
 <ul>
   <li><strong>LangGraph / CrewAI / Strands</strong> = <em>orchestration framework</em> (the agent code).</li>
@@ -663,7 +778,7 @@
   <li>You can run a LangGraph agent on AgentCore Runtime, using AgentCore Memory and Gateway. AWS pushes this pattern.</li>
 </ul>
 
-<h3>1.5 Deploying an agent on AgentCore Runtime (mental model)</h3>
+<h3 id="15-deploying-an-agent-on-agentcore-runtime-mental-model">1.5 Deploying an agent on AgentCore Runtime (mental model)</h3>
 
 <pre><code># Conceptual flow
 
@@ -690,7 +805,7 @@ def invoke(payload):
 # boto3 client → agentcore.invoke(agentArn, sessionId, payload)
 </code></pre>
 
-<h3>1.6 Sessions, isolation, and the 8-hour async window</h3>
+<h3 id="16-sessions-isolation-and-the-8-hour-async-window">1.6 Sessions, isolation, and the 8-hour async window</h3>
 <ul>
   <li>Each session is fully isolated (process-level) — no cross-session leakage.</li>
   <li>Sync invocations: up to 60 sec.</li>
@@ -698,7 +813,7 @@ def invoke(payload):
   <li>Session state in Memory; cold start mitigated by warm pools.</li>
 </ul>
 
-<h3>1.7 AgentCore Memory deep dive</h3>
+<h3 id="17-agentcore-memory-deep-dive">1.7 AgentCore Memory deep dive</h3>
 <ul>
   <li><strong>Short-term memory</strong> — auto-managed conversation history with summarization at thresholds.</li>
   <li><strong>Long-term memory</strong> — semantic facts ("user prefers Python"), preferences, cross-session context. Stored as embeddings, retrieved by semantic similarity.</li>
@@ -706,7 +821,7 @@ def invoke(payload):
   <li><strong>Why it matters</strong> — replaces the entire "build a vector store + memory layer" task that every team reinvents.</li>
 </ul>
 
-<h3>1.8 AgentCore Gateway and MCP</h3>
+<h3 id="18-agentcore-gateway-and-mcp">1.8 AgentCore Gateway and MCP</h3>
 <p>Gateway exposes existing assets (Lambdas, OpenAPI specs, Smithy models) as MCP (Model Context Protocol) tools. This is the killer feature for enterprise.</p>
 <ul>
   <li>Point Gateway at your internal customer-lookup Lambda → it becomes a tool any agent can call.</li>
@@ -714,7 +829,7 @@ def invoke(payload):
   <li>Supports semantic search across hundreds of tools — agent only sees relevant ones per turn.</li>
 </ul>
 
-<h3>1.9 Likely interview questions on AgentCore</h3>
+<h3 id="19-likely-interview-questions-on-agentcore">1.9 Likely interview questions on AgentCore</h3>
 
 <div class="qa">
   <div class="qa-q">Q: What is AWS AgentCore and how does it differ from Bedrock Agents?</div>
@@ -741,7 +856,7 @@ def invoke(payload):
   <div class="qa-a">A vector DB is a primitive — you still write the chunking, summarization, eviction, and retrieval logic. AgentCore Memory packages all of that as a managed service: built-in summarization at configurable thresholds, semantic extractors for facts and preferences, automatic write-through to long-term memory. It's the difference between Postgres and a managed RAG service.</div>
 </div>
 
-<h3>1.10 Hands-on action items (do these before interview)</h3>
+<h3 id="110-hands-on-action-items-do-these-before-interview">1.10 Hands-on action items (do these before interview)</h3>
 <ol>
   <li>Read the AWS AgentCore <a href="https://docs.aws.amazon.com/bedrock-agentcore/">official docs</a> end-to-end.</li>
   <li>Deploy the "hello world" agent from the AgentCore samples repo.</li>
@@ -756,7 +871,7 @@ def invoke(payload):
 
 <p>The JD lists: S3, Glue, Lambda, DynamoDB, EventBridge, MSK/SQS. You must speak fluently and quickly. Each subsection below is structured: <em>what it is → key features → gotchas → when to use vs. not → interview Q&amp;A.</em> For deeper reference on any of these, see the <a href="aws-guide.html">AWS guide</a>.</p>
 
-<h3>2.1 Amazon S3</h3>
+<h3 id="21-amazon-s3">2.1 Amazon S3</h3>
 <h4>Core concepts</h4>
 <ul>
   <li><strong>Buckets</strong> are globally unique. Objects are key-value pairs. Max object size 5 TB; multipart upload required &gt; 5 GB.</li>
@@ -794,7 +909,7 @@ def invoke(payload):
   <div class="qa-a">Three-zone pattern: raw (immutable, original format), curated (cleaned, Parquet/ORC, partitioned), and consumption (aggregated views). Each zone in its own bucket with appropriate lifecycle policies — raw goes to Glacier after 90 days, curated stays warm. Use Hive-style partitioning by date and source. Compact small files daily to keep file sizes between 128MB and 1GB.</div>
 </div>
 
-<h3>2.2 AWS Glue</h3>
+<h3 id="22-aws-glue">2.2 AWS Glue</h3>
 <h4>Components</h4>
 <ul>
   <li><strong>Glue Data Catalog</strong> — central metastore (databases, tables, schemas). Hive-compatible. Shared by Athena, EMR, Redshift Spectrum, Lake Formation.</li>
@@ -834,7 +949,7 @@ def invoke(payload):
   <div class="qa-a">Glue for serverless workloads under an hour where ops simplicity wins — pay per DPU-second, no cluster to manage, integrated with Catalog. EMR when I need fine-grained Spark tuning, custom JARs, jobs longer than a few hours, or cost optimization via spot instances at scale. For a typical ingestion pipeline I default to Glue; for nightly massive aggregations on TB-scale data, EMR with spot.</div>
 </div>
 
-<h3>2.3 AWS Lambda</h3>
+<h3 id="23-aws-lambda">2.3 AWS Lambda</h3>
 <h4>Core facts</h4>
 <ul>
   <li>Max execution: <strong>15 minutes</strong>. Hard limit.</li>
@@ -871,7 +986,7 @@ def invoke(payload):
   <div class="qa-a">A few options. (1) Split the work — Lambda kicks off a Step Function that fans out into parallel sub-Lambdas. (2) Lambda enqueues to SQS, then a Fargate task processes. (3) For long-running agent work, use AgentCore Runtime's 8-hour async sessions. The choice depends on whether the work parallelizes, the latency requirement, and operational simplicity.</div>
 </div>
 
-<h3>2.4 DynamoDB</h3>
+<h3 id="24-dynamodb">2.4 DynamoDB</h3>
 <h4>Core concepts</h4>
 <ul>
   <li><strong>Partition key (PK)</strong> — hashed to a partition. <strong>Sort key (SK)</strong> — optional, orders items within a partition.</li>
@@ -927,7 +1042,7 @@ ORDER#999       ITEM#1              Item    sku, qty
   <div class="qa-a">DynamoDB charges per request and has no joins. Single-table lets you retrieve related entities in one query by carefully designing PK and SK. The tradeoff is upfront cost — you must enumerate every access pattern before designing. For our agent metadata in Agent Forge, single-table would let one query return an agent's profile, recent invocations, and tool registrations — instead of three queries across normalized tables.</div>
 </div>
 
-<h3>2.5 EventBridge</h3>
+<h3 id="25-eventbridge">2.5 EventBridge</h3>
 <h4>Concepts</h4>
 <ul>
   <li><strong>Event bus</strong> — default bus, custom buses (per domain), partner buses (SaaS).</li>
@@ -953,7 +1068,7 @@ ORDER#999       ITEM#1              Item    sku, qty
   <div class="qa-a">EventBridge when I need content-based routing — one publisher emits many event types and different consumers care about subsets. EventBridge's rule engine handles that natively with JSON patterns. SNS when I just need fanout — one event, multiple subscribers, no filtering complexity. EventBridge is also the right choice for SaaS partner events. Tradeoff: EventBridge has higher latency than SNS and lower throughput per bus.</div>
 </div>
 
-<h3>2.6 SQS, Kinesis, MSK</h3>
+<h3 id="26-sqs-kinesis-msk">2.6 SQS, Kinesis, MSK</h3>
 
 <h4>SQS</h4>
 <ul>
@@ -999,7 +1114,7 @@ ORDER#999       ITEM#1              Item    sku, qty
 <tr><td>Event-driven routing</td><td>EventBridge</td></tr>
 </table>
 
-<h3>2.7 Event-driven architecture patterns</h3>
+<h3 id="27-event-driven-architecture-patterns">2.7 Event-driven architecture patterns</h3>
 
 <h4>Choreography vs. orchestration</h4>
 <ul>
@@ -1029,7 +1144,7 @@ ORDER#999       ITEM#1              Item    sku, qty
   <li>The <code>aws-lambda-powertools</code> idempotency utility wraps this cleanly.</li>
 </ul>
 
-<h3>2.8 Putting it together — a reference ingestion pipeline</h3>
+<h3 id="28-putting-it-together-a-reference-ingestion-pipeline">2.8 Putting it together — a reference ingestion pipeline</h3>
 
 <div class="ascii">
                           [Vendors / SFTP / API]
@@ -1105,7 +1220,7 @@ ORDER#999       ITEM#1              Item    sku, qty
   When asked: "I haven't shipped production PySpark, but I understand Spark's model and have built distributed pipelines at scale — the TinyMathReason project ran on TPU v4-32 with sharded data and packed sequences, so the underlying concepts of partitioning, shuffles, and parallelism are familiar. I'd be productive in PySpark within a sprint." Then pivot to your TPU distributed work.
 </div>
 
-<h3>3.1 Spark architecture in 5 minutes</h3>
+<h3 id="31-spark-architecture-in-5-minutes">3.1 Spark architecture in 5 minutes</h3>
 <ul>
   <li><strong>Driver</strong> — orchestrates the job. Holds SparkContext, builds DAG, schedules stages.</li>
   <li><strong>Executors</strong> — JVM processes on worker nodes. Run tasks, hold cached data.</li>
@@ -1131,7 +1246,7 @@ ORDER#999       ITEM#1              Item    sku, qty
       0,1,2)         3,4,5)         6,7,8)
 </div>
 
-<h3>3.2 RDD vs. DataFrame vs. Dataset</h3>
+<h3 id="32-rdd-vs-dataframe-vs-dataset">3.2 RDD vs. DataFrame vs. Dataset</h3>
 <table>
 <tr><th scope="col"></th><th scope="col">RDD</th><th scope="col">DataFrame</th><th scope="col">Dataset</th></tr>
 <tr><td>API</td><td>Low-level, functional</td><td>High-level, SQL-like</td><td>Typed (Scala/Java only)</td></tr>
@@ -1140,7 +1255,7 @@ ORDER#999       ITEM#1              Item    sku, qty
 </table>
 <p>In PySpark, you'll almost always work with DataFrames.</p>
 
-<h3>3.3 Transformations vs. actions (lazy evaluation)</h3>
+<h3 id="33-transformations-vs-actions-lazy-evaluation">3.3 Transformations vs. actions (lazy evaluation)</h3>
 <ul>
   <li><strong>Transformations</strong> are lazy — they build the DAG but don't execute. <code>filter</code>, <code>select</code>, <code>join</code>, <code>groupBy</code>, <code>withColumn</code>.</li>
   <li><strong>Actions</strong> trigger execution. <code>show</code>, <code>collect</code>, <code>count</code>, <code>write</code>, <code>foreach</code>.</li>
@@ -1148,14 +1263,14 @@ ORDER#999       ITEM#1              Item    sku, qty
   <li><strong>Why this matters</strong>: writing a job that does 10 transformations and 5 <code>count()</code> calls runs the pipeline 5 times. <code>cache()</code> or restructure.</li>
 </ul>
 
-<h3>3.4 Narrow vs. wide transformations</h3>
+<h3 id="34-narrow-vs-wide-transformations">3.4 Narrow vs. wide transformations</h3>
 <ul>
   <li><strong>Narrow</strong> — each output partition depends on one input partition. No shuffle. <code>filter</code>, <code>map</code>, <code>union</code>, <code>withColumn</code>.</li>
   <li><strong>Wide</strong> — each output partition depends on many input partitions. <strong>Triggers shuffle</strong>. <code>groupBy</code>, <code>join</code>, <code>orderBy</code>, <code>distinct</code>, <code>repartition</code>.</li>
   <li>Shuffles are expensive — they write to disk and move data across the network. Minimize them.</li>
 </ul>
 
-<h3>3.5 Partitioning</h3>
+<h3 id="35-partitioning">3.5 Partitioning</h3>
 <ul>
   <li>Default partitions: <code>spark.sql.shuffle.partitions = 200</code>. Too many for small data, too few for huge.</li>
   <li><strong>repartition(N)</strong> — full shuffle, exact partition count. Use when increasing partitions.</li>
@@ -1163,14 +1278,14 @@ ORDER#999       ITEM#1              Item    sku, qty
   <li><strong>Partition by column</strong>: <code>df.write.partitionBy("date").parquet(...)</code> creates Hive-style directory layout for partition pruning.</li>
 </ul>
 
-<h3>3.6 Joins — broadcast vs. shuffle</h3>
+<h3 id="36-joins-broadcast-vs-shuffle">3.6 Joins — broadcast vs. shuffle</h3>
 <ul>
   <li><strong>Shuffle hash join / Sort-merge join</strong> — both sides shuffled by join key. Expensive.</li>
   <li><strong>Broadcast join</strong> — small table sent to all executors, joined locally. Cheap when one side &lt; 10 MB (or whatever <code>spark.sql.autoBroadcastJoinThreshold</code>).</li>
   <li>Force broadcast: <code>from pyspark.sql.functions import broadcast; df1.join(broadcast(df2), "key")</code>.</li>
 </ul>
 
-<h3>3.7 Common performance issues</h3>
+<h3 id="37-common-performance-issues">3.7 Common performance issues</h3>
 
 <h4>Data skew</h4>
 <ul>
@@ -1198,7 +1313,7 @@ ORDER#999       ITEM#1              Item    sku, qty
   <li>Fix: never collect to driver; use <code>write</code> instead. If needed, <code>take(N)</code> or <code>sample()</code>.</li>
 </ul>
 
-<h3>3.8 Catalyst &amp; Tungsten (high level)</h3>
+<h3 id="38-catalyst-amp-tungsten-high-level">3.8 Catalyst &amp; Tungsten (high level)</h3>
 <ul>
   <li><strong>Catalyst</strong> — query optimizer. Parses your DataFrame ops, applies rules (predicate pushdown, constant folding, join reordering), produces optimized physical plan.</li>
   <li><strong>Tungsten</strong> — execution engine. Off-heap memory, whole-stage code generation, cache-aware computation.</li>
@@ -1206,7 +1321,7 @@ ORDER#999       ITEM#1              Item    sku, qty
   <li>Inspect plan: <code>df.explain(mode="extended")</code>.</li>
 </ul>
 
-<h3>3.9 Reference PySpark job (memorize this shape)</h3>
+<h3 id="39-reference-pyspark-job-memorize-this-shape">3.9 Reference PySpark job (memorize this shape)</h3>
 
 <pre><code>from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, to_date, broadcast
@@ -1251,7 +1366,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
  .parquet("s3://lake-curated/transactions/"))
 </code></pre>
 
-<h3>3.10 PySpark interview Q&amp;A</h3>
+<h3 id="310-pyspark-interview-qampa">3.10 PySpark interview Q&amp;A</h3>
 
 <div class="qa">
   <div class="qa-q">Q: A Spark job that ran fine on 100 GB is failing on 500 GB. How do you diagnose?</div>
@@ -1279,7 +1394,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
 
 <p>The JD names Claude Code and Cursor specifically. You list them as skills but show no concrete usage. Expect: <em>"Walk me through how you've actually used Claude Code to ship something."</em> Prepare 2–3 specific stories.</p>
 
-<h3>4.1 Claude Code — core features you must know</h3>
+<h3 id="41-claude-code-core-features-you-must-know">4.1 Claude Code — core features you must know</h3>
 <ul>
   <li><strong>CLI agent</strong> with file editing, bash execution, web search, and codebase awareness.</li>
   <li><strong>Skills</strong> — composable, scoped capabilities you load into a session.</li>
@@ -1291,7 +1406,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
   <li><strong>Agent SDK</strong> — build custom agents using the same primitives.</li>
 </ul>
 
-<h3>4.2 Cursor — core features</h3>
+<h3 id="42-cursor-core-features">4.2 Cursor — core features</h3>
 <ul>
   <li>VS Code fork with deep AI integration.</li>
   <li><strong>Tab completion</strong> — predictive multi-line.</li>
@@ -1301,7 +1416,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
   <li><strong>@-mentions</strong> — pull in files, docs, web pages.</li>
 </ul>
 
-<h3>4.3 Claude Code vs. Cursor — when to use each</h3>
+<h3 id="43-claude-code-vs-cursor-when-to-use-each">4.3 Claude Code vs. Cursor — when to use each</h3>
 <table>
 <tr><th scope="col"></th><th scope="col">Claude Code</th><th scope="col">Cursor</th></tr>
 <tr><td>Form factor</td><td>CLI / terminal</td><td>IDE</td></tr>
@@ -1310,7 +1425,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
 <tr><td>Best for</td><td>Background agents, terminal-heavy devs, long tasks</td><td>Active coding sessions, file-by-file work</td></tr>
 </table>
 
-<h3>4.4 Concrete usage stories to prepare</h3>
+<h3 id="44-concrete-usage-stories-to-prepare">4.4 Concrete usage stories to prepare</h3>
 
 <p>You need real stories. If you genuinely haven't used these much, spend a week using Claude Code on a real project before the interview. Below are the kinds of stories that land:</p>
 
@@ -1338,7 +1453,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
 <strong>Lesson:</strong> "The harness matters more than the model — hooks are the right place for org-wide policy."
 </div>
 
-<h3>4.5 Failure modes — when AI tools give you bad code</h3>
+<h3 id="45-failure-modes-when-ai-tools-give-you-bad-code">4.5 Failure modes — when AI tools give you bad code</h3>
 <ul>
   <li><strong>Hallucinated APIs</strong> — invents a library function that doesn't exist. Fix: pin to docs via <code>@</code> mentions or MCP.</li>
   <li><strong>Outdated patterns</strong> — uses deprecated API from training data. Fix: tell the model the version explicitly.</li>
@@ -1347,7 +1462,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
   <li><strong>Test gaming</strong> — when you ask "make the tests pass" it may modify the test. Fix: read the diff, don't auto-accept.</li>
 </ul>
 
-<h3>4.6 Eval/test loop for AI-generated code</h3>
+<h3 id="46-evaltest-loop-for-ai-generated-code">4.6 Eval/test loop for AI-generated code</h3>
 <ol>
   <li>Type checking — first line of defense for hallucinated APIs.</li>
   <li>Unit tests — run on every change. Hooks make this automatic.</li>
@@ -1357,7 +1472,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
   <li>For agentic code — eval suite of representative tasks; measure success rate, latency, cost.</li>
 </ol>
 
-<h3>4.7 Interview Q&amp;A</h3>
+<h3 id="47-interview-qampa">4.7 Interview Q&amp;A</h3>
 
 <div class="qa">
   <div class="qa-q">Q: How has Claude Code changed your development process?</div>
@@ -1382,7 +1497,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
 
 <p>This is the core technical theme of the JD. You have direct experience (Agent Forge) — your job is to articulate it at <em>architect</em> level, not just <em>builder</em> level. The <a href="agentic-ai-guide.html">agentic AI guide</a> is the deep reference for patterns and frameworks; the <a href="ai-engineering-guide.html">AI engineering guide</a> covers the production scaffolding (eval, RAG, structured outputs, observability) every agent sits on top of.</p>
 
-<h3>5.1 What makes a system "agentic"</h3>
+<h3 id="51-what-makes-a-system-agentic">5.1 What makes a system "agentic"</h3>
 <p>An agent is an LLM-driven system where the model dynamically decides:</p>
 <ul>
   <li>What action to take next (tool selection)</li>
@@ -1391,7 +1506,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
 </ul>
 <p>Contrast with a <strong>workflow</strong>: predefined steps, deterministic flow. Agents = autonomy; workflows = control. Most production systems are a hybrid — Anthropic's "Building Effective Agents" post calls this out explicitly.</p>
 
-<h3>5.2 The canonical agent loop (ReAct)</h3>
+<h3 id="52-the-canonical-agent-loop-react">5.2 The canonical agent loop (ReAct)</h3>
 
 <div class="ascii">
    ┌──────────────────────────────────────────────────┐
@@ -1413,7 +1528,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
   <li>Loop until done or budget exceeded.</li>
 </ul>
 
-<h3>5.3 Agent design patterns (Anthropic's taxonomy)</h3>
+<h3 id="53-agent-design-patterns-anthropics-taxonomy">5.3 Agent design patterns (Anthropic's taxonomy)</h3>
 
 <h4>Workflow patterns (deterministic)</h4>
 <ul>
@@ -1442,7 +1557,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
   <li><strong>Swarm</strong> — many lightweight agents, emergent behavior.</li>
 </ul>
 
-<h3>5.4 Tool use — the engineering details</h3>
+<h3 id="54-tool-use-the-engineering-details">5.4 Tool use — the engineering details</h3>
 
 <h4>Function calling vs. ReAct-style</h4>
 <ul>
@@ -1475,7 +1590,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
   <li>Replacing bespoke tool integrations the way LSP replaced bespoke IDE integrations.</li>
 </ul>
 
-<h3>5.5 Orchestration frameworks comparison</h3>
+<h3 id="55-orchestration-frameworks-comparison">5.5 Orchestration frameworks comparison</h3>
 <table>
 <tr><th scope="col">Framework</th><th scope="col">Strength</th><th scope="col">Weakness</th><th scope="col">Best for</th></tr>
 <tr>
@@ -1522,7 +1637,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
 </tr>
 </table>
 
-<h3>5.6 Agent evaluation</h3>
+<h3 id="56-agent-evaluation">5.6 Agent evaluation</h3>
 
 <h4>What to measure</h4>
 <ul>
@@ -1562,7 +1677,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
   <li><strong>Arize Phoenix</strong> — observability + evals, OTEL-native.</li>
 </ul>
 
-<h3>5.7 Production concerns for agents</h3>
+<h3 id="57-production-concerns-for-agents">5.7 Production concerns for agents</h3>
 
 <p class="meta">For the inference-stack side of these (KV cache sizing, prefix caching, continuous batching, streaming), see the <a href="llm-inference-guide.html">LLM inference guide</a>.</p>
 
@@ -1599,7 +1714,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
   <li>Traces show the full agent trajectory — invaluable for debugging.</li>
 </ul>
 
-<h3>5.8 Agentic AI Q&amp;A</h3>
+<h3 id="58-agentic-ai-qampa">5.8 Agentic AI Q&amp;A</h3>
 
 <div class="qa">
   <div class="qa-q">Q: When would you NOT build an agent and just use a workflow?</div>
@@ -1627,7 +1742,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
 
 <p>You know most of this. This section is a refresher and a checklist of terms you might be asked to define. For depth, the <a href="llm-inference-guide.html">LLM inference guide</a> covers the runtime/serving side (attention, KV cache, batching, decoding) and the <a href="ai-engineering-guide.html">AI engineering guide</a> covers the application side (prompting, RAG, eval, structured output).</p>
 
-<h3>6.1 Transformer architecture</h3>
+<h3 id="61-transformer-architecture">6.1 Transformer architecture</h3>
 <ul>
   <li><strong>Attention</strong> — Q, K, V matrices; <code>softmax(QK^T / sqrt(d_k)) V</code>. Each token attends to every other token weighted by similarity.</li>
   <li><strong>Multi-head attention (MHA)</strong> — multiple attention heads in parallel, concatenated.</li>
@@ -1637,7 +1752,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
   <li><strong>RoPE</strong> — rotary positional embeddings. Standard now over absolute/learned positions.</li>
 </ul>
 
-<h3>6.2 Architecture families</h3>
+<h3 id="62-architecture-families">6.2 Architecture families</h3>
 <table>
 <tr><th scope="col">Type</th><th scope="col">Example</th><th scope="col">Use</th></tr>
 <tr><td>Decoder-only</td><td>GPT, Llama, Claude</td><td>Generation, default for chat/instruction</td></tr>
@@ -1645,7 +1760,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
 <tr><td>Encoder-only</td><td>BERT, RoBERTa</td><td>Embeddings, classification, retrieval</td></tr>
 </table>
 
-<h3>6.3 Inference cost &amp; optimization</h3>
+<h3 id="63-inference-cost-amp-optimization">6.3 Inference cost &amp; optimization</h3>
 
 <h4>KV cache</h4>
 <ul>
@@ -1679,7 +1794,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
   <li><strong>Long-context training</strong> — train on long sequences; pricey but effective.</li>
 </ul>
 
-<h3>6.4 Fine-tuning techniques</h3>
+<h3 id="64-fine-tuning-techniques">6.4 Fine-tuning techniques</h3>
 
 <table>
 <tr><th scope="col">Method</th><th scope="col">What</th><th scope="col">Use when</th></tr>
@@ -1693,7 +1808,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
 <tr><td>GRPO</td><td>Group relative policy optimization (DeepSeek)</td><td>Reasoning models; what you used</td></tr>
 </table>
 
-<h3>6.5 Prompt techniques</h3>
+<h3 id="65-prompt-techniques">6.5 Prompt techniques</h3>
 <ul>
   <li><strong>Zero-shot</strong> — just the instruction.</li>
   <li><strong>Few-shot</strong> — include K examples in prompt.</li>
@@ -1705,7 +1820,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
   <li><strong>Role prompting</strong> — "you are an expert SQL engineer." Modest gains.</li>
 </ul>
 
-<h3>6.6 RAG essentials</h3>
+<h3 id="66-rag-essentials">6.6 RAG essentials</h3>
 <ul>
   <li><strong>Chunking</strong> — split docs into retrievable units. Fixed size with overlap is the baseline; semantic chunking (split on topic change) is better for high-quality RAG.</li>
   <li><strong>Embedding model</strong> — OpenAI text-embedding-3, Cohere, Voyage, BGE. Domain-specific FT can help.</li>
@@ -1714,7 +1829,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
   <li><strong>Eval</strong> — Ragas metrics: faithfulness (no hallucination), answer relevance, context precision, context recall.</li>
 </ul>
 
-<h3>6.7 LLM Q&amp;A</h3>
+<h3 id="67-llm-qampa">6.7 LLM Q&amp;A</h3>
 
 <div class="qa">
   <div class="qa-q">Q: What's the difference between RLHF and DPO?</div>
@@ -1737,7 +1852,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
 
 <p>This is the JD's central theme: AI applied to data engineering. Be ready to whiteboard each of these scenarios.</p>
 
-<h3>7.1 THE killer scenario: reverse engineering legacy pipelines</h3>
+<h3 id="71-the-killer-scenario-reverse-engineering-legacy-pipelines">7.1 THE killer scenario: reverse engineering legacy pipelines</h3>
 
 <p>The JD explicitly calls out: <em>"Develop autonomous systems capable of reverse engineering legacy pipelines and generating cloud-native equivalents."</em> This is almost certainly going to come up as a system design question.</p>
 
@@ -1835,7 +1950,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
   <div class="qa-a">Wide range. Simple ETL with clean specs: minutes, fully automated. Medium complexity with some business logic: hours including parity validation on samples. Complex pipelines with poorly documented logic: days, mostly waiting for human review of flagged cases. The win is not zero-touch migration — it's shifting from 100% manual to 80%+ automated with humans on the hard cases. At 500 pipelines that's the difference between 5 years and 1 year.</div>
 </div>
 
-<h3>7.2 Self-healing pipelines</h3>
+<h3 id="72-self-healing-pipelines">7.2 Self-healing pipelines</h3>
 
 <p>JD: <em>"Build feedback loops for self-healing pipelines and auto-correction of data issues."</em></p>
 
@@ -1884,7 +1999,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
   <li><strong>Performance regression</strong>: job slowed 3x. Agent reads Spark UI, identifies skew, proposes salt or repartition.</li>
 </ul>
 
-<h3>7.3 Data quality with AI</h3>
+<h3 id="73-data-quality-with-ai">7.3 Data quality with AI</h3>
 
 <h4>Frameworks</h4>
 <ul>
@@ -1901,7 +2016,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
   <li><strong>Semantic column naming</strong>: LLM enriches schema descriptions for ambiguous columns.</li>
 </ul>
 
-<h3>7.4 Data lineage with AI</h3>
+<h3 id="74-data-lineage-with-ai">7.4 Data lineage with AI</h3>
 
 <ul>
   <li><strong>Column-level lineage from SQL parsing</strong>: tools like sqlglot, sqllineage parse SQL into ASTs and trace columns end-to-end.</li>
@@ -1910,7 +2025,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
   <li><strong>Impact analysis</strong>: "if I drop this column, what breaks?" — agents can trace and summarize.</li>
 </ul>
 
-<h3>7.5 Schema inference &amp; drift</h3>
+<h3 id="75-schema-inference-amp-drift">7.5 Schema inference &amp; drift</h3>
 <ul>
   <li><strong>Schema-on-read</strong> (Athena, Spark) — infer at query time. Flexible but slow, costly.</li>
   <li><strong>Schema-on-write</strong> (Parquet with explicit schema) — fast, but rigid.</li>
@@ -1918,7 +2033,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
   <li><strong>Drift detection</strong>: hash the schema; alert when hash changes. Classify breaking vs. non-breaking. LLM helps explain the change.</li>
 </ul>
 
-<h3>7.6 Reconciliation</h3>
+<h3 id="76-reconciliation">7.6 Reconciliation</h3>
 <ul>
   <li>Row counts (source vs. target).</li>
   <li>Sum of numeric columns.</li>
@@ -1935,7 +2050,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
 
 <p>Every bullet on your resume is fair game. The interviewer will pick 2-3 they find interesting and dig. Below: prepared answers for the highest-probability deep-dives, plus the 2-vs-5 years script.</p>
 
-<h3>8.1 The 2-vs-5 years problem (prepare this answer cold)</h3>
+<h3 id="81-the-2-vs-5-years-problem-prepare-this-answer-cold">8.1 The 2-vs-5 years problem (prepare this answer cold)</h3>
 
 <div class="callout callout-gap">
   <strong>They will ask. Don't be defensive. Acknowledge → reframe → redirect.</strong>
@@ -1954,7 +2069,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
   <li>End with an opening — invites them to probe specifics.</li>
 </ul>
 
-<h3>8.2 Alpha Copilot — anticipated deep dive</h3>
+<h3 id="82-alpha-copilot-anticipated-deep-dive">8.2 Alpha Copilot — anticipated deep dive</h3>
 
 <div class="qa">
   <div class="qa-q">Q: Walk me through Alpha Copilot's architecture end to end.</div>
@@ -1981,7 +2096,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
   <div class="qa-a">[Use the layered answer from Part 6.7 above.] Six stacked optimizations: prompt caching, retrieval-trimmed schema, semantic few-shot, parallel pipelines, streaming, and model routing.</div>
 </div>
 
-<h3>8.3 Agent Forge — anticipated deep dive (your headline)</h3>
+<h3 id="83-agent-forge-anticipated-deep-dive-your-headline">8.3 Agent Forge — anticipated deep dive (your headline)</h3>
 
 <div class="qa">
   <div class="qa-q">Q: What problem was Agent Forge built to solve?</div>
@@ -2013,7 +2128,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
   <div class="qa-a">Those are frameworks for building one agent or workflow. Agent Forge is a platform for managing many agents across the enterprise — it doesn't replace the framework, it sits above it. We support LangGraph and our own SDK as the building tools, but Agent Forge provides the registration, governance, observability, and discovery layer that no single-team framework offers. The analog is Kubernetes vs. a single Docker container — orthogonal concerns.</div>
 </div>
 
-<h3>8.4 TinyMathReason-1B — anticipated deep dive</h3>
+<h3 id="84-tinymathreason-1b-anticipated-deep-dive">8.4 TinyMathReason-1B — anticipated deep dive</h3>
 
 <div class="qa">
   <div class="qa-q">Q: Why MaxText/JAX and not PyTorch FSDP?</div>
@@ -2030,7 +2145,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
   <div class="qa-a">DPO is great for general preference alignment but pairs of "chosen vs. rejected" don't capture reasoning quality well — both could be plausible chains of thought. GRPO (Group Relative Policy Optimization, from DeepSeek-R1) samples multiple responses per prompt, scores each (here, by correctness against a math gold answer), and optimizes within the group. This is well-suited to verifiable tasks like math where you have a clear reward signal. The result was better step-level reasoning on held-out problems vs. DPO baseline.</div>
 </div>
 
-<h3>8.5 Publications — anticipated deep dive</h3>
+<h3 id="85-publications-anticipated-deep-dive">8.5 Publications — anticipated deep dive</h3>
 
 <div class="qa">
   <div class="qa-q">Q: What's novel about GoT4SQL-DA?</div>
@@ -2042,7 +2157,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
   <div class="qa-a">Tree-of-Thoughts explores reasoning as a tree — each node is a thought, you branch, prune, backtrack. Graph-of-Thoughts adds merge and refine operations — you can combine partial solutions, refine a node based on multiple parents, share sub-results across branches. This is closer to how humans actually reason about hard problems — we don't pick one path and prune; we synthesize across attempts. Computationally it's more expensive but expresses reasoning patterns ToT can't.</div>
 </div>
 
-<h3>8.6 Other resume bullets — quick refreshers</h3>
+<h3 id="86-other-resume-bullets-quick-refreshers">8.6 Other resume bullets — quick refreshers</h3>
 
 <ul>
   <li><strong>RAG on fund prospectuses</strong>: be ready on chunking strategy (semantic chunks on heading boundaries), embedding model choice, retrieval evaluation (Ragas faithfulness ~0.X), and how you handled tables and figures in PDFs.</li>
@@ -2057,7 +2172,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
 
 <p>Five worked walkthroughs. Practice drawing each on paper from memory. The framework: <em>(1) clarify, (2) estimate scale, (3) high-level architecture, (4) drill into 1-2 components, (5) failure modes and scaling, (6) explicit tradeoffs.</em> For the broader system design toolkit — back-of-envelope numbers, caching, sharding, consensus, worked classic designs — see the <a href="system-design-guide.html">system design guide</a>.</p>
 
-<h3>9.1 Framework for any system design answer</h3>
+<h3 id="91-framework-for-any-system-design-answer">9.1 Framework for any system design answer</h3>
 <ol>
   <li><strong>Clarify requirements</strong> — functional (what does it do), non-functional (latency SLO, scale, availability, cost ceiling).</li>
   <li><strong>Estimate scale</strong> — QPS, data volume, growth. Aloud: "If we expect 1M events/day, that's ~12 QPS average, peak maybe 100 QPS."</li>
@@ -2068,7 +2183,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
   <li><strong>Tradeoffs</strong> — explicitly name choices and alternatives.</li>
 </ol>
 
-<h3>9.1a ML system design framework (the seven-stage template)</h3>
+<h3 id="91a-ml-system-design-framework-the-seven-stage-template">9.1a ML system design framework (the seven-stage template)</h3>
 
 <p>When the question is "design an ML system" (recommender, fraud detector, churn predictor, anything trained), walk through these seven stages out loud. Reviewers want to hear the structure as much as the answer.</p>
 
@@ -2086,7 +2201,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
   <strong>Memory hook:</strong> <em>"Problem → Data → Features → Model → Serving → Monitoring → Metrics."</em> Say each phase name aloud as you draw the boxes.
 </div>
 
-<h3>9.1b "Design ChatGPT / a coding copilot / an agent" — LLM-product template</h3>
+<h3 id="91b-design-chatgpt-a-coding-copilot-an-agent-llm-product-tem">9.1b "Design ChatGPT / a coding copilot / an agent" — LLM-product template</h3>
 
 <p>This is the most common 2026 system-design question for a Lead AI role. The structure:</p>
 
@@ -2111,7 +2226,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
 
 <p>For an <strong>agent product</strong> specifically: emphasize the bounded agent loop, the eval harness (golden trajectories, not just final answers), permission model on tools, and human-in-the-loop checkpoints.</p>
 
-<h3>9.1c RAG system design template</h3>
+<h3 id="91c-rag-system-design-template">9.1c RAG system design template</h3>
 
 <p>If asked "design a RAG system for [X]," follow this checklist out loud:</p>
 
@@ -2127,7 +2242,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
   <li><strong>Monitoring</strong> — retrieval miss rate, low-confidence rate, citation click-through, user thumbs.</li>
 </ol>
 
-<h3>9.1d LLM eval design template</h3>
+<h3 id="91d-llm-eval-design-template">9.1d LLM eval design template</h3>
 
 <p>When asked "how would you evaluate this LLM feature?" — they're checking whether you have an engineering-grade eval instinct, not just vibes.</p>
 
@@ -2140,7 +2255,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
   <li><strong>Online eval</strong> — production traffic sampled, judged async, dashboarded. Online metric (thumbs, completion rate, user retention) is the ultimate truth.</li>
 </ol>
 
-<h3>9.1e AI-assisted coding interview protocol</h3>
+<h3 id="91e-ai-assisted-coding-interview-protocol">9.1e AI-assisted coding interview protocol</h3>
 
 <p>In 2026, many on-site coding rounds <strong>expect</strong> you to use Cursor or Claude Code. The reviewer is <em>not</em> testing autocomplete speed — they're testing your judgment as an AI-augmented engineer. What they look for:</p>
 
@@ -2158,7 +2273,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
   <strong>Phrase to use:</strong> <em>"Let me have Claude Code draft this, then I'll walk through and verify each part."</em> Signals you use AI deliberately, not reflexively.
 </div>
 
-<h3>9.2 Scenario A: Agentic ingestion pipeline for 50 vendors</h3>
+<h3 id="92-scenario-a-agentic-ingestion-pipeline-for-50-vendors">9.2 Scenario A: Agentic ingestion pipeline for 50 vendors</h3>
 
 <p><em>"Design an AI agent system that ingests CSV files from 50 vendors, infers schema, validates quality, and loads to a lakehouse."</em></p>
 
@@ -2229,11 +2344,11 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
   <li>Per-vendor agent session vs. shared: per-vendor for isolation and parallelism, at modest extra cost.</li>
 </ul>
 
-<h3>9.3 Scenario B: Reverse engineer 500 Informatica jobs</h3>
+<h3 id="93-scenario-b-reverse-engineer-500-informatica-jobs">9.3 Scenario B: Reverse engineer 500 Informatica jobs</h3>
 
 <p>Already covered in Part 7.1 with full architecture. The interview move here: <em>draw that diagram, defend each agent's role, then they will drill into "how do you handle X" — refer to Part 7.1 Q&amp;A.</em></p>
 
-<h3>9.4 Scenario C: Self-healing data lake</h3>
+<h3 id="94-scenario-c-self-healing-data-lake">9.4 Scenario C: Self-healing data lake</h3>
 
 <p><em>"Build an agent that monitors a data lake and auto-remediates broken pipelines."</em></p>
 
@@ -2294,7 +2409,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
   <li>Learning corpus: every diagnosis (whether auto-fixed or human-corrected) is logged with outcome; periodically used as few-shot examples or fine-tuning data.</li>
 </ul>
 
-<h3>9.5 Scenario D: Agent Forge on AgentCore</h3>
+<h3 id="95-scenario-d-agent-forge-on-agentcore">9.5 Scenario D: Agent Forge on AgentCore</h3>
 
 <p><em>"Re-architect Agent Forge to run on AWS AgentCore."</em></p>
 
@@ -2321,7 +2436,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
   <li>Decommission self-managed runtime once last agent moved.</li>
 </ol>
 
-<h3>9.6 Scenario E: Text-to-SQL for a 10,000-table warehouse</h3>
+<h3 id="96-scenario-e-text-to-sql-for-a-10000-table-warehouse">9.6 Scenario E: Text-to-SQL for a 10,000-table warehouse</h3>
 
 <p><em>"Build a Text-to-SQL system for a warehouse with 10,000 tables."</em></p>
 
@@ -2352,7 +2467,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
 
 <p>JD requires Jenkins/Harness, Bitbucket, SonarQube, Veracode, and embedding agentic workflows in CI/CD. You have Harness + Docker on resume; round out the others.</p>
 
-<h3>10.1 Standard pipeline structure</h3>
+<h3 id="101-standard-pipeline-structure">10.1 Standard pipeline structure</h3>
 <div class="ascii">
   Developer push
         │
@@ -2402,7 +2517,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
   └─────────────────────────┘
 </div>
 
-<h3>10.2 SonarQube basics</h3>
+<h3 id="102-sonarqube-basics">10.2 SonarQube basics</h3>
 <ul>
   <li>Static analysis platform — code smells, bugs, security hotspots, coverage.</li>
   <li>Quality Gate: pass/fail thresholds on metrics (coverage, duplications, new bugs).</li>
@@ -2410,7 +2525,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
   <li>Languages: covers everything you'd care about (Python, Java, JS, SQL).</li>
 </ul>
 
-<h3>10.3 Veracode basics</h3>
+<h3 id="103-veracode-basics">10.3 Veracode basics</h3>
 <ul>
   <li>SAST (static), DAST (dynamic), SCA (software composition — vulnerable dependencies).</li>
   <li>Policy-driven: severity thresholds block deploys.</li>
@@ -2418,7 +2533,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
   <li>Veracode SCA = Snyk / Dependabot equivalent.</li>
 </ul>
 
-<h3>10.4 Embedding AI in CI/CD</h3>
+<h3 id="104-embedding-ai-in-cicd">10.4 Embedding AI in CI/CD</h3>
 
 <h4>PR review agent</h4>
 <ul>
@@ -2449,7 +2564,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
   <li>Caveat: never auto-apply security fixes; always human review.</li>
 </ul>
 
-<h3>10.5 Harness specifics (you list this)</h3>
+<h3 id="105-harness-specifics-you-list-this">10.5 Harness specifics (you list this)</h3>
 <ul>
   <li>Pipeline-as-code via YAML.</li>
   <li>Strong feature: GitOps with delegate model.</li>
@@ -2458,7 +2573,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
   <li>Be ready to talk about: your Harness pipeline structure for Alpha Copilot, how you handle secrets (Harness Secret Manager / external vault), and rollback strategy.</li>
 </ul>
 
-<h3>10.6 Q&amp;A</h3>
+<h3 id="106-qampa">10.6 Q&amp;A</h3>
 
 <div class="qa">
   <div class="qa-q">Q: How would you embed an LLM-based code review into a CI pipeline?</div>
@@ -2476,7 +2591,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
 
 <p>FTSE 100 + financial-services-adjacent (Experian's data is heavily regulated). Be sharp on these. (Sections 11.1–11.5 are AWS-flavored — see the <a href="aws-guide.html">AWS guide</a> for the full IAM / KMS / CloudTrail reference.)</p>
 
-<h3>11.1 AWS IAM essentials</h3>
+<h3 id="111-aws-iam-essentials">11.1 AWS IAM essentials</h3>
 <ul>
   <li><strong>Principle of least privilege</strong> — every role gets only what it needs.</li>
   <li><strong>Roles over keys</strong> — IAM roles assumed via STS, never long-lived access keys.</li>
@@ -2485,7 +2600,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
   <li><strong>SCPs (Service Control Policies)</strong> — at AWS Organizations level, restrict accounts org-wide.</li>
 </ul>
 
-<h3>11.2 Encryption</h3>
+<h3 id="112-encryption">11.2 Encryption</h3>
 <ul>
   <li><strong>At rest</strong>: KMS-managed keys. SSE-KMS on S3, encrypted EBS, DynamoDB encryption at rest (default).</li>
   <li><strong>In transit</strong>: TLS 1.2+. ACM for cert management.</li>
@@ -2493,14 +2608,14 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
   <li><strong>Envelope encryption</strong> — data key encrypted by master key; standard pattern for performance.</li>
 </ul>
 
-<h3>11.3 Secrets management</h3>
+<h3 id="113-secrets-management">11.3 Secrets management</h3>
 <ul>
   <li><strong>AWS Secrets Manager</strong> — versioned, auto-rotation supported (RDS, Redshift).</li>
   <li><strong>SSM Parameter Store</strong> — cheaper, simpler; SecureString uses KMS. Lower limits.</li>
   <li>Never commit secrets. Pre-commit hooks (detect-secrets, gitleaks).</li>
 </ul>
 
-<h3>11.4 Data classification</h3>
+<h3 id="114-data-classification">11.4 Data classification</h3>
 <ul>
   <li><strong>PII</strong> — names, emails, SSN, addresses.</li>
   <li><strong>PHI</strong> — health info (HIPAA in US).</li>
@@ -2509,14 +2624,14 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
   <li>Experian-specific: credit-bureau data is extremely regulated; consent and FCRA-style controls matter.</li>
 </ul>
 
-<h3>11.5 Audit logging</h3>
+<h3 id="115-audit-logging">11.5 Audit logging</h3>
 <ul>
   <li><strong>CloudTrail</strong> — every API call to AWS. Mandatory.</li>
   <li><strong>VPC Flow Logs</strong> — network traffic metadata.</li>
   <li><strong>Application audit log</strong> — every user action, model invocation, tool call. Immutable storage (S3 with Object Lock).</li>
 </ul>
 
-<h3>11.6 LLM-specific security</h3>
+<h3 id="116-llm-specific-security">11.6 LLM-specific security</h3>
 <ul>
   <li><strong>Prompt injection</strong> — covered in 5.8.</li>
   <li><strong>Data exfiltration via tools</strong> — agent has tool access to read sensitive data; user tricks it into emitting that data. Defense: scoped tools per user role; output filters.</li>
@@ -2525,7 +2640,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
   <li><strong>Supply chain</strong> — downloaded models or prompts may be poisoned. Defense: pin sources, hash-verify, sandboxed execution.</li>
 </ul>
 
-<h3>11.7 OWASP Top 10 for LLM Applications (2025)</h3>
+<h3 id="117-owasp-top-10-for-llm-applications-2025">11.7 OWASP Top 10 for LLM Applications (2025)</h3>
 <p class="meta">The <a href="agentic-ai-guide.html">agentic AI guide</a> covers each of these with concrete agent-side mitigations.</p>
 <ol>
   <li><strong>LLM01: Prompt Injection</strong> — still the #1 risk; direct and indirect (poisoned retrieved content, tool output).</li>
@@ -2541,7 +2656,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
 </ol>
 <p>Know this list by name and number. The interviewer might cite "OWASP LLM Top 10" directly — flag that you know it's the <strong>2025 revision</strong>, that LLM07 and LLM08 are new, Excessive Agency was expanded into three root causes, and Sensitive Info Disclosure jumped to #2.</p>
 
-<h3>11.8 Q&amp;A</h3>
+<h3 id="118-qampa">11.8 Q&amp;A</h3>
 
 <div class="qa">
   <div class="qa-q">Q: How do you scope tool access for an agent?</div>
@@ -2559,7 +2674,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
 
 <p>This is a Lead role. Prepare 8 STAR stories. Each: 90 seconds, Situation → Task → Action → Result, quantify the Result. Draft answers below — edit to match your actual experience.</p>
 
-<h3>12.1 Story bank (STAR format)</h3>
+<h3 id="121-story-bank-star-format">12.1 Story bank (STAR format)</h3>
 
 <div class="star">
 <strong>Theme:</strong> Leading without authority<br>
@@ -2633,7 +2748,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
 <strong>Lesson:</strong> Transparent prioritization is kinder than private prioritization, even when the answer is the same.
 </div>
 
-<h3>12.2 Behavioral questions to expect</h3>
+<h3 id="122-behavioral-questions-to-expect">12.2 Behavioral questions to expect</h3>
 <ul>
   <li>Tell me about a time you led a project end to end.</li>
   <li>Describe a technical disagreement with a senior person and how you handled it.</li>
@@ -2647,7 +2762,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
   <li>How do you stay current with AI?</li>
 </ul>
 
-<h3>12.3 AI-specific behavioral prompts (prepare these cold)</h3>
+<h3 id="123-ai-specific-behavioral-prompts-prepare-these-cold">12.3 AI-specific behavioral prompts (prepare these cold)</h3>
 
 <p>By 2026, Lead AI interviews almost always include 2-3 of these. They probe whether you've operated a real LLM system in production, not just prototyped.</p>
 
@@ -2677,7 +2792,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
 
 <p>A Lead candidate who asks no questions looks junior. Pick 4-6 from this list depending on who's interviewing.</p>
 
-<h3>For engineering leadership / Director</h3>
+<h3 id="for-engineering-leadership-director">For engineering leadership / Director</h3>
 <ul>
   <li>What does success in the first 90 days look like for this role?</li>
   <li>What are the biggest technical bets the team is making right now?</li>
@@ -2688,7 +2803,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
   <li>How autonomous is engineering's decision-making vs. driven from above?</li>
 </ul>
 
-<h3>For peer engineers / team members</h3>
+<h3 id="for-peer-engineers-team-members">For peer engineers / team members</h3>
 <ul>
   <li>How does the team currently use Claude Code / Cursor? What's the adoption story?</li>
   <li>What's the biggest pipeline you're trying to reverse engineer? Mainframe? Informatica?</li>
@@ -2698,28 +2813,28 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
   <li>How does the team make architecture decisions — RFC, ad-hoc, top-down?</li>
 </ul>
 
-<h3>For product / business stakeholders</h3>
+<h3 id="for-product-business-stakeholders">For product / business stakeholders</h3>
 <ul>
   <li>What's the business outcome you're optimizing for? Cost reduction, new product, time-to-market?</li>
   <li>Who's the primary internal customer for the AI engineering team's work?</li>
   <li>How are AI investment decisions made — model, tooling, headcount?</li>
 </ul>
 
-<h3>For HR / final round</h3>
+<h3 id="for-hr-final-round">For HR / final round</h3>
 <ul>
   <li>What's the growth path from Lead — Staff, Principal, manager? How is that handled?</li>
   <li>What does hybrid look like in practice — days/week in office, flexibility?</li>
   <li>What's the compensation structure — base, bonus, RSU?</li>
 </ul>
 
-<h3>Strong closer (use sparingly)</h3>
+<h3 id="strong-closer-use-sparingly">Strong closer (use sparingly)</h3>
 <blockquote>"From everything I've heard, this role is squarely about making AI agents do real engineering work. I've been doing exactly that — Agent Forge, Alpha Copilot, the Text-to-SQL research, the 1B-param pretraining. What I'd want to confirm before I commit is the latitude — will this role have the scope to set agentic engineering standards across teams, or is it more focused on building specific systems?"</blockquote>
 
 <hr>
 
 <h2 id="part-14">Part 14 — Study schedule &amp; final checklist <span class="tag tag-core">★ CORE</span></h2>
 
-<h3>14.1 Two-week sprint (recommended)</h3>
+<h3 id="141-two-week-sprint-recommended">14.1 Two-week sprint (recommended)</h3>
 
 <h4>Week 1 — fill the gaps</h4>
 <table>
@@ -2745,7 +2860,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
 <tr><td>14</td><td>Light review, rest, logistics</td><td>Ready</td></tr>
 </table>
 
-<h3>14.2 One-week crash (if 2 weeks isn't possible)</h3>
+<h3 id="142-one-week-crash-if-2-weeks-isnt-possible">14.2 One-week crash (if 2 weeks isn't possible)</h3>
 <table>
 <tr><th scope="col">Day</th><th scope="col">Focus</th></tr>
 <tr><td>1</td><td>AgentCore + AWS data stack (Parts 1, 2)</td></tr>
@@ -2757,7 +2872,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
 <tr><td>7</td><td>Mock interviews + rest</td></tr>
 </table>
 
-<h3>14.3 Red flags to avoid</h3>
+<h3 id="143-red-flags-to-avoid">14.3 Red flags to avoid</h3>
 <ol>
   <li><strong>Don't oversell AWS.</strong> Be honest about Azure-leaning background, frame the gap as fast-fillable.</li>
   <li><strong>Don't bash legacy systems.</strong> Experian has decades of legacy. Respect it.</li>
@@ -2769,7 +2884,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
   <li><strong>Don't forget to ask questions.</strong> Silent candidates look uninterested.</li>
 </ol>
 
-<h3>14.4 Day-before checklist</h3>
+<h3 id="144-day-before-checklist">14.4 Day-before checklist</h3>
 <ul>
   <li>[ ] Re-read JD once</li>
   <li>[ ] Re-read your resume — every bullet, ready to defend</li>
@@ -2785,7 +2900,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
   <li>[ ] Sleep at least 7 hours</li>
 </ul>
 
-<h3>14.5 Day-of mental model</h3>
+<h3 id="145-day-of-mental-model">14.5 Day-of mental model</h3>
 <ul>
   <li>You are not begging for a job — you are evaluating if this is the right place for the next 2-3 years of your career.</li>
   <li>Mutual interview. They sell, you sell.</li>
@@ -2794,7 +2909,7 @@ enriched = clean.join(broadcast(lookup), "customer_id", "left")
   <li>Smile, breathe, take a beat before answering complex questions. It's not a quiz show.</li>
 </ul>
 
-<h3>14.6 After the interview</h3>
+<h3 id="146-after-the-interview">14.6 After the interview</h3>
 <ul>
   <li>Send a thank-you note within 24 hours — short, specific (reference one thing discussed), and reaffirms interest.</li>
   <li>Write down what was asked. Useful regardless of outcome.</li>
@@ -2913,6 +3028,151 @@ End of guide · Last updated 2026-05-29 · Open in browser or print to PDF
 </script>
 
 <button class="scroll-top" id="scroll-top" aria-label="Scroll to top">↑</button>
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/styles/default.min.css" disabled>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/highlight.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  if (typeof hljs !== 'undefined') {
+    document.querySelectorAll('pre code').forEach(b => {
+      try { hljs.highlightElement(b); } catch (e) {}
+    });
+  }
+  document.querySelectorAll('pre').forEach(pre => {
+    if (pre.classList.contains('ascii')) return;
+    const btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.type = 'button';
+    btn.textContent = 'Copy';
+    btn.setAttribute('aria-label', 'Copy code to clipboard');
+    btn.addEventListener('click', async () => {
+      const code = pre.querySelector('code')?.innerText ?? pre.innerText;
+      try {
+        await navigator.clipboard.writeText(code);
+        btn.textContent = 'Copied'; btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1400);
+      } catch (e) { btn.textContent = 'Err'; }
+    });
+    pre.appendChild(btn);
+  });
+});
+</script>
+
+
+<div class="search-overlay" id="search-overlay" role="dialog" aria-modal="true" aria-label="Search">
+  <div class="search-modal">
+    <input type="text" class="search-input" id="search-input" placeholder="Search all guides…  (Esc to close, ↑↓ to navigate)" autocomplete="off" spellcheck="false">
+    <div class="search-results" id="search-results"></div>
+  </div>
+</div>
+
+<script>
+(function() {
+  const overlay = document.getElementById('search-overlay');
+  const input = document.getElementById('search-input');
+  const results = document.getElementById('search-results');
+  const trigger = document.getElementById('search-trigger');
+  if (!overlay || !input || !results) return;
+  let idx = null;
+  let active = 0;
+
+  async function loadIndex() {
+    if (idx) return idx;
+    try {
+      const r = await fetch('search-index.json');
+      idx = await r.json();
+    } catch (e) { idx = []; }
+    return idx;
+  }
+  function escapeHTML(s) { return s.replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c])); }
+  function escapeRE(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+  function highlight(s, terms) {
+    let h = escapeHTML(s);
+    for (const t of terms) {
+      if (!t) continue;
+      h = h.replace(new RegExp('(' + escapeRE(t) + ')', 'gi'), '<mark>$1</mark>');
+    }
+    return h;
+  }
+  function score(sec, terms) {
+    let s = 0;
+    const title = sec.t.toLowerCase();
+    const text = sec.x.toLowerCase();
+    for (const t of terms) {
+      if (!t) continue;
+      if (title === t) s += 50;
+      if (title.includes(t)) s += 10;
+      if (title.startsWith(t)) s += 5;
+      if (text.includes(t)) s += 1;
+    }
+    return s;
+  }
+  async function render(q) {
+    await loadIndex();
+    const terms = q.toLowerCase().split(/\s+/).filter(Boolean);
+    if (!terms.length) {
+      results.innerHTML = '<div class="search-empty">Type to search across all guides.</div>';
+      return;
+    }
+    let hits = [];
+    for (const g of idx) {
+      for (const sec of g.s) {
+        const sc = score(sec, terms);
+        if (sc > 0) hits.push({g, sec, sc});
+      }
+    }
+    hits.sort((a, b) => b.sc - a.sc);
+    hits = hits.slice(0, 20);
+    if (!hits.length) {
+      results.innerHTML = '<div class="search-empty">No matches.</div>';
+      return;
+    }
+    results.innerHTML = hits.map((h, i) => '<a class="search-result' + (i === 0 ? ' active' : '') + '" href="' + h.g.f + '#' + h.sec.i + '" data-i="' + i + '">' +
+      '<div class="search-result-title">' + highlight(h.sec.t, terms) + '</div>' +
+      '<div class="search-result-meta">' + escapeHTML(h.g.g) + ' · ' + h.sec.l + '</div>' +
+      '<div class="search-result-text">' + highlight(h.sec.x.substring(0, 200), terms) + '</div>' +
+    '</a>').join('');
+    active = 0;
+  }
+  function open() {
+    overlay.classList.add('open');
+    input.focus();
+    render(input.value);
+  }
+  function close() { overlay.classList.remove('open'); }
+  function moveActive(d) {
+    const items = results.querySelectorAll('.search-result');
+    if (!items.length) return;
+    items[active]?.classList.remove('active');
+    active = (active + d + items.length) % items.length;
+    items[active].classList.add('active');
+    items[active].scrollIntoView({block: 'nearest'});
+  }
+  if (trigger) trigger.addEventListener('click', open);
+  overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+  input.addEventListener('input', e => render(e.target.value));
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Escape') close();
+    else if (e.key === 'ArrowDown') { e.preventDefault(); moveActive(1); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); moveActive(-1); }
+    else if (e.key === 'Enter') {
+      const items = results.querySelectorAll('.search-result');
+      if (items[active]) items[active].click();
+    }
+  });
+  document.addEventListener('keydown', e => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      e.preventDefault();
+      overlay.classList.contains('open') ? close() : open();
+    } else if (e.key === '/' && !overlay.classList.contains('open') &&
+               !['INPUT','TEXTAREA'].includes(e.target.tagName) &&
+               !e.target.isContentEditable) {
+      e.preventDefault(); open();
+    }
+  });
+})();
+</script>
 
 </body>
 </html>

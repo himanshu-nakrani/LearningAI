@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Glossary of key concepts and acronyms used across the Learning AI guides — AI engineering, agentic AI, LLM inference, cloud AI services, hardware, system design, Python, and DSA.">
+<meta property="og:title" content="Glossary — Learning AI">
+<meta property="og:description" content="Brief definitions of the key concepts used across the guides, with links to deeper treatments.">
+<meta property="og:type" content="article">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Glossary — Learning AI">
+<meta name="twitter:description" content="Brief definitions of the key concepts used across the guides.">
+<title>Glossary — Learning AI</title>
+<style>
+  :root {
+    --fg: #1a1a1a;
+    --muted: #555;
+    --bg: #fdfdfc;
+    --accent: #6b8e2e;
+    --accent-soft: #eef2e0;
+    --border: #d4d4d0;
+    --code-bg: #f4f1ec;
+    --code-fg: #2a2a2a;
+    --warn-bg: #fff8e0;
+    --warn-bd: #e0c560;
+    --tip-bg: #e8f3eb;
+    --tip-bd: #6ba577;
+    --gap-bg: #fbe8e6;
+    --gap-bd: #b8453a;
+  }
+  html.dark .booknav a.current { color: #1a1a1a; }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: Charter, "Iowan Old Style", Georgia, serif;
+    color: var(--fg);
+    background: var(--bg);
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 50px 30px 90px;
+    line-height: 1.75;
+    font-size: 18px;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    font-feature-settings: "kern", "liga", "calt";
+    text-wrap: pretty;
+  }
+  h1, h2, h3 {
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+    color: var(--fg);
+    line-height: 1.3;
+    text-wrap: balance;
+  }
+  h1, h2, h3 { scroll-margin-top: 64px; }
+  h1 {
+    font-size: 2.2em;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 18px;
+    margin: 0.5em 0 0.3em;
+    letter-spacing: -0.015em;
+  }
+  h2 {
+    font-size: 1.5em;
+    margin-top: 2.6em;
+    margin-bottom: 0.8em;
+    letter-spacing: -0.008em;
+  }
+  h2::before {
+    content: '';
+    display: block;
+    width: 36px;
+    height: 2px;
+    background: var(--accent);
+    margin-bottom: 14px;
+    border-radius: 1px;
+  }
+  .tagline { color: var(--muted); margin-bottom: 2.5em; font-size: 1.02em; }
+  p { margin: 0.9em 0; }
+  a { color: var(--accent); }
+  p a, dd a {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+    text-decoration-color: var(--border);
+    transition: text-decoration-color 0.15s ease;
+  }
+  p a:hover, dd a:hover { text-decoration-color: var(--accent); }
+  dl.glossary { margin: 1em 0 1.5em; }
+  dl.glossary dt {
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    font-weight: 600;
+    font-size: 1.02em;
+    margin-top: 1.1em;
+    color: var(--fg);
+    scroll-margin-top: 64px;
+  }
+  dl.glossary dt span.alt {
+    color: var(--muted);
+    font-weight: 400;
+    font-size: 0.92em;
+    margin-left: 4px;
+  }
+  dl.glossary dd {
+    margin: 0.3em 0 0 0;
+    color: var(--fg);
+  }
+  dl.glossary dd .ref {
+    color: var(--muted);
+    font-size: 0.88em;
+    margin-left: 4px;
+  }
+  dl.glossary dd .ref a { color: var(--muted); }
+  dl.glossary dd .ref a:hover { color: var(--accent); }
+  code {
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    background: var(--code-bg);
+    color: var(--code-fg);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 0.88em;
+  }
+  hr {
+    border: none;
+    margin: 2.8em 0;
+    text-align: center;
+    height: 1em;
+    overflow: visible;
+  }
+  hr::after {
+    content: '·  ·  ·';
+    color: var(--muted);
+    letter-spacing: 0.5em;
+    font-size: 1em;
+    font-family: -apple-system, sans-serif;
+  }
+  .meta { color: var(--muted); font-size: 0.9em; margin-bottom: 2em; }
+  footer {
+    margin-top: 4em;
+    padding-top: 1.5em;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 0.9em;
+  }
+  footer a { color: var(--accent); }
+
+  /* booknav */
+  .booknav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    margin: -40px -30px 30px;
+    padding: 7px 24px;
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+    font-size: 0.76em;
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 2px 5px;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .booknav .home {
+    font-weight: 600;
+    color: var(--accent);
+    text-decoration: none;
+    padding-right: 6px;
+    border-right: 1px solid var(--border);
+    margin-right: 1px;
+    flex-shrink: 0;
+  }
+  .booknav a {
+    color: var(--muted);
+    text-decoration: none;
+    padding: 2px 5px;
+    border-radius: 3px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .booknav a:hover { background: var(--accent-soft); color: var(--accent); }
+  .booknav a.current { background: var(--accent); color: #fff; font-weight: 600; }
+  @media (max-width: 700px) { .booknav { margin: -40px -20px 24px; padding: 7px 16px; font-size: 0.72em; } }
+
+  .skip-link {
+    position: absolute;
+    top: -40px;
+    left: 8px;
+    background: var(--accent);
+    color: #fff;
+    padding: 8px 16px;
+    z-index: 9999;
+    text-decoration: none;
+    border-radius: 0 0 4px 4px;
+    font-weight: 600;
+  }
+  .skip-link:focus { top: 0; }
+
+  /* search trigger + overlay */
+  .search-trigger {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: -apple-system, sans-serif;
+    font-size: 0.78em;
+    padding: 2px 9px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-left: auto;
+    margin-right: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    flex-shrink: 0;
+    transition: color 0.15s ease, border-color 0.15s ease;
+  }
+  .search-trigger:hover { color: var(--accent); border-color: var(--accent); }
+  .search-trigger kbd {
+    font-family: -apple-system, sans-serif;
+    background: var(--code-bg);
+    padding: 0 5px;
+    border-radius: 3px;
+    font-size: 0.9em;
+    color: var(--muted);
+    border: none;
+  }
+  .theme-toggle-inline {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 0.95rem;
+    line-height: 1;
+    color: var(--fg);
+    padding: 0;
+    flex-shrink: 0;
+    transition: background 0.15s ease, transform 0.15s ease;
+  }
+  .theme-toggle-inline:hover { background: var(--accent-soft); transform: scale(1.08); }
+  .search-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 2000;
+    display: none;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 12vh;
+    backdrop-filter: blur(2px);
+  }
+  .search-overlay.open { display: flex; }
+  .search-modal {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    width: min(640px, 92%);
+    max-height: 70vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    overflow: hidden;
+    font-family: -apple-system, sans-serif;
+  }
+  .search-input {
+    border: none;
+    outline: none;
+    padding: 16px 20px;
+    font-size: 1.05em;
+    background: transparent;
+    color: var(--fg);
+    border-bottom: 1px solid var(--border);
+    font-family: inherit;
+  }
+  .search-input::placeholder { color: var(--muted); }
+  .search-results { overflow-y: auto; padding: 6px 0; }
+  .search-result {
+    display: block;
+    padding: 10px 20px;
+    color: var(--fg);
+    text-decoration: none;
+    border-left: 3px solid transparent;
+    font-size: 0.92em;
+  }
+  .search-result:hover, .search-result.active {
+    background: var(--accent-soft);
+    border-left-color: var(--accent);
+  }
+  .search-result-title { font-weight: 600; }
+  .search-result-meta { font-size: 0.78em; color: var(--muted); margin-top: 2px; }
+  .search-result-text { font-size: 0.82em; color: var(--muted); margin-top: 4px; line-height: 1.4; max-height: 2.9em; overflow: hidden; }
+  .search-empty { padding: 24px 20px; color: var(--muted); text-align: center; font-size: 0.9em; }
+  .search-result mark { background: var(--accent-soft); color: var(--accent); padding: 0 2px; border-radius: 2px; font-weight: 600; }
+
+  /* reading progress + scroll-to-top */
+  .reading-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 2px;
+    background: var(--accent);
+    z-index: 1001;
+    width: 0%;
+    pointer-events: none;
+    transition: width 0.1s ease;
+  }
+  .scroll-top {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1.3rem;
+    line-height: 1;
+    padding: 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 999;
+    transition: opacity 0.3s ease, transform 0.15s ease;
+  }
+  .scroll-top.visible { opacity: 1; pointer-events: auto; }
+  .scroll-top:hover { transform: translateY(-2px); }
+
+  a:focus-visible, button:focus-visible {
+    outline: 3px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  html.dark {
+    --fg: #e8e8e8;
+    --muted: #b8b8b8;
+    --bg: #1d1d1f;
+    --accent: #a8c476;
+    --accent-soft: #232818;
+    --border: #4a4a4a;
+    --code-bg: #2a2a2c;
+    --code-fg: #d4d4d4;
+    --warn-bg: #3a3320;
+    --warn-bd: #b89847;
+    --tip-bg: #2a3a2e;
+    --tip-bd: #6ba577;
+    --gap-bg: #3a2826;
+    --gap-bd: #b8453a;
+  }
+
+  @media (max-width: 480px) {
+    body { padding: 30px 18px 60px; font-size: 17px; }
+    h1 { font-size: 1.8em; }
+    h2 { font-size: 1.3em; }
+    .booknav { font-size: 0.7em; }
+  }
+</style>
+</head>
+<body>
+
+<a class="skip-link" href="#main">Skip to main content</a>
+
+<div class="reading-progress" id="reading-progress"></div>
+
+<nav class="booknav">
+  <a class="home" href="index.html">Home</a>
+  <a href="ai-engineering-guide.html">AI Engineering</a>
+  <a href="agentic-ai-guide.html">Agentic AI</a>
+  <a href="llm-inference-guide.html">LLM Inference</a>
+  <a href="aws-guide.html">AWS</a>
+  <a href="azure-guide.html">Azure</a>
+  <a href="gcp-guide.html">GCP</a>
+  <a href="cloud-ai-comparison.html">Cloud AI</a>
+  <a href="python-guide.html">Python</a>
+  <a href="dsa-guide.html">DSA</a>
+  <a href="system-design-guide.html">System Design</a>
+  <a href="interview-prep.html">Interview Prep</a>
+  <a class="current" href="glossary.html">Glossary</a>
+  <button class="search-trigger" id="search-trigger" type="button" aria-label="Search guides">Search <kbd>⌘K</kbd></button>
+  <button class="theme-toggle-inline" id="theme-toggle" aria-label="Toggle dark mode">🌙</button>
+</nav>
+
+<main id="main" tabindex="-1">
+
+<h1>Glossary</h1>
+<p class="tagline">Brief definitions of the key concepts used across the guides. Each entry links to where the term is treated in depth.</p>
+
+<p>Sections: <a href="#ai-ml-core">AI/ML core</a> · <a href="#agentic-ai">Agentic AI</a> · <a href="#llm-inference">LLM inference</a> · <a href="#cloud-ai">Cloud AI services</a> · <a href="#hardware">Hardware</a> · <a href="#system-design">System design</a> · <a href="#python">Python</a> · <a href="#dsa">DSA</a></p>
+
+<hr>
+
+<h2 id="ai-ml-core">AI / ML core</h2>
+<dl class="glossary">
+  <dt id="t-token">Token</dt>
+  <dd>A subword unit produced by the tokenizer — the atomic input/output of an LLM. One token ≈ ¾ of an English word on average. Costs and context limits are measured in tokens. <span class="ref">→ <a href="ai-engineering-guide.html#part-1">AI Engineering · Part 1</a></span></dd>
+
+  <dt id="t-embedding">Embedding</dt>
+  <dd>A dense vector that places text (or any item) in a high-dimensional space where geometric distance encodes semantic similarity. Sentence/document embeddings (from a dedicated embedding model) power RAG retrieval; internal token embeddings are a different, contextual concept. <span class="ref">→ <a href="ai-engineering-guide.html#part-5">AI Engineering · Part 5</a></span></dd>
+
+  <dt id="t-context-window">Context window</dt>
+  <dd>The maximum number of tokens a model can attend to in a single request. Frontier models in 2026 commonly support 1M+ tokens (Gemini 2.5/3, Claude extended thinking, GPT-5). Cost and latency grow with used context, so retrieval-augmented generation is often preferable to stuffing the window. <span class="ref">→ <a href="ai-engineering-guide.html#part-2">AI Engineering · Part 2</a></span></dd>
+
+  <dt id="t-rag">RAG <span class="alt">Retrieval-Augmented Generation</span></dt>
+  <dd>Architecture pattern: retrieve a small set of relevant documents from a vector or hybrid index, then prompt the LLM to answer using only that retrieved context. Reduces hallucination and lets a model stay current without retraining. <span class="ref">→ <a href="ai-engineering-guide.html#part-6">AI Engineering · Part 6</a></span></dd>
+
+  <dt id="t-cot">Chain-of-thought <span class="alt">CoT</span></dt>
+  <dd>Prompting the model to produce intermediate reasoning steps before its final answer. In 2025-2026, frontier "reasoning models" (GPT-5 thinking, Claude extended thinking, Gemini thinking) internalize this and charge separately for thinking tokens. <span class="ref">→ <a href="ai-engineering-guide.html#part-3">AI Engineering · Part 3</a></span></dd>
+
+  <dt id="t-finetuning">Fine-tuning</dt>
+  <dd>Further training a base model on a smaller curated dataset to specialize it. Full fine-tuning updates all parameters; parameter-efficient variants (LoRA, QLoRA) update only a small adapter to keep the original frozen. <span class="ref">→ <a href="ai-engineering-guide.html#part-11">AI Engineering · Part 11</a></span></dd>
+
+  <dt id="t-lora">LoRA / QLoRA</dt>
+  <dd><strong>LoRA</strong> (Low-Rank Adaptation) injects small trainable rank-decomposition matrices into a frozen base model — typically &lt;1% of full parameters. <strong>QLoRA</strong> additionally quantizes the base to 4-bit so training fits on much smaller GPUs. <span class="ref">→ <a href="ai-engineering-guide.html#part-11">AI Engineering · Part 11</a></span></dd>
+
+  <dt id="t-rlhf">RLHF / DPO</dt>
+  <dd>Preference-based alignment. <strong>RLHF</strong> trains a reward model from human comparisons, then uses RL (PPO) to align the policy. <strong>DPO</strong> (Direct Preference Optimization) skips the reward model and optimizes preferences directly — simpler and now the more common path. <span class="ref">→ <a href="ai-engineering-guide.html#part-11">AI Engineering · Part 11</a></span></dd>
+
+  <dt id="t-kvcache">KV cache</dt>
+  <dd>Per-layer cached attention keys and values for already-generated tokens. The dominant memory cost during decoding — proportional to batch × layers × heads × hidden × sequence length × dtype. Caching it well (paging, prefix sharing) is most of inference optimization. <span class="ref">→ <a href="llm-inference-guide.html#part-4">LLM Inference · Part 4</a></span></dd>
+
+  <dt id="t-quantization">Quantization</dt>
+  <dd>Reducing weight (and sometimes activation/KV-cache) precision below FP16/BF16: FP8 on Hopper, NVFP4/MXFP4 on Blackwell, INT8/INT4 software paths. Cuts memory and bandwidth — the main lever for cheaper inference. <span class="ref">→ <a href="llm-inference-guide.html#part-7">LLM Inference · Part 7</a></span></dd>
+
+  <dt id="t-structured-output">Structured output</dt>
+  <dd>Constraining model output to a valid JSON Schema (OpenAI Responses API, Anthropic, Gemini all support a flavor). Implemented as constrained decoding using a grammar/FSM (xgrammar, Outlines, lm-format-enforcer). <span class="ref">→ <a href="ai-engineering-guide.html#part-4">AI Engineering · Part 4</a></span></dd>
+
+  <dt id="t-eval">Evals</dt>
+  <dd>Quantitative test suites for LLM systems — golden sets, LLM-as-judge graders, trajectory rubrics. Treated as a first-class CI artifact in mature teams. Tools: Braintrust, Langfuse, Inspect AI, Promptfoo. <span class="ref">→ <a href="ai-engineering-guide.html#part-12">AI Engineering · Part 12</a></span></dd>
+</dl>
+
+<hr>
+
+<h2 id="agentic-ai">Agentic AI</h2>
+<dl class="glossary">
+  <dt id="t-agent-loop">Agent loop</dt>
+  <dd>The core perceive→plan→act→observe cycle: model emits a tool call, runtime executes it, result is fed back, repeat until the model declares done or a safety stop fires. <span class="ref">→ <a href="agentic-ai-guide.html#part-1">Agentic AI · Part 1</a></span></dd>
+
+  <dt id="t-react">ReAct</dt>
+  <dd>Interleaved reasoning + acting trace where the model alternates "Thought" → "Action" → "Observation" steps. The original general-purpose agent pattern; still useful as a fallback when planning isn't worth the upfront cost. <span class="ref">→ <a href="agentic-ai-guide.html#part-2">Agentic AI · Part 2</a></span></dd>
+
+  <dt id="t-plan-execute">Plan-and-execute</dt>
+  <dd>Generate an explicit multi-step plan first, then execute steps (often in parallel) with a re-plan trigger if a step fails. Better for governance: the upfront plan is reviewable. <span class="ref">→ <a href="agentic-ai-guide.html#part-2">Agentic AI · Part 2</a></span></dd>
+
+  <dt id="t-mcp">MCP <span class="alt">Model Context Protocol</span></dt>
+  <dd>Open standard (JSON-RPC over stdio/HTTP) for connecting LLMs to tools and data. Introduced by Anthropic Nov 2024; adopted by OpenAI Mar 2025, Google Apr 2025, Microsoft May 2025, AWS Nov 2025. Donated to the Linux Foundation (Agentic AI Foundation) Dec 2025. 10K+ public servers. <span class="ref">→ <a href="agentic-ai-guide.html#part-5">Agentic AI · Part 5</a></span></dd>
+
+  <dt id="t-a2a">A2A <span class="alt">Agent-to-Agent</span></dt>
+  <dd>Protocol for direct agent-to-agent communication and delegation. Originated at Google in 2025; supported by AWS AgentCore at GA. <span class="ref">→ <a href="agentic-ai-guide.html#part-9">Agentic AI · Part 9</a></span></dd>
+
+  <dt id="t-subagents">Subagents</dt>
+  <dd>Lightweight delegated agents spawned from a parent agent for a focused sub-task with their own context window. Popularized by Anthropic's Claude Code in 2025; central to the Claude Agent SDK. <span class="ref">→ <a href="agentic-ai-guide.html#part-7">Agentic AI · Part 7</a></span></dd>
+
+  <dt id="t-tool-use">Tool use / Function calling</dt>
+  <dd>Model emits a structured call (name + arguments) into a registered toolset; the runtime executes and returns the result. Schema differs per provider — OpenAI Responses, Anthropic <code>input_schema</code>, Gemini function calling. MCP standardizes this across vendors. <span class="ref">→ <a href="agentic-ai-guide.html#part-4">Agentic AI · Part 4</a></span></dd>
+
+  <dt id="t-computer-use">Computer use / Browser agents</dt>
+  <dd>Agents that operate a real browser or desktop via screenshots + keyboard/mouse actions. Anthropic Computer Use, OpenAI Operator, Gemini browser agents. AgentCore Browser is the managed AWS surface. <span class="ref">→ <a href="agentic-ai-guide.html#part-4">Agentic AI · Part 4</a></span></dd>
+
+  <dt id="t-agentcore">AgentCore</dt>
+  <dd>AWS's managed runtime for production AI agents. Preview Jul 16 2025, GA Oct 13 2025, 9 regions. Seven services: Runtime, Memory, Identity, Gateway, Code Interpreter, Browser, Observability. Framework-agnostic; A2A protocol at GA. <span class="ref">→ <a href="aws-guide.html#part-11">AWS · Part 11</a> · <a href="agentic-ai-guide.html#part-11">Agentic AI · Part 11</a></span></dd>
+
+  <dt id="t-claude-agent-sdk">Claude Agent SDK</dt>
+  <dd>Anthropic's official agent framework (2025). Native MCP, subagents as first-class, native memory tool. The conceptual model behind Claude Code generalized into a library. <span class="ref">→ <a href="agentic-ai-guide.html#part-10">Agentic AI · Part 10</a></span></dd>
+
+  <dt id="t-strands">Strands Agents SDK</dt>
+  <dd>AWS-built open-source agent framework. Pairs naturally with AgentCore (Strands = framework, AgentCore = runtime). <span class="ref">→ <a href="aws-guide.html#part-11">AWS · Part 11</a></span></dd>
+
+  <dt id="t-adk">ADK <span class="alt">Agent Development Kit</span></dt>
+  <dd>Google's open-source agent framework, paired with Vertex AI Agent Builder. <span class="ref">→ <a href="gcp-guide.html#part-11">GCP · Part 11</a></span></dd>
+
+  <dt id="t-memory-tool">Memory tool</dt>
+  <dd>Model-native primitive for reading and writing persistent agent memory across sessions. Anthropic memory tool, OpenAI Responses API stateful sessions, LangGraph checkpointers, AgentCore Memory, Mem0. <span class="ref">→ <a href="agentic-ai-guide.html#part-6">Agentic AI · Part 6</a></span></dd>
+
+  <dt id="t-guardrails">Guardrails</dt>
+  <dd>Input/output filters around an LLM call — denied topics, content filters, PII redaction, contextual grounding, prompt-injection detection. Bedrock Guardrails, Azure Content Safety, Vertex Safety Filters; OSS via Llama Guard, NeMo Guardrails. <span class="ref">→ <a href="agentic-ai-guide.html#part-13">Agentic AI · Part 13</a></span></dd>
+</dl>
+
+<hr>
+
+<h2 id="llm-inference">LLM inference</h2>
+<dl class="glossary">
+  <dt id="t-vllm">vLLM</dt>
+  <dd>Throughput-oriented open-source LLM serving engine. Introduced PagedAttention; the default high-concurrency engine for many deployments. Supports continuous batching, prefix caching, multi-LoRA, FP4 on Blackwell. <span class="ref">→ <a href="llm-inference-guide.html#part-12">LLM Inference · Part 12</a></span></dd>
+
+  <dt id="t-trtllm">TensorRT-LLM</dt>
+  <dd>NVIDIA's optimized inference runtime. Best Blackwell FP4 support (NVFP4 native in v0.17+); deepest hardware integration. Uses ModelOpt for PTQ calibration. <span class="ref">→ <a href="llm-inference-guide.html#part-12">LLM Inference · Part 12</a></span></dd>
+
+  <dt id="t-sglang">SGLang</dt>
+  <dd>Serving engine with RadixAttention — radix-tree-based prefix caching that hits across requests. Strong for agent workloads with shared system prompts. <span class="ref">→ <a href="llm-inference-guide.html#part-12">LLM Inference · Part 12</a></span></dd>
+
+  <dt id="t-paged-attention">PagedAttention</dt>
+  <dd>KV cache stored in fixed-size pages mapped from a per-sequence page table — analogous to OS virtual memory. Lets the engine pack many sequences into the same GPU without internal fragmentation. <span class="ref">→ <a href="llm-inference-guide.html#part-6">LLM Inference · Part 6</a></span></dd>
+
+  <dt id="t-flash-attention">FlashAttention-3</dt>
+  <dd>Tiled, IO-aware fused attention kernel. FA-3 is the 2026 standard: Hopper-optimized, supports FP8, used everywhere serious. <span class="ref">→ <a href="llm-inference-guide.html#part-8">LLM Inference · Part 8</a></span></dd>
+
+  <dt id="t-prefix-caching">Prefix caching</dt>
+  <dd>Reuse the KV cache of a shared prompt prefix across requests. Hash-keyed (vLLM) or radix-tree (SGLang RadixAttention). Critical for agents and chat where system prompts repeat. <span class="ref">→ <a href="llm-inference-guide.html#part-11">LLM Inference · Part 11</a></span></dd>
+
+  <dt id="t-spec-decoding">Speculative decoding</dt>
+  <dd>A small "draft" model proposes a few tokens; the target model verifies in parallel. Acceptable tokens are committed for free. Modern variants: <strong>EAGLE-2/3</strong> (learned draft head sharing target's hidden states), <strong>Medusa-2</strong> (multi-head draft). <span class="ref">→ <a href="llm-inference-guide.html#part-9">LLM Inference · Part 9</a></span></dd>
+
+  <dt id="t-chunked-prefill">Chunked prefill</dt>
+  <dd>Slice a long prefill into chunks and interleave them with decode steps of other in-flight requests. Smooths tail latency. Sarathi-Serve formalized the schedule. <span class="ref">→ <a href="llm-inference-guide.html#part-5">LLM Inference · Part 5</a></span></dd>
+
+  <dt id="t-disagg-serving">Disaggregated serving</dt>
+  <dd>Separate hardware pools for prefill (compute-bound) and decode (memory-bandwidth-bound). KV cache is transferred between them over NVLink/IB. Used at scale by DeepSeek; references: Splitwise, DistServe, Mooncake, NVIDIA Dynamo. <span class="ref">→ <a href="llm-inference-guide.html#part-11">LLM Inference · Part 11</a></span></dd>
+
+  <dt id="t-nvfp4">NVFP4 / MXFP4</dt>
+  <dd>4-bit floating-point formats with native Blackwell tensor core support. Both use E2M1 element encoding. <strong>NVFP4</strong>: 16-element blocks with FP8 (E4M3) micro-scale plus FP32 per-tensor — finest granularity. <strong>MXFP4</strong>: 32-element blocks with FP8 (E8M0) scale; broader kernel support including training. <span class="ref">→ <a href="llm-inference-guide.html#part-7">LLM Inference · Part 7</a></span></dd>
+
+  <dt id="t-moe">MoE <span class="alt">Mixture of Experts</span></dt>
+  <dd>Sparse architecture where a router activates only a few "expert" FFN blocks per token. Total params huge, active params small. Serving needs expert parallelism (EP) and careful all-to-all comm; DeepSeek-V3/R1 and Mixtral are canonical references. <span class="ref">→ <a href="llm-inference-guide.html#part-10">LLM Inference · Part 10</a></span></dd>
+
+  <dt id="t-gqa">GQA <span class="alt">Grouped-Query Attention</span></dt>
+  <dd>Multiple Q heads share each KV head. Shrinks KV cache (and KV bandwidth) by 4-8× with negligible quality cost — the standard since Llama 3.x. <span class="ref">→ <a href="llm-inference-guide.html#part-16">LLM Inference · Part 16</a></span></dd>
+
+  <dt id="t-multi-lora">Multi-LoRA serving</dt>
+  <dd>Serve many LoRA adapters off one base model, swapping adapters per request or batching across adapters. References: S-LoRA, Punica. <span class="ref">→ <a href="llm-inference-guide.html#part-11">LLM Inference · Part 11</a></span></dd>
+</dl>
+
+<hr>
+
+<h2 id="cloud-ai">Cloud AI services</h2>
+<dl class="glossary">
+  <dt id="t-bedrock">Amazon Bedrock</dt>
+  <dd>AWS's foundation-model API. Current catalog includes Claude Opus 4.7 / Sonnet 4.6 / Haiku 4.5, Nova (Pro/Lite/Micro/Canvas/Reel), Llama, Mistral, Cohere, DeepSeek, AI21, Stability AI. Bundles Knowledge Bases (RAG), Guardrails, Agents (legacy), AgentCore. <span class="ref">→ <a href="aws-guide.html#part-11">AWS · Part 11</a></span></dd>
+
+  <dt id="t-hyperpod">SageMaker HyperPod</dt>
+  <dd>AWS distributed FM training platform. Slurm or EKS orchestration, auto-recovery from hardware failures, Blackwell GB200 NVL72 UltraServers, recipes for Llama 3.1 405B, 3.2 90B, Mixtral, Nova. Elastic training GA Dec 2025. <span class="ref">→ <a href="aws-guide.html#part-11">AWS · Part 11</a></span></dd>
+
+  <dt id="t-trainium">Trainium2 / Inferentia2</dt>
+  <dd>AWS-designed accelerators: Trainium2 for training (Trn2 UltraServers), Inferentia2 for inference. Programmed via the Neuron SDK. <span class="ref">→ <a href="aws-guide.html#part-11">AWS · Part 11</a></span></dd>
+
+  <dt id="t-ai-foundry">Azure AI Foundry</dt>
+  <dd>Azure's umbrella for AI app/agent dev. Renamed from Azure AI Studio in Nov 2024. Includes model catalog (Llama, Mistral, Phi, DeepSeek), Foundry Agents Service, prompt flow, evaluation, content safety. <span class="ref">→ <a href="azure-guide.html#part-11">Azure · Part 11</a></span></dd>
+
+  <dt id="t-ai-search">Azure AI Search</dt>
+  <dd>Hybrid + vector search service (renamed from Cognitive Search). HNSW or exhaustive KNN, integrated vectorization, agentic retrieval, semantic reranker. <span class="ref">→ <a href="azure-guide.html#part-11">Azure · Part 11</a></span></dd>
+
+  <dt id="t-phi">Phi family</dt>
+  <dd>Microsoft's flagship small language models — Phi-3, Phi-3.5, Phi-4. Optimized for on-device and edge inference. <span class="ref">→ <a href="azure-guide.html#part-11">Azure · Part 11</a></span></dd>
+
+  <dt id="t-aca-gpu">ACA Serverless GPU</dt>
+  <dd>Azure Container Apps serverless GPU (NVIDIA A100/T4). GA April 2025. Scale-to-zero, per-second billing, NVIDIA NIM support. <span class="ref">→ <a href="azure-guide.html#part-4">Azure · Part 4</a></span></dd>
+
+  <dt id="t-aks-automatic">AKS Automatic</dt>
+  <dd>Managed Kubernetes mode with opinionated defaults (Cilium, Karpenter, NGINX ingress, Azure Linux). GA September 2025. <span class="ref">→ <a href="azure-guide.html#part-4">Azure · Part 4</a></span></dd>
+
+  <dt id="t-vertex-ai">Vertex AI</dt>
+  <dd>Google's managed ML/GenAI platform. Hosts Gemini 2.5/3, Gemma 2/3, Imagen 3, Veo 2/3, Claude (via partnership), Llama. Bundles Model Garden, tuning, evaluation, prompt caching. <span class="ref">→ <a href="gcp-guide.html#part-11">GCP · Part 11</a></span></dd>
+
+  <dt id="t-agent-builder">Vertex AI Agent Builder + ADK</dt>
+  <dd>Google's agent stack: Agent Builder as the managed runtime, ADK as the open-source framework, A2A protocol for inter-agent calls. <span class="ref">→ <a href="gcp-guide.html#part-11">GCP · Part 11</a></span></dd>
+
+  <dt id="t-cloud-run-gpu">Cloud Run GPU</dt>
+  <dd>GCP serverless GPU inference (NVIDIA L4, RTX Pro 6000 Blackwell). GA June 3 2025. Scale-to-zero, per-second billing, ~5s cold start, no quota for L4. <span class="ref">→ <a href="gcp-guide.html#part-5">GCP · Part 5</a></span></dd>
+
+  <dt id="t-bq-vector">BigQuery vector search</dt>
+  <dd><code>VECTOR_SEARCH()</code> with vector indexes inside BigQuery, plus BQ ML <code>ML.GENERATE_TEXT</code> remote models calling Gemini. Lets RAG live next to the data warehouse. <span class="ref">→ <a href="gcp-guide.html#part-10">GCP · Part 10</a></span></dd>
+
+  <dt id="t-alloydb-ai">AlloyDB AI</dt>
+  <dd>Postgres-compatible Spanner-class DB with ScaNN vector indexes and built-in model integration. <span class="ref">→ <a href="gcp-guide.html#part-7">GCP · Part 7</a></span></dd>
+
+  <dt id="t-prompt-caching">Prompt caching</dt>
+  <dd>Caching the KV state of a stable prompt prefix at the provider. Anthropic explicit <code>cache_control</code> gives ~90% discount on cached tokens; OpenAI implicit ~50%; Gemini has both implicit and explicit context caching. Single biggest cost lever for chat and agent workloads. <span class="ref">→ <a href="cloud-ai-comparison.html#part-10">Cloud AI Comparison · Part 10</a></span></dd>
+</dl>
+
+<hr>
+
+<h2 id="hardware">Hardware</h2>
+<dl class="glossary">
+  <dt id="t-h100">H100 / H200</dt>
+  <dd>NVIDIA Hopper datacenter GPUs. H100: 80 GB HBM3. H200: 141 GB HBM3e with ~1.4× the bandwidth — same compute, much better LLM serving. Native FP8 tensor cores. <span class="ref">→ <a href="llm-inference-guide.html#part-3">LLM Inference · Part 3</a></span></dd>
+
+  <dt id="t-b200">B200 / GB200 NVL72</dt>
+  <dd>NVIDIA Blackwell. B200: 192 GB HBM3e, native NVFP4/MXFP4 tensor cores (~20 PFLOPS dense FP4). GB200 NVL72: 72 Blackwell GPUs in a single NVLink domain — eliminates cross-node hops for trillion-parameter models. <span class="ref">→ <a href="llm-inference-guide.html#part-3">LLM Inference · Part 3</a></span></dd>
+
+  <dt id="t-mi300x">MI300X / MI325X</dt>
+  <dd>AMD CDNA3 datacenter GPUs. MI300X: 192 GB HBM3. MI325X: 256 GB HBM3e. The credible non-NVIDIA inference option in 2026, ROCm-based. <span class="ref">→ <a href="llm-inference-guide.html#part-3">LLM Inference · Part 3</a></span></dd>
+
+  <dt id="t-trillium">TPU v6e Trillium</dt>
+  <dd>Google's 6th-gen TPU. GA Q4 2024. 32 GB HBM, 256-chip pods, 4.7× compute per chip vs v5p, 67% better TOPS/W. Used to train Gemini 2.0. Only the <code>v6e</code> SKU exists — no v6p. <span class="ref">→ <a href="gcp-guide.html#part-11">GCP · Part 11</a></span></dd>
+
+  <dt id="t-ironwood">TPU v7 Ironwood</dt>
+  <dd>Google's 7th-gen TPU, GA Nov 2025. 192 GB HBM3e, 7.37 TB/s memory bandwidth, FP8 native, 9,216-chip superpods (42.5 ExaFLOPS). Inference-optimized; powers Gemini 3 inference. Anthropic committed to 1M+ Ironwood chips for Claude training/serving in 2026. <span class="ref">→ <a href="gcp-guide.html#part-11">GCP · Part 11</a></span></dd>
+
+  <dt id="t-nvlink">NVLink / NVSwitch</dt>
+  <dd>High-bandwidth GPU-to-GPU interconnect (5th-gen NVLink in Blackwell: 1.8 TB/s per GPU). NVSwitch fabric extends it to many GPUs in one coherent domain. <span class="ref">→ <a href="llm-inference-guide.html#part-10">LLM Inference · Part 10</a></span></dd>
+
+  <dt id="t-hbm3e">HBM3e</dt>
+  <dd>High-Bandwidth Memory generation used on H200, B200, MI325X, Ironwood. The bandwidth (~5-8 TB/s per stack on flagship) is the limit for memory-bandwidth-bound decode workloads. <span class="ref">→ <a href="llm-inference-guide.html#part-3">LLM Inference · Part 3</a></span></dd>
+</dl>
+
+<hr>
+
+<h2 id="system-design">System design</h2>
+<dl class="glossary">
+  <dt id="t-cap">CAP theorem</dt>
+  <dd>Under a network partition, a system can preserve at most two of consistency, availability, and partition tolerance. The famous "pick 2 of 3" framing is misleading — partitions are unavoidable, so the real choice is C vs A during a partition. <span class="ref">→ <a href="system-design-guide.html#part-3">System Design · Part 3</a></span></dd>
+
+  <dt id="t-raft">Raft</dt>
+  <dd>Leader-based consensus protocol — picks a leader, replicates a log to followers, commits when a majority acknowledges. Used by etcd, Consul, CockroachDB, TiDB. Multi-Paxos is the older, harder-to-implement alternative; Zab is ZooKeeper's variant. <span class="ref">→ <a href="system-design-guide.html#part-14">System Design · Part 14</a></span></dd>
+
+  <dt id="t-saga">Saga</dt>
+  <dd>Pattern for distributed transactions: a sequence of local transactions, each with a compensating action. Choreography (each service reacts to events) vs orchestration (a coordinator drives steps). <span class="ref">→ <a href="system-design-guide.html#part-11">System Design · Part 11</a></span></dd>
+
+  <dt id="t-idempotency">Idempotency key</dt>
+  <dd>Client-supplied unique token attached to a request. The server records it on first success and short-circuits duplicates — the safe basis for retries. Standard on Stripe, AWS APIs, etc. <span class="ref">→ <a href="system-design-guide.html#part-11">System Design · Part 11</a></span></dd>
+
+  <dt id="t-otel">OpenTelemetry <span class="alt">OTel</span></dt>
+  <dd>Vendor-neutral observability standard for traces, metrics, and logs. Has supplanted bespoke instrumentation (Jaeger client, X-Ray SDK). Backends are interchangeable: Tempo, Honeycomb, Datadog, Grafana stack. <span class="ref">→ <a href="system-design-guide.html#part-12">System Design · Part 12</a></span></dd>
+
+  <dt id="t-traceparent">W3C traceparent</dt>
+  <dd>HTTP header standard for propagating distributed trace context across service hops. Format: <code>00-{trace-id}-{span-id}-{flags}</code>. <span class="ref">→ <a href="system-design-guide.html#part-12">System Design · Part 12</a></span></dd>
+
+  <dt id="t-cdc">CDC <span class="alt">Change Data Capture</span></dt>
+  <dd>Streaming row-level database changes from the transaction log into a downstream system. Debezium and Maxwell are the canonical tools; underpins the transactional outbox pattern. <span class="ref">→ <a href="system-design-guide.html#part-8">System Design · Part 8</a></span></dd>
+
+  <dt id="t-vector-db">Vector database</dt>
+  <dd>Storage + ANN index optimized for high-dimensional similarity search. Postgres <code>pgvector</code>, Pinecone, Weaviate, Qdrant, Milvus. Inside warehouses: BigQuery <code>VECTOR_SEARCH</code>, AlloyDB AI, Spanner vector search. <span class="ref">→ <a href="system-design-guide.html#part-14">System Design · Part 14</a></span></dd>
+
+  <dt id="t-gcra">GCRA <span class="alt">Generic Cell Rate Algorithm</span></dt>
+  <dd>Memory-efficient token-bucket/leaky-bucket variant from ATM networking. Stores just one timestamp per limit key — preferred in distributed rate limiters (Redis-backed) for that reason. <span class="ref">→ <a href="system-design-guide.html#part-13">System Design · Part 13</a></span></dd>
+
+  <dt id="t-slo">SLO / Error budget</dt>
+  <dd>A Service Level Objective is a quantitative reliability target (e.g., 99.9% over 30 days). The error budget is what remains — feature work slows or pauses when it's exhausted. The discipline that prevents "fix vs ship" from being a vibes argument. <span class="ref">→ <a href="system-design-guide.html#part-12">System Design · Part 12</a></span></dd>
+
+  <dt id="t-distributed-sql">Distributed SQL</dt>
+  <dd>SQL DBs with horizontal scale built in: Spanner, CockroachDB, Vitess, YugabyteDB, TiDB, PlanetScale, Neon. Removes the historical "SQL only scales up" framing. <span class="ref">→ <a href="system-design-guide.html#part-6">System Design · Part 6</a></span></dd>
+
+  <dt id="t-rate-limiting">Rate limiting algorithms</dt>
+  <dd>Fixed window, sliding window, token bucket, leaky bucket, GCRA. Adaptive concurrency limits (Netflix Concurrency Limits, AIMD) target throughput instead of rate — distinct from load shedding. <span class="ref">→ <a href="system-design-guide.html#part-13">System Design · Part 13</a></span></dd>
+</dl>
+
+<hr>
+
+<h2 id="python">Python</h2>
+<dl class="glossary">
+  <dt id="t-pep695">PEP 695 generics</dt>
+  <dd>New generic syntax (3.12+): <code>def first[T](items: list[T]) -&gt; T:</code>, <code>class Box[T]:</code>, <code>type Alias = ...</code>. Replaces the old <code>TypeVar("T")</code> + <code>Generic[T]</code> dance. <span class="ref">→ <a href="python-guide.html#part-14">Python · Part 14</a></span></dd>
+
+  <dt id="t-pep703">PEP 703 / free-threaded</dt>
+  <dd>No-GIL build of CPython. Experimental in 3.13 (~40% single-thread overhead); officially supported in 3.14 via PEP 779 (~5-10% overhead). Still an optional build — not the default. <span class="ref">→ <a href="python-guide.html#part-15">Python · Part 15</a></span></dd>
+
+  <dt id="t-pep744">PEP 744 / JIT</dt>
+  <dd>Tier-2 copy-and-patch JIT, experimental since 3.13. Not yet enabled by default. <span class="ref">→ <a href="python-guide.html#part-17">Python · Part 17</a></span></dd>
+
+  <dt id="t-taskgroup">asyncio.TaskGroup</dt>
+  <dd>Structured concurrency primitive (3.11+). <code>async with asyncio.TaskGroup() as tg: tg.create_task(...)</code>. If any task fails, siblings are cancelled and exceptions surface as a group. Now the recommended pattern over <code>gather</code>. <span class="ref">→ <a href="python-guide.html#part-15">Python · Part 15</a></span></dd>
+
+  <dt id="t-asyncio-timeout">asyncio.timeout</dt>
+  <dd>Async timeout context manager (3.11+). <code>async with asyncio.timeout(5):</code> — cleaner than wrapping in <code>wait_for</code>. <span class="ref">→ <a href="python-guide.html#part-15">Python · Part 15</a></span></dd>
+
+  <dt id="t-uv">uv</dt>
+  <dd>Astral's fast Rust-based Python package/venv/project manager. Replaces pip + virtualenv + pip-tools and increasingly poetry/pdm. <code>uv venv</code>, <code>uv add</code>, <code>uv run</code>, lockfile via <code>uv.lock</code>. <span class="ref">→ <a href="python-guide.html#part-0">Python · Part 0</a></span></dd>
+
+  <dt id="t-ruff">ruff / ruff format</dt>
+  <dd>Astral's Rust-based linter (replaces flake8/pylint/isort) and formatter (now displacing black). One tool, fast. <span class="ref">→ <a href="python-guide.html#part-16">Python · Part 16</a></span></dd>
+
+  <dt id="t-pydantic2">Pydantic v2</dt>
+  <dd>Runtime data validation tied to type hints — the standard in 2026 for API boundaries, agent tool schemas, structured LLM output. <span class="ref">→ <a href="python-guide.html#part-14">Python · Part 14</a></span></dd>
+
+  <dt id="t-tomllib">tomllib</dt>
+  <dd>Stdlib TOML reader (3.11+). Use for parsing <code>pyproject.toml</code> and config files without a third-party dependency. <span class="ref">→ <a href="python-guide.html#part-13">Python · Part 13</a></span></dd>
+</dl>
+
+<hr>
+
+<h2 id="dsa">DSA</h2>
+<dl class="glossary">
+  <dt id="t-union-find">Union-Find / DSU</dt>
+  <dd>Disjoint-set data structure with path compression and union-by-rank-or-size. Near-O(1) amortized. Used for connected components, Kruskal's MST, redundant connection, accounts merge. <span class="ref">→ <a href="dsa-guide.html#part-13">DSA · Part 13</a></span></dd>
+
+  <dt id="t-trie">Trie</dt>
+  <dd>Prefix tree for string sets with character-by-character traversal. <code>insert</code>, <code>search</code>, <code>startsWith</code> all O(L) for a string of length L. Foundation for autocomplete, Word Search II. <span class="ref">→ <a href="dsa-guide.html#part-3">DSA · Part 3</a></span></dd>
+
+  <dt id="t-toposort">Topological sort</dt>
+  <dd>Linear ordering of a DAG such that for every edge u→v, u appears before v. Kahn's BFS: queue all in-degree-0 nodes, peel them off, decrement neighbors. Detects cycles when the ordering is short. <span class="ref">→ <a href="dsa-guide.html#part-13">DSA · Part 13</a></span></dd>
+
+  <dt id="t-monotonic-stack">Monotonic stack / queue</dt>
+  <dd>Stack or deque maintained in monotonic order to answer "next greater / next smaller element" or sliding-window max/min in amortized O(n). <span class="ref">→ <a href="dsa-guide.html#part-7">DSA · Part 7</a></span></dd>
+
+  <dt id="t-quickselect">Quickselect</dt>
+  <dd>Partition-based selection of the k-th element. Average O(n), worst O(n²). Faster than the heap approach for one-shot k-th-largest problems. <span class="ref">→ <a href="dsa-guide.html#part-14">DSA · Part 14</a></span></dd>
+
+  <dt id="t-kadane">Kadane's algorithm</dt>
+  <dd>O(n) maximum subarray sum DP. Maintain "best ending here" and "best so far"; reset when running sum goes negative. <span class="ref">→ <a href="dsa-guide.html#part-15">DSA · Part 15</a></span></dd>
+
+  <dt id="t-dijkstra">Dijkstra's algorithm</dt>
+  <dd>Shortest path in a weighted graph with non-negative edges. Min-heap of (distance, node), pop the smallest, relax neighbors. O((V+E) log V). For negative edges use Bellman-Ford. <span class="ref">→ <a href="dsa-guide.html#part-13">DSA · Part 13</a></span></dd>
+
+  <dt id="t-lru-cache">LRU cache</dt>
+  <dd>Eviction policy: drop the least-recently-used entry. Implemented as ordered-dict (Python) or doubly-linked list + hashmap (interview classic). In Python: <code>@functools.lru_cache</code> for pure functions. <span class="ref">→ <a href="dsa-guide.html#part-14">DSA · Part 14</a></span></dd>
+
+  <dt id="t-sliding-window">Sliding window</dt>
+  <dd>Two-pointer technique over an array/string. Expand the right pointer, shrink the left when an invariant breaks. Most "longest substring with X" problems collapse to it. <span class="ref">→ <a href="dsa-guide.html#part-8">DSA · Part 8</a></span></dd>
+</dl>
+
+<hr>
+
+<div class="meta">Found a missing term or a wrong cross-reference? The guides change faster than the glossary — when in doubt, search (⌘K).</div>
+
+<footer>
+  Part of the <a href="../">LearningAI</a> repository. See the <a href="index.html">guides index</a>.
+</footer>
+
+</main>
+
+<button class="scroll-top" id="scroll-top" aria-label="Scroll to top">↑</button>
+
+<div class="search-overlay" id="search-overlay" role="dialog" aria-modal="true" aria-label="Search">
+  <div class="search-modal">
+    <input type="text" class="search-input" id="search-input" placeholder="Search all guides…  (Esc to close, ↑↓ to navigate)" autocomplete="off" spellcheck="false">
+    <div class="search-results" id="search-results"></div>
+  </div>
+</div>
+
+<script>
+(function() {
+  const html = document.documentElement;
+  const btn = document.getElementById('theme-toggle');
+  const STORAGE_KEY = 'theme';
+  function setTheme(theme) {
+    if (theme === 'dark') {
+      html.classList.add('dark');
+      btn.textContent = '☀️';
+      btn.setAttribute('aria-label', 'Toggle light mode');
+    } else {
+      html.classList.remove('dark');
+      btn.textContent = '🌙';
+      btn.setAttribute('aria-label', 'Toggle dark mode');
+    }
+    localStorage.setItem(STORAGE_KEY, theme);
+  }
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) setTheme(saved);
+  else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) setTheme('dark');
+  btn.addEventListener('click', () => {
+    setTheme(html.classList.contains('dark') ? 'light' : 'dark');
+  });
+})();
+
+(function() {
+  const progress = document.getElementById('reading-progress');
+  const scrollTopBtn = document.getElementById('scroll-top');
+  function update() {
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const pct = scrollHeight > 0 ? (scrollTop / scrollHeight) * 100 : 0;
+    if (progress) progress.style.width = pct + '%';
+    if (scrollTopBtn) {
+      if (scrollTop > 300) scrollTopBtn.classList.add('visible');
+      else scrollTopBtn.classList.remove('visible');
+    }
+  }
+  window.addEventListener('scroll', update, { passive: true });
+  update();
+  if (scrollTopBtn) scrollTopBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+})();
+
+(function() {
+  const overlay = document.getElementById('search-overlay');
+  const input = document.getElementById('search-input');
+  const results = document.getElementById('search-results');
+  const trigger = document.getElementById('search-trigger');
+  if (!overlay || !input || !results) return;
+  let idx = null;
+  let active = 0;
+
+  async function loadIndex() {
+    if (idx) return idx;
+    try {
+      const r = await fetch('search-index.json');
+      idx = await r.json();
+    } catch (e) { idx = []; }
+    return idx;
+  }
+  function escapeHTML(s) { return s.replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c])); }
+  function escapeRE(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+  function highlight(s, terms) {
+    let h = escapeHTML(s);
+    for (const t of terms) {
+      if (!t) continue;
+      h = h.replace(new RegExp('(' + escapeRE(t) + ')', 'gi'), '<mark>$1</mark>');
+    }
+    return h;
+  }
+  function score(sec, terms) {
+    let s = 0;
+    const title = sec.t.toLowerCase();
+    const text = sec.x.toLowerCase();
+    for (const t of terms) {
+      if (!t) continue;
+      if (title === t) s += 50;
+      if (title.includes(t)) s += 10;
+      if (title.startsWith(t)) s += 5;
+      if (text.includes(t)) s += 1;
+    }
+    return s;
+  }
+  async function render(q) {
+    await loadIndex();
+    const terms = q.toLowerCase().split(/\s+/).filter(Boolean);
+    if (!terms.length) {
+      results.innerHTML = '<div class="search-empty">Type to search across all guides.</div>';
+      return;
+    }
+    let hits = [];
+    for (const g of idx) {
+      for (const sec of g.s) {
+        const sc = score(sec, terms);
+        if (sc > 0) hits.push({g, sec, sc});
+      }
+    }
+    hits.sort((a, b) => b.sc - a.sc);
+    hits = hits.slice(0, 20);
+    if (!hits.length) {
+      results.innerHTML = '<div class="search-empty">No matches.</div>';
+      return;
+    }
+    results.innerHTML = hits.map((h, i) => '<a class="search-result' + (i === 0 ? ' active' : '') + '" href="' + h.g.f + '#' + h.sec.i + '" data-i="' + i + '">' +
+      '<div class="search-result-title">' + highlight(h.sec.t, terms) + '</div>' +
+      '<div class="search-result-meta">' + escapeHTML(h.g.g) + ' · ' + h.sec.l + '</div>' +
+      '<div class="search-result-text">' + highlight(h.sec.x.substring(0, 200), terms) + '</div>' +
+    '</a>').join('');
+    active = 0;
+  }
+  function open() { overlay.classList.add('open'); input.focus(); render(input.value); }
+  function close() { overlay.classList.remove('open'); }
+  function moveActive(d) {
+    const items = results.querySelectorAll('.search-result');
+    if (!items.length) return;
+    items[active]?.classList.remove('active');
+    active = (active + d + items.length) % items.length;
+    items[active].classList.add('active');
+    items[active].scrollIntoView({block: 'nearest'});
+  }
+  if (trigger) trigger.addEventListener('click', open);
+  overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+  input.addEventListener('input', e => render(e.target.value));
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Escape') close();
+    else if (e.key === 'ArrowDown') { e.preventDefault(); moveActive(1); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); moveActive(-1); }
+    else if (e.key === 'Enter') {
+      const items = results.querySelectorAll('.search-result');
+      if (items[active]) items[active].click();
+    }
+  });
+  document.addEventListener('keydown', e => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      e.preventDefault();
+      overlay.classList.contains('open') ? close() : open();
+    } else if (e.key === '/' && !overlay.classList.contains('open') &&
+               !['INPUT','TEXTAREA'].includes(e.target.tagName) &&
+               !e.target.isContentEditable) {
+      e.preventDefault(); open();
+    }
+  });
+})();
+</script>
+
+</body>
+</html>

@@ -9,6 +9,7 @@ export type GuideSlug =
   | "python"
   | "dsa"
   | "system-design"
+  | "ai-system-design"
   | "interview-prep";
 
 export type GuideMeta = {
@@ -136,6 +137,17 @@ export const GUIDES: GuideMeta[] = [
     accentSoft: "#e0eee6",
     accentSoftDark: "#1a2a20",
     group: "fundamentals",
+  },
+  {
+    slug: "ai-system-design",
+    title: "AI System Design (High Level)",
+    shortTitle: "AI System Design",
+    description: "High-level AI interview architectures for RAG, agents, recommendations, ranking, and voice systems.",
+    accent: "#7c3aed",
+    accentDark: "#b79af5",
+    accentSoft: "#efe7ff",
+    accentSoftDark: "#261a3a",
+    group: "ai",
   },
   {
     slug: "interview-prep",

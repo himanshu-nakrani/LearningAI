@@ -1,0 +1,438 @@
+---
+title: "AI System Design (High Level) — Interview Guide & Examples"
+description: "High-level AI system design interview framework, common architectures, and worked examples for RAG, agents, recommendations, ranking, and real-time ML systems."
+slug: "ai-system-design"
+---
+
+<h1>AI System Design (High Level) — Interview Guide &amp; Examples</h1>
+<div className="meta">
+  High-level interview-focused guide for designing AI systems clearly and confidently.<br />
+  Covers interview flow, reusable architecture blocks, and worked examples you can adapt in real interviews.<br />
+  Legend:
+  <Tag kind="core">★ CORE</Tag> must know
+  <Tag kind="concept">◆ CONCEPT</Tag> architectural idea
+  <Tag kind="neutral">EXAMPLE</Tag> worked scenario
+</div>
+
+<div className="toc">
+<h2>Table of Contents</h2>
+<ol>
+  <li><a href="#part-0">Part 0 — How to answer an AI system design interview</a></li>
+  <li><a href="#part-1">Part 1 — Reusable building blocks for AI systems</a></li>
+  <li><a href="#part-2">Part 2 — Core trade-offs interviewers expect</a></li>
+  <li><a href="#part-3">Part 3 — Generic AI architecture template</a></li>
+  <li><a href="#part-4">Part 4 — Example: design a RAG assistant</a></li>
+  <li><a href="#part-5">Part 5 — Example: design an agentic workflow system</a></li>
+  <li><a href="#part-6">Part 6 — Example: design a recommendation system</a></li>
+  <li><a href="#part-7">Part 7 — Example: design a fraud / anomaly detection system</a></li>
+  <li><a href="#part-8">Part 8 — Example: design real-time voice AI</a></li>
+  <li><a href="#part-9">Part 9 — Safety, evaluation, observability, and cost</a></li>
+  <li><a href="#part-10">Part 10 — Final interview checklist</a></li>
+</ol>
+</div>
+
+<h2 id="part-0">Part 0 — How to answer an AI system design interview <Tag kind="core">★ CORE</Tag></h2>
+
+<p>AI system design interviews are usually not asking for low-level distributed-systems detail first. They want to see whether you can structure an ambiguous product into a sensible <strong>data flow</strong>, <strong>model flow</strong>, <strong>serving architecture</strong>, and <strong>operations plan</strong>. The best answers are simple, layered, and explicit about trade-offs.</p>
+
+<h3 id="a-simple-interview-flow">A simple interview flow</h3>
+<ol>
+  <li><strong>Clarify the use case</strong> — who uses it, what task, what success means.</li>
+  <li><strong>Define inputs and outputs</strong> — text, image, audio, structured records, actions.</li>
+  <li><strong>Choose the AI pattern</strong> — classification, ranking, retrieval, generation, agent, forecasting.</li>
+  <li><strong>Draw the high-level architecture</strong> — clients, APIs, model layer, data stores, async workers.</li>
+  <li><strong>Discuss model lifecycle</strong> — data collection, training/fine-tuning, deployment, evaluation.</li>
+  <li><strong>Discuss production concerns</strong> — latency, cost, safety, monitoring, fallback paths.</li>
+  <li><strong>Close with trade-offs</strong> — why this design over simpler or more advanced options.</li>
+</ol>
+
+<Callout variant="tip" title="Lead with the product goal, not the model">
+  In AI interviews, many candidates jump directly to "use an LLM" or "train a transformer." Strong candidates start with the user problem and the success metric. The model is one component of the system, not the whole answer.
+</Callout>
+
+<h3 id="what-to-clarify-early">What to clarify early</h3>
+<ul>
+  <li><strong>Users:</strong> internal employees, consumers, analysts, support agents, doctors, drivers?</li>
+  <li><strong>Mode:</strong> batch, near-real-time, real-time, interactive?</li>
+  <li><strong>Output quality bar:</strong> helpful suggestion, top-1 prediction, autonomous action, or human-reviewed draft?</li>
+  <li><strong>Risk level:</strong> low-risk summarization vs high-risk finance/healthcare decisioning.</li>
+  <li><strong>Scale:</strong> daily batch jobs, hundreds of QPS, or millions?</li>
+</ul>
+
+<h3 id="a-good-one-line-structure">A good one-line structure</h3>
+
+<Ascii>{`  User request / event
+        -> data retrieval + context assembly
+        -> model inference / decision engine
+        -> post-processing + guardrails
+        -> response / action
+        -> logging + feedback + evaluation`}</Ascii>
+
+<hr />
+
+<h2 id="part-1">Part 1 — Reusable building blocks for AI systems <Tag kind="core">★ CORE</Tag></h2>
+
+<p>Most AI systems are composed from the same small set of blocks. Interviewers usually want to hear these pieces named clearly.</p>
+
+<table>
+  <tr><th scope="col">Block</th><th scope="col">Role</th><th scope="col">Examples</th></tr>
+  <tr><td>Client / product surface</td><td>User or upstream system entry point</td><td>Web app, API, chat UI, internal tool</td></tr>
+  <tr><td>Application layer</td><td>Auth, routing, business logic, orchestration</td><td>API gateway, backend service</td></tr>
+  <tr><td>Feature / context layer</td><td>Prepares model inputs</td><td>Feature store, retrieval service, prompt builder</td></tr>
+  <tr><td>Model serving layer</td><td>Runs inference</td><td>LLM endpoint, classifier, ranker, speech model</td></tr>
+  <tr><td>State / storage</td><td>Stores source data and derived data</td><td>OLTP DB, object store, vector DB, cache</td></tr>
+  <tr><td>Async processing</td><td>Heavy or delayed work</td><td>Queues, stream processors, workers</td></tr>
+  <tr><td>Evaluation / feedback</td><td>Measures quality and drift</td><td>Offline evals, human review, A/B testing</td></tr>
+  <tr><td>Safety / governance</td><td>Controls bad behavior and compliance</td><td>Filters, policy engine, audit logs</td></tr>
+  <tr><td>Observability</td><td>Tracks health and cost</td><td>Tracing, metrics, logs, token usage</td></tr>
+</table>
+
+<h3 id="common-ai-system-types">Common AI system types</h3>
+<ul>
+  <li><strong>Predictive ML:</strong> classify, score, forecast, rank.</li>
+  <li><strong>Search + retrieval:</strong> semantic search, hybrid search, enterprise knowledge lookup.</li>
+  <li><strong>Generative AI:</strong> chat, summarization, drafting, code generation.</li>
+  <li><strong>Agentic systems:</strong> plan, use tools, fetch data, take actions across systems.</li>
+  <li><strong>Decisioning systems:</strong> fraud, abuse, recommendations, bidding, dynamic pricing.</li>
+  <li><strong>Multimodal systems:</strong> image understanding, OCR, speech, voice assistants.</li>
+</ul>
+
+<hr />
+
+<h2 id="part-2">Part 2 — Core trade-offs interviewers expect <Tag kind="concept">◆ CONCEPT</Tag></h2>
+
+<h3 id="accuracy-vs-latency-vs-cost">Accuracy vs latency vs cost</h3>
+<p>This is the central AI production triangle. Larger models often improve quality, but also raise latency and cost. Good answers explain how to tier the system: cheap model first, expensive model only when needed.</p>
+
+<Ascii>{`  Better quality  -> usually larger model / more retrieval / more compute
+  Lower latency   -> smaller model / caching / precomputation
+  Lower cost      -> batching / routing / fallback / async processing
+
+  In interviews: say which side you optimize first for this product.`}</Ascii>
+
+<h3 id="online-vs-offline">Online vs offline</h3>
+<ul>
+  <li><strong>Offline:</strong> training, indexing, batch enrichment, feature computation, evaluation.</li>
+  <li><strong>Online:</strong> request-time retrieval, ranking, inference, safety checks, response formatting.</li>
+</ul>
+<p>A common mistake is placing too much work in the online path. High-level designs should move expensive work offline whenever possible.</p>
+
+<h3 id="personalization-vs-simplicity">Personalization vs simplicity</h3>
+<p>Personalization improves utility, but adds feature pipelines, privacy concerns, online feature freshness requirements, and harder debugging. Mention this explicitly for recommendations, assistants, and ranking systems.</p>
+
+<h3 id="automation-vs-human-in-the-loop">Automation vs human-in-the-loop</h3>
+<p>For low-risk tasks, fully automated AI may be acceptable. For high-risk workflows, a better architecture is AI draft → human review → audited final action. This is often the correct enterprise answer.</p>
+
+<hr />
+
+<h2 id="part-3">Part 3 — Generic AI architecture template <Tag kind="core">★ CORE</Tag></h2>
+
+<p>This template works for many interview questions. Adapt it rather than inventing a brand-new structure each time.</p>
+
+<Ascii>{`  [User / App / Event]
+          |
+          v
+    [API Gateway / Backend]
+          |
+          +--> [Auth / Rate limiting / Policy checks]
+          |
+          +--> [Context builder]
+          |         |
+          |         +--> [Operational DB]
+          |         +--> [Object store / docs]
+          |         +--> [Vector DB / search index]
+          |         +--> [Feature store / profile store]
+          |
+          +--> [Model router / orchestrator]
+                    |
+                    +--> [Classifier / ranker / LLM / speech model]
+                    +--> [Fallback model]
+                    +--> [Tool calls / external APIs]
+                    |
+                    v
+              [Post-processing + guardrails]
+                    |
+                    v
+                [Response / action]
+                    |
+                    +--> [Logs, traces, prompts, outputs]
+                    +--> [Feedback events]
+                    +--> [Eval pipeline / retraining pipeline]`}</Ascii>
+
+<h3 id="how-to-explain-it">How to explain it</h3>
+<ul>
+  <li><strong>Ingress:</strong> request enters through app/API layer with auth and rate limits.</li>
+  <li><strong>Context assembly:</strong> gather the minimum context needed for good inference.</li>
+  <li><strong>Inference/orchestration:</strong> call one or more models or tools.</li>
+  <li><strong>Guardrails:</strong> validate response, redact sensitive data, check policy.</li>
+  <li><strong>Feedback loop:</strong> store interactions for analytics, evals, and future improvement.</li>
+</ul>
+
+<Callout variant="tip" title="Say where training lives">
+  Even in a high-level interview, mention that training and re-indexing live off the critical request path: scheduled pipelines in batch/stream processing, model registry, offline evaluation, then controlled deployment to serving.
+</Callout>
+
+<hr />
+
+<h2 id="part-4">Part 4 — Example: design a RAG assistant <Tag kind="neutral">EXAMPLE</Tag></h2>
+
+<h3 id="goal-rag">Goal</h3>
+<p>Build an internal enterprise assistant that answers employee questions using company documents with citations.</p>
+
+<h3 id="requirements-rag">Requirements</h3>
+<ul>
+  <li>Answers should be grounded in internal knowledge.</li>
+  <li>Return citations and document links.</li>
+  <li>Support permissions: users should only see docs they can access.</li>
+  <li>Latency target around 2–5 seconds for interactive chat.</li>
+</ul>
+
+<h3 id="high-level-design-rag">High-level design</h3>
+<Ascii>{`  Document sources -> ingestion pipeline -> chunking -> embeddings -> vector index
+          |                                                    |
+          |                                                    v
+          +---------------------- metadata / ACLs --------> retriever
+
+  User query -> API -> auth -> query rewrite (optional) -> retrieve top-k docs
+             -> rerank (optional) -> prompt builder -> LLM -> answer + citations
+             -> logs / feedback / eval`}</Ascii>
+
+<h3 id="key-components-rag">Key components</h3>
+<ul>
+  <li><strong>Ingestion pipeline:</strong> pulls docs from Drive, Confluence, PDFs, tickets, wiki.</li>
+  <li><strong>Parsing/chunking:</strong> split documents into useful chunks with metadata.</li>
+  <li><strong>Embedding/indexing:</strong> create embeddings and store them in vector DB.</li>
+  <li><strong>Metadata filters:</strong> enforce team, role, or document ACLs at retrieval time.</li>
+  <li><strong>Retriever + reranker:</strong> retrieve top-k chunks, optionally rerank for relevance.</li>
+  <li><strong>Prompt builder:</strong> inject user question + selected context + style rules.</li>
+  <li><strong>LLM response:</strong> generate grounded answer with citations.</li>
+</ul>
+
+<h3 id="tradeoffs-rag">Trade-offs to mention</h3>
+<ul>
+  <li><strong>Pure fine-tuning vs RAG:</strong> RAG is better when knowledge changes frequently.</li>
+  <li><strong>Latency vs quality:</strong> reranking improves relevance but adds delay.</li>
+  <li><strong>Chunk size:</strong> too small loses context; too large hurts retrieval precision.</li>
+  <li><strong>Freshness:</strong> need incremental indexing or event-driven reindexing.</li>
+</ul>
+
+<div>
+  <div>Good interview line:</div>
+  <div>I would keep ingestion and indexing offline, and keep the online path limited to auth, retrieval, prompt construction, generation, and response validation. That keeps latency predictable while allowing the knowledge base to evolve independently.</div>
+</div>
+
+<hr />
+
+<h2 id="part-5">Part 5 — Example: design an agentic workflow system <Tag kind="neutral">EXAMPLE</Tag></h2>
+
+<h3 id="goal-agent">Goal</h3>
+<p>Design an AI system that can analyze a support ticket, fetch account data, query internal tools, propose a resolution, and optionally take approved actions.</p>
+
+<h3 id="high-level-design-agent">High-level design</h3>
+<Ascii>{`  Ticket / user request
+        -> orchestrator
+            -> planner / policy layer
+            -> tool registry
+            -> identity / permissions
+            -> memory / state store
+            -> LLM reasoning loop
+            -> action executor
+        -> human approval (for sensitive actions)
+        -> final response + audit log`}</Ascii>
+
+<h3 id="what-the-interviewer-wants-agent">What the interviewer wants to hear</h3>
+<ul>
+  <li><strong>Tool use is constrained:</strong> the model should not have unrestricted access.</li>
+  <li><strong>State is explicit:</strong> task state, tool outputs, retries, and memory are stored outside the model.</li>
+  <li><strong>Approval gates exist:</strong> high-risk actions need human confirmation.</li>
+  <li><strong>Observability matters:</strong> trace every tool call, prompt, result, and failure.</li>
+</ul>
+
+<h3 id="key-design-choices-agent">Key design choices</h3>
+<table>
+  <tr><th scope="col">Choice</th><th scope="col">Recommended answer</th></tr>
+  <tr><td>Planning</td><td>Use structured plans or state-machine/graph workflow, not free-form endless loops</td></tr>
+  <tr><td>Tool access</td><td>Allowlisted tools with schemas, auth, and timeout budgets</td></tr>
+  <tr><td>Memory</td><td>Session memory for current task, long-term memory only if it adds clear value</td></tr>
+  <tr><td>Action safety</td><td>Human-in-the-loop for money movement, deletions, account changes</td></tr>
+  <tr><td>Retries</td><td>Idempotent actions, bounded retries, circuit breakers</td></tr>
+</table>
+
+<h3 id="big-risk-agent">Big risk</h3>
+<p>The main failure mode is not just hallucination — it is <strong>incorrect action</strong>. So the architecture should emphasize permissions, validation, and reversible workflows more than just answer quality.</p>
+
+<hr />
+
+<h2 id="part-6">Part 6 — Example: design a recommendation system <Tag kind="neutral">EXAMPLE</Tag></h2>
+
+<h3 id="goal-rec">Goal</h3>
+<p>Recommend products, videos, or jobs personalized to each user.</p>
+
+<h3 id="standard-two-stage-architecture">Standard two-stage architecture</h3>
+<Ascii>{`  User activity / item metadata / context
+        -> feature pipelines
+        -> candidate generation
+        -> top-N candidates
+        -> ranking model
+        -> final recommendations
+        -> feedback loop (clicks, dwell, purchases)`}</Ascii>
+
+<h3 id="why-two-stage">Why two-stage</h3>
+<p>You usually cannot score millions of items with an expensive model on every request. So you:</p>
+<ol>
+  <li><strong>Generate candidates</strong> quickly using retrieval/ANN/heuristics/co-visitation.</li>
+  <li><strong>Rank candidates</strong> with a stronger model using richer features.</li>
+</ol>
+
+<h3 id="data-sources-rec">Data sources</h3>
+<ul>
+  <li>User profile and history</li>
+  <li>Item metadata</li>
+  <li>Context features: time, device, location, session intent</li>
+  <li>Feedback labels: clicks, likes, watch time, purchases</li>
+</ul>
+
+<h3 id="production-points-rec">Production points to mention</h3>
+<ul>
+  <li><strong>Cold start:</strong> new users and new items need fallback strategies.</li>
+  <li><strong>Freshness:</strong> trending items may need stream updates.</li>
+  <li><strong>Exploration vs exploitation:</strong> do not overfit to existing popular items only.</li>
+  <li><strong>Bias/fairness:</strong> recommendations can amplify popularity and creator imbalance.</li>
+</ul>
+
+<div>
+  <div>Good interview line:</div>
+  <div>I would separate offline feature generation and model training from online candidate retrieval and ranking. For online serving, I would cache partial results for heavy users and keep a simple popularity-based fallback path if the personalized ranker is unavailable.</div>
+</div>
+
+<hr />
+
+<h2 id="part-7">Part 7 — Example: design a fraud / anomaly detection system <Tag kind="neutral">EXAMPLE</Tag></h2>
+
+<h3 id="goal-fraud">Goal</h3>
+<p>Detect suspicious transactions in near-real-time and block or review them.</p>
+
+<h3 id="architecture-fraud">Architecture</h3>
+<Ascii>{`  Transaction event stream
+        -> stream ingestion
+        -> online feature enrichment
+        -> rules engine + ML risk model
+        -> risk score / decision
+        -> approve | challenge | block | manual review
+        -> investigator tools + feedback labels
+        -> retraining pipeline`}</Ascii>
+
+<h3 id="good-answer-fraud">Good answer themes</h3>
+<ul>
+  <li><strong>Hybrid system:</strong> rules + ML, not ML alone.</li>
+  <li><strong>Feature freshness:</strong> recent counts, recent devices, recent geos matter.</li>
+  <li><strong>Low latency:</strong> online scoring often must finish in tens or hundreds of milliseconds.</li>
+  <li><strong>Human feedback loop:</strong> investigator decisions create new labels.</li>
+  <li><strong>Explainability:</strong> risk reasons should be visible to analysts.</li>
+</ul>
+
+<h3 id="tradeoff-fraud">Trade-off</h3>
+<p>False positives hurt customers, false negatives cost money. A mature design may have multiple thresholds: auto-approve low risk, manual-review medium risk, auto-block very high risk.</p>
+
+<hr />
+
+<h2 id="part-8">Part 8 — Example: design real-time voice AI <Tag kind="neutral">EXAMPLE</Tag></h2>
+
+<h3 id="goal-voice">Goal</h3>
+<p>Build a voice assistant that supports live conversation with low perceived latency.</p>
+
+<h3 id="high-level-design-voice">High-level design</h3>
+<Ascii>{`  Audio input
+    -> streaming ASR
+    -> partial transcript
+    -> dialogue manager / LLM
+    -> tool calls (optional)
+    -> response text
+    -> streaming TTS
+    -> audio output`}</Ascii>
+
+<h3 id="critical-points-voice">Critical points</h3>
+<ul>
+  <li><strong>Streaming everywhere:</strong> ASR, model output, and TTS should stream.</li>
+  <li><strong>Turn-taking:</strong> interruption handling and barge-in matter a lot.</li>
+  <li><strong>Latency budget:</strong> break down ASR, reasoning, tool calls, and TTS.</li>
+  <li><strong>Fallbacks:</strong> if one model is slow, use a smaller one or shorter response mode.</li>
+</ul>
+
+<h3 id="latency-budget-example-voice">Example latency budget</h3>
+<table>
+  <tr><th scope="col">Stage</th><th scope="col">Target</th></tr>
+  <tr><td>Streaming ASR partials</td><td>100–300 ms</td></tr>
+  <tr><td>Dialogue/model first token</td><td>300–800 ms</td></tr>
+  <tr><td>TTS start</td><td>200–500 ms</td></tr>
+  <tr><td>Total perceived response start</td><td>&lt; 1.5 sec preferred</td></tr>
+</table>
+
+<p>For voice, perceived responsiveness often matters more than final full-answer quality.</p>
+
+<hr />
+
+<h2 id="part-9">Part 9 — Safety, evaluation, observability, and cost <Tag kind="core">★ CORE</Tag></h2>
+
+<h3 id="evaluation">Evaluation</h3>
+<ul>
+  <li><strong>Offline evals:</strong> benchmark datasets, replay sets, golden prompts, ranking metrics.</li>
+  <li><strong>Online evals:</strong> A/B tests, user satisfaction, conversion, resolution rate.</li>
+  <li><strong>Human review:</strong> especially for correctness, harmful outputs, and action safety.</li>
+</ul>
+
+<h3 id="observability">Observability</h3>
+<p>In AI systems, logs are not enough. You usually want:</p>
+<ul>
+  <li>request traces</li>
+  <li>model chosen</li>
+  <li>prompt/version</li>
+  <li>retrieved context IDs</li>
+  <li>tool calls and durations</li>
+  <li>token usage / compute cost</li>
+  <li>user feedback and failure labels</li>
+</ul>
+
+<h3 id="safety-and-governance">Safety and governance</h3>
+<ul>
+  <li>PII detection and redaction</li>
+  <li>content moderation</li>
+  <li>policy enforcement for actions and data access</li>
+  <li>audit logs for regulated workflows</li>
+  <li>dataset and model versioning</li>
+</ul>
+
+<h3 id="cost-controls">Cost controls</h3>
+<ul>
+  <li>cache common responses or retrieved context</li>
+  <li>route easy queries to smaller/cheaper models</li>
+  <li>use async pipelines for heavy jobs</li>
+  <li>truncate irrelevant context</li>
+  <li>batch where possible</li>
+</ul>
+
+<Callout variant="warn" title="A common weak answer">
+  Saying "we'll just use GPT-4 for everything" is not a system design answer. A strong answer includes model routing, fallback behavior, caching, observability, and evaluation strategy.
+</Callout>
+
+<hr />
+
+<h2 id="part-10">Part 10 — Final interview checklist <Tag kind="core">★ CORE</Tag></h2>
+
+<ul>
+  <li>Did I clarify the product goal and risk level?</li>
+  <li>Did I identify whether the system is predictive, retrieval-based, generative, or agentic?</li>
+  <li>Did I separate offline pipelines from online serving?</li>
+  <li>Did I name the main stores: operational DB, object store, vector/search index, cache?</li>
+  <li>Did I cover latency, scale, and fallback behavior?</li>
+  <li>Did I mention evaluation, feedback loops, and drift?</li>
+  <li>Did I address safety, permissions, and auditability?</li>
+  <li>Did I explain at least one concrete trade-off?</li>
+</ul>
+
+<h3 id="a-good-closing-answer">A good closing answer</h3>
+<p>To summarize, I would start with a simple reliable baseline, keep expensive processing off the online path, use the smallest model that meets quality needs, add monitoring and human review for risky decisions, and evolve the system through offline evals plus controlled online experiments.</p>
+
+<Callout variant="tip" title="How to practice">
+  Practice giving the same structure across 5–6 prompts: RAG assistant, recommendation engine, fraud detection, support copilot, voice assistant, and autonomous agent workflow. Repetition makes your interview answers feel senior and calm.
+</Callout>

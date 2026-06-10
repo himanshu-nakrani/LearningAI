@@ -1,14 +1,15 @@
 .root {
   display: inline-block;
-  font-size: 0.7em;
+  font-size: 0.66em;
   font-weight: 700;
-  padding: 2px 8px;
-  border-radius: 3px;
+  padding: 3px 8px;
+  border-radius: 999px;
   margin-left: 6px;
   vertical-align: middle;
-  font-family: -apple-system, sans-serif;
-  letter-spacing: 0.04em;
+  font-family: var(--sans);
+  letter-spacing: 0.055em;
   color: #fff;
+  line-height: 1;
 }
 .core { background: var(--accent); }
 .concept { background: #4a7ba6; }

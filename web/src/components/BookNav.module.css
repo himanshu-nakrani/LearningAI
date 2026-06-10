@@ -2,40 +2,54 @@
   position: sticky;
   top: 0;
   z-index: 100;
-  background: var(--bg);
-  border-bottom: 1px solid var(--border);
-  padding: 7px 24px;
-  font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
-  font-size: 0.76em;
+  background: color-mix(in srgb, var(--surface) 82%, transparent);
+  backdrop-filter: blur(18px) saturate(1.1);
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 76%, transparent);
+  padding: 10px 24px;
+  font-family: var(--sans);
+  font-size: 0.78em;
   display: flex;
   flex-wrap: nowrap;
   align-items: center;
-  gap: 2px 5px;
+  gap: 6px;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.24), 0 12px 30px rgba(25, 22, 18, 0.05);
 }
 .home {
-  font-weight: 600;
+  font-weight: 750;
   color: var(--accent);
   text-decoration: none;
-  padding-right: 6px;
+  padding: 6px 12px 6px 0;
   border-right: 1px solid var(--border);
-  margin-right: 1px;
+  margin-right: 4px;
   flex-shrink: 0;
+  letter-spacing: -0.01em;
 }
 .link {
   color: var(--muted);
   text-decoration: none;
-  padding: 2px 5px;
-  border-radius: 3px;
+  padding: 6px 10px;
+  border-radius: 999px;
   white-space: nowrap;
   flex-shrink: 0;
+  font-weight: 560;
+  line-height: 1;
+  transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
 }
-.link:hover { background: var(--accent-soft); color: var(--accent); }
-.current { background: var(--accent); color: #fff; font-weight: 600; }
-html.dark .current { color: #1a1a1a; }
+.link:hover {
+  background: color-mix(in srgb, var(--accent-soft) 74%, transparent);
+  color: var(--accent);
+}
+.current {
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+  box-shadow: 0 6px 18px color-mix(in srgb, var(--accent) 24%, transparent);
+}
+html.dark .root { box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28); }
+html.dark .current { color: #141412; }
 
-@media (max-width: 700px) { .root { padding: 7px 16px; font-size: 0.72em; } }
-@media (max-width: 480px) { .root { font-size: 0.7em; } }
+@media (max-width: 700px) { .root { padding: 9px 16px; font-size: 0.74em; } }
+@media (max-width: 480px) { .root { font-size: 0.72em; gap: 4px; } .link { padding: 6px 9px; } }

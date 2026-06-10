@@ -1,18 +1,29 @@
 .root {
-  padding: 14px 20px;
-  margin: 1.2em 0;
-  border-radius: 6px;
-  border-left: 3px solid;
+  padding: 18px 20px;
+  margin: 1.45em 0;
+  border-radius: var(--radius-md);
+  border: 1px solid;
+  box-shadow: var(--shadow-sm);
 }
 .title {
   display: block;
-  margin-bottom: 4px;
-  font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
-  font-weight: 600;
+  margin-bottom: 6px;
+  font-family: var(--sans);
+  font-weight: 760;
+  letter-spacing: -0.01em;
 }
 .body :global(p):first-child { margin-top: 0; }
 .body :global(p):last-child { margin-bottom: 0; }
 
-.tip { background: var(--tip-bg); border-color: var(--tip-bd); }
-.warn { background: var(--warn-bg); border-color: var(--warn-bd); }
-.gap { background: var(--gap-bg); border-color: var(--gap-bd); }
+.tip {
+  background: color-mix(in srgb, var(--tip-bg) 78%, var(--surface));
+  border-color: color-mix(in srgb, var(--tip-bd) 52%, var(--border));
+}
+.warn {
+  background: color-mix(in srgb, var(--warn-bg) 78%, var(--surface));
+  border-color: color-mix(in srgb, var(--warn-bd) 58%, var(--border));
+}
+.gap {
+  background: color-mix(in srgb, var(--gap-bg) 78%, var(--surface));
+  border-color: color-mix(in srgb, var(--gap-bd) 58%, var(--border));
+}

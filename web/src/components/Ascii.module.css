@@ -1,12 +1,13 @@
 .root {
-  font-family: "SF Mono", Menlo, monospace;
+  font-family: var(--mono);
   white-space: pre;
   background: var(--code-bg);
-  padding: 14px 18px;
-  border-radius: 6px;
-  border-left: 2px solid var(--accent);
+  padding: 18px 20px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  box-shadow: inset 3px 0 0 var(--accent);
   overflow-x: auto;
   font-size: 0.82em;
   line-height: 1.5;
-  margin: 1em 0;
+  margin: 1.25em 0;
 }

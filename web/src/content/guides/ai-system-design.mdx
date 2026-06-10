@@ -1,7 +1,7 @@
 <h1>AI System Design (High Level) — Interview Guide &amp; Examples</h1>
 <div className="meta">
   High-level interview-focused guide for designing AI systems clearly and confidently.<br />
-  Covers interview flow, reusable architecture blocks, and worked examples you can adapt in real interviews.<br />
+  Covers interview flow, reusable architecture blocks, AI lifecycle design, serving patterns, and worked examples you can adapt in real interviews.<br />
   Legend:
   <Tag kind="core">★ CORE</Tag> must know
   <Tag kind="concept">◆ CONCEPT</Tag> architectural idea
@@ -13,13 +13,16 @@
 <ol>
   <li><a href="#part-0">Part 0 — How to answer an AI system design interview</a></li>
   <li><a href="#part-1">Part 1 — Reusable building blocks for AI systems</a></li>
+  <li><a href="#part-1-5">Part 1.5 — AI-specific estimation</a></li>
   <li><a href="#part-2">Part 2 — Core trade-offs interviewers expect</a></li>
   <li><a href="#part-3">Part 3 — Generic AI architecture template</a></li>
+  <li><a href="#part-3-5">Part 3.5 — Data, model, and deployment lifecycle</a></li>
   <li><a href="#part-4">Part 4 — Example: design a RAG assistant</a></li>
   <li><a href="#part-5">Part 5 — Example: design an agentic workflow system</a></li>
   <li><a href="#part-6">Part 6 — Example: design a recommendation system</a></li>
   <li><a href="#part-7">Part 7 — Example: design a fraud / anomaly detection system</a></li>
   <li><a href="#part-8">Part 8 — Example: design real-time voice AI</a></li>
+  <li><a href="#part-8-5">Part 8.5 — More common interview blueprints</a></li>
   <li><a href="#part-9">Part 9 — Safety, evaluation, observability, and cost</a></li>
   <li><a href="#part-10">Part 10 — Final interview checklist</a></li>
 </ol>
@@ -62,6 +65,32 @@
         -> response / action
         -> logging + feedback + evaluation`}</Ascii>
 
+<h3 id="time-budget">A 45-minute AI system design time budget</h3>
+<table>
+  <tr><th scope="col">Phase</th><th scope="col">Time</th><th scope="col">What to say</th></tr>
+  <tr><td>Clarify</td><td>5 min</td><td>Use case, users, risk, latency, scale, success metric</td></tr>
+  <tr><td>Choose pattern</td><td>3 min</td><td>Predictive ML, RAG, agent, recommendation, multimodal, or hybrid</td></tr>
+  <tr><td>High-level design</td><td>10 min</td><td>Online path, offline path, stores, model serving, safety layer</td></tr>
+  <tr><td>Deep dive</td><td>15 min</td><td>Retrieval, ranking, feature freshness, agent tools, evals, or latency</td></tr>
+  <tr><td>Operations</td><td>7 min</td><td>Monitoring, drift, cost, fallback, rollout, incident handling</td></tr>
+  <tr><td>Wrap</td><td>5 min</td><td>Trade-offs, what you would build first, what you would defer</td></tr>
+</table>
+
+<Callout variant="tip" title="The strongest answer shape">
+  Separate the <strong>online serving path</strong> from the <strong>offline improvement path</strong>. The online path answers users; the offline path improves the model, index, features, prompts, and evals. This single separation makes most AI designs sound production-ready.
+</Callout>
+
+<h3 id="requirements-that-matter-for-ai">Requirements that matter specifically for AI</h3>
+<table>
+  <tr><th scope="col">Requirement</th><th scope="col">Why it matters</th><th scope="col">Design implication</th></tr>
+  <tr><td>Quality target</td><td>AI output is probabilistic</td><td>Define eval metric, not just feature list</td></tr>
+  <tr><td>Latency target</td><td>LLMs, rerankers, speech, and tools add delay</td><td>Use streaming, caching, smaller models, async jobs</td></tr>
+  <tr><td>Risk level</td><td>Wrong actions can harm users or business</td><td>Add approval gates, audit logs, policy checks</td></tr>
+  <tr><td>Freshness</td><td>Knowledge, features, and fraud patterns change</td><td>Use event-driven indexing, streaming features, retraining cadence</td></tr>
+  <tr><td>Personalization</td><td>Context improves utility but increases privacy complexity</td><td>Use scoped profiles, consent, feature TTLs, access checks</td></tr>
+  <tr><td>Explainability</td><td>Analysts and regulators need reasons</td><td>Store evidence, citations, feature attributions, decision reasons</td></tr>
+</table>
+
 <hr />
 
 <h2 id="part-1">Part 1 — Reusable building blocks for AI systems <Tag kind="core">★ CORE</Tag></h2>
@@ -91,6 +120,92 @@
   <li><strong>Multimodal systems:</strong> image understanding, OCR, speech, voice assistants.</li>
 </ul>
 
+<h3 id="online-offline-split">The online/offline split</h3>
+<p>This diagram is useful in almost every AI system design answer. Draw it early, then zoom into the risky part.</p>
+
+<Ascii>{`                 OFFLINE / ASYNC PATH
+
+  raw data -> cleaning -> labeling -> features -> train/eval -> registry
+      |          |           |            |          |           |
+      |          |           |            |          |           v
+      |          +---------> data quality checks      deployment gate
+      |                                                |
+      +-----> indexing / embeddings / batch scores ----+
+
+  ----------------------------------------------------------------
+
+                 ONLINE / SERVING PATH
+
+  request -> auth -> context/features/retrieval -> model/router
+          -> guardrails/post-processing -> response/action -> logs`}</Ascii>
+
+<h3 id="stores-in-ai-systems">Stores in AI systems</h3>
+<table>
+  <tr><th scope="col">Store</th><th scope="col">Holds</th><th scope="col">Interview notes</th></tr>
+  <tr><td>Operational DB</td><td>Users, sessions, transactions, permissions</td><td>Source of truth for business state</td></tr>
+  <tr><td>Object store</td><td>Documents, media, raw logs, training data</td><td>Cheap durable storage for offline pipelines</td></tr>
+  <tr><td>Vector/search index</td><td>Embeddings, chunks, semantic/keyword indexes</td><td>RAG and candidate retrieval; must include metadata/ACLs</td></tr>
+  <tr><td>Feature store</td><td>Reusable ML features</td><td>Keep offline and online features consistent</td></tr>
+  <tr><td>Cache</td><td>Hot prompts, retrieved context, model outputs, rankings</td><td>Improves latency/cost, but watch staleness</td></tr>
+  <tr><td>Model registry</td><td>Model versions, artifacts, eval reports</td><td>Needed for controlled deployment and rollback</td></tr>
+  <tr><td>Trace/eval store</td><td>Prompts, tool calls, outputs, labels, feedback</td><td>Essential for debugging non-deterministic systems</td></tr>
+</table>
+
+<h2 id="part-1-5">Part 1.5 — AI-specific estimation <Tag kind="core">★ CORE</Tag></h2>
+
+<p>AI system estimation includes normal system-design numbers plus model-specific numbers: tokens, retrieval fan-out, model calls, GPU/API cost, and feedback volume.</p>
+
+<h3 id="what-to-estimate">What to estimate</h3>
+<ul>
+  <li><strong>Traffic:</strong> QPS, daily active users, peak multiplier.</li>
+  <li><strong>Input size:</strong> tokens per prompt, audio seconds, image size, number of documents.</li>
+  <li><strong>Model calls:</strong> one model call vs router + retriever + reranker + generator + judge.</li>
+  <li><strong>Retrieval fan-out:</strong> top-k chunks, reranked candidates, metadata filters.</li>
+  <li><strong>Latency budget:</strong> retrieval, model first token, tool calls, post-processing.</li>
+  <li><strong>Storage growth:</strong> logs, embeddings, traces, raw data, labels.</li>
+  <li><strong>Cost:</strong> token/API cost, GPU cost, vector DB cost, human review cost.</li>
+</ul>
+
+<h3 id="rag-cost-example">Worked estimate: internal RAG assistant</h3>
+<Ascii>{`  Assumptions:
+    20,000 employees
+    30% use assistant daily        -> 6,000 DAU
+    8 questions / active user / day -> 48,000 queries/day
+    Peak ~= 3x average
+
+  Average QPS:
+    48,000 / 86,400 ~= 0.56 QPS
+    Peak ~= 1.7 QPS  (small traffic, quality matters more than scale)
+
+  Per query:
+    input prompt      ~= 1,500 tokens
+    retrieved context ~= 4 chunks * 500 tokens = 2,000 tokens
+    output            ~= 400 tokens
+    total             ~= 3,900 tokens/query
+
+  Daily token volume:
+    48,000 * 3,900 ~= 187M tokens/day
+
+  Design implication:
+    The main problem is not QPS. It is grounding quality,
+    permissions, token cost, evals, and trace/debug storage.`}</Ascii>
+
+<h3 id="embedding-storage-estimate">Embedding storage estimate</h3>
+<Ascii>{`  1M document chunks
+  embedding dimension: 1,536
+  float32 size: 4 bytes
+
+  raw vectors = 1M * 1,536 * 4 bytes ~= 6.1 GB
+  plus metadata + ANN index overhead ~= 2-4x
+  practical storage estimate ~= 12-25 GB
+
+  If using float16 or quantized vectors, storage drops,
+  but recall may change. Mention this as a tuning lever.`}</Ascii>
+
+<Callout variant="tip" title="Estimation signal">
+  In AI interviews, a good estimate often shows that the hard part is not always traffic. Sometimes the hard part is token cost, eval quality, stale context, labeling throughput, or permission-safe retrieval.
+</Callout>
+
 <hr />
 
 <h2 id="part-2">Part 2 — Core trade-offs interviewers expect <Tag kind="concept">◆ CONCEPT</Tag></h2>
@@ -116,6 +231,31 @@
 
 <h3 id="automation-vs-human-in-the-loop">Automation vs human-in-the-loop</h3>
 <p>For low-risk tasks, fully automated AI may be acceptable. For high-risk workflows, a better architecture is AI draft → human review → audited final action. This is often the correct enterprise answer.</p>
+
+<h3 id="retrieval-vs-fine-tuning-vs-prompting">Prompting vs RAG vs fine-tuning vs agents</h3>
+<table>
+  <tr><th scope="col">Approach</th><th scope="col">Use when</th><th scope="col">Avoid when</th></tr>
+  <tr><td>Prompting</td><td>The task is simple and the model already knows enough</td><td>You need private/fresh knowledge or consistent behavior at scale</td></tr>
+  <tr><td>RAG</td><td>You need grounded answers over changing knowledge</td><td>The problem is style/format/skill rather than factual lookup</td></tr>
+  <tr><td>Fine-tuning</td><td>You need consistent format, domain style, or narrow repeated behavior</td><td>You mainly need up-to-date facts or citations</td></tr>
+  <tr><td>Agent/tools</td><td>The task requires multi-step actions, APIs, or decisions based on intermediate results</td><td>A fixed workflow or simple retrieval answer is enough</td></tr>
+  <tr><td>Classical ML</td><td>You need low-latency scoring, ranking, forecasting, or classification</td><td>The task requires open-ended reasoning or generation</td></tr>
+</table>
+
+<h3 id="consistency-for-ai-systems">Consistency in AI systems</h3>
+<p>AI systems have normal data consistency issues plus model/version consistency issues. Say which version of the prompt, model, retriever, feature set, and policy produced a result. Without that, debugging and rollback become guesswork.</p>
+
+<Ascii>{`  User saw bad answer at 10:03
+          |
+          v
+  Need to reconstruct:
+    model version       = gpt-x / llama-y / ranker-v12
+    prompt version      = support_prompt_2026_06_10
+    retrieval index     = docs_index_184
+    feature snapshot    = online_features_10:03
+    policy version      = pii_policy_v7
+    tool outputs        = account_api response IDs
+    final output        = exact text/action returned`}</Ascii>
 
 <hr />
 
@@ -166,6 +306,101 @@
   Even in a high-level interview, mention that training and re-indexing live off the critical request path: scheduled pipelines in batch/stream processing, model registry, offline evaluation, then controlled deployment to serving.
 </Callout>
 
+<h3 id="model-router-pattern">Model router pattern</h3>
+<p>A production AI system rarely sends every request to the largest model. A router can classify difficulty, risk, or domain and choose the cheapest reliable path.</p>
+
+<Ascii>{`  request
+    |
+    v
+  [intent + risk classifier]
+    |             |              |
+    | easy        | hard         | unsafe / restricted
+    v             v              v
+  small model   large model    refuse / human review
+    |             |
+    +-------> common response validator
+                  |
+                  v
+              response`}</Ascii>
+
+<h3 id="fallback-patterns">Fallback patterns</h3>
+<table>
+  <tr><th scope="col">Failure</th><th scope="col">Fallback</th><th scope="col">Example</th></tr>
+  <tr><td>LLM timeout</td><td>Smaller model or cached answer</td><td>Return concise answer with sources already retrieved</td></tr>
+  <tr><td>Retriever empty</td><td>Keyword search, broader query, or ask clarifying question</td><td>"I could not find a policy doc for that exact term"</td></tr>
+  <tr><td>Tool/API failure</td><td>Retry if idempotent, otherwise degrade to draft</td><td>Support copilot drafts but does not submit action</td></tr>
+  <tr><td>Safety uncertainty</td><td>Human review</td><td>Payment reversal, account closure, medical guidance</td></tr>
+  <tr><td>High cost pressure</td><td>Queue async job or summarize shorter</td><td>Long document analysis becomes background task</td></tr>
+</table>
+
+<h2 id="part-3-5">Part 3.5 — Data, model, and deployment lifecycle <Tag kind="core">★ CORE</Tag></h2>
+
+<p>High-level AI design is not complete unless you describe how the system improves after launch. The lifecycle is the difference between a demo and a product.</p>
+
+<h3 id="lifecycle-diagram">Lifecycle diagram</h3>
+<Ascii>{`  production traffic
+        |
+        v
+  logs + traces + feedback + labels
+        |
+        +--> data quality checks
+        +--> eval set construction
+        +--> error taxonomy
+        |
+        v
+  improve one layer:
+    - prompt
+    - retrieval/chunking
+    - features
+    - model/fine-tune
+    - policy/guardrails
+        |
+        v
+  offline evals -> canary -> A/B test -> full rollout
+        |
+        v
+  monitor drift, cost, quality, incidents`}</Ascii>
+
+<h3 id="training-vs-serving-skew">Training-serving skew</h3>
+<p>Training-serving skew happens when the model is trained on features or data transformations that differ from what online serving uses. This is common in recommendation, fraud, ranking, and personalization systems.</p>
+
+<table>
+  <tr><th scope="col">Skew source</th><th scope="col">Example</th><th scope="col">Mitigation</th></tr>
+  <tr><td>Feature calculation</td><td>Offline uses 30-day purchase count; online uses stale cache</td><td>Shared feature definitions, feature store, freshness SLAs</td></tr>
+  <tr><td>Label leakage</td><td>Training uses future data accidentally</td><td>Point-in-time joins, backtesting discipline</td></tr>
+  <tr><td>Different distributions</td><td>Training on historical users, serving new user cohort</td><td>Drift monitoring, shadow evaluation, fresh labels</td></tr>
+  <tr><td>Prompt/retrieval mismatch</td><td>Offline eval uses curated docs; production retrieval returns noisy chunks</td><td>End-to-end evals with real retriever</td></tr>
+</table>
+
+<h3 id="deployment-strategies">Deployment strategies</h3>
+<ul>
+  <li><strong>Shadow mode:</strong> run new model beside production, do not affect users.</li>
+  <li><strong>Canary:</strong> send a small percentage of traffic to new version.</li>
+  <li><strong>A/B test:</strong> compare product metrics and quality metrics.</li>
+  <li><strong>Human-reviewed rollout:</strong> new AI output is visible only to reviewers first.</li>
+  <li><strong>Rollback:</strong> keep model, prompt, retriever, and policy versions separately rollbackable.</li>
+</ul>
+
+<h3 id="model-registry-and-governance">Model registry and governance</h3>
+<Ascii>{`  training job / prompt change / retriever change
+        |
+        v
+  artifact + config + eval report + owner
+        |
+        v
+  model/prompt/index registry
+        |
+        +--> staging endpoint
+        +--> canary endpoint
+        +--> production endpoint
+        |
+        v
+  rollback pointer: prod -> previous known-good version`}</Ascii>
+
+<Callout variant="warn" title="Do not ignore prompts and indexes">
+  In LLM/RAG systems, the deployed artifact is not just the model. The prompt template, retrieval index, chunking strategy, reranker, tool schemas, and guardrail policy are all part of the deployable system.
+</Callout>
+
 <hr />
 
 <h2 id="part-4">Part 4 — Example: design a RAG assistant <Tag kind="neutral">EXAMPLE</Tag></h2>
@@ -180,6 +415,26 @@
   <li>Support permissions: users should only see docs they can access.</li>
   <li>Latency target around 2–5 seconds for interactive chat.</li>
 </ul>
+
+<h3 id="api-rag">API sketch</h3>
+
+```json
+POST /chat
+{
+  "conversation_id": "c_123",
+  "message": "What is our parental leave policy?"
+}
+
+Response:
+{
+  "answer": "...",
+  "citations": [
+    {"doc_id": "hr_policy_2026", "title": "Leave Policy", "chunk_id": "..."}
+  ],
+  "confidence": "medium",
+  "trace_id": "tr_abc"
+}
+```
 
 <h3 id="high-level-design-rag">High-level design</h3>
 <Ascii>{`  Document sources -> ingestion pipeline -> chunking -> embeddings -> vector index
@@ -202,12 +457,60 @@
   <li><strong>LLM response:</strong> generate grounded answer with citations.</li>
 </ul>
 
+<h3 id="rag-ingestion-details">Ingestion details</h3>
+<Ascii>{`  connectors
+    |  (Drive, Confluence, SharePoint, S3, Git, tickets)
+    v
+  parse / OCR / clean
+    |
+    v
+  chunk by structure
+    |  title, heading path, owner, ACL, timestamp
+    v
+  embed chunks
+    |
+    +--> vector index
+    +--> keyword index
+    +--> metadata store
+    +--> dead-letter queue for parse failures`}</Ascii>
+
+<h3 id="rag-retrieval-stack">Retrieval stack</h3>
+<table>
+  <tr><th scope="col">Layer</th><th scope="col">Purpose</th><th scope="col">Notes</th></tr>
+  <tr><td>Query rewrite</td><td>Turn follow-up into standalone query</td><td>Use conversation summary, not entire chat history</td></tr>
+  <tr><td>Hybrid retrieval</td><td>Combine semantic and keyword search</td><td>Handles acronyms, names, exact policy terms</td></tr>
+  <tr><td>ACL filtering</td><td>Prevent unauthorized chunks</td><td>Filter during retrieval, not after answer generation</td></tr>
+  <tr><td>Reranking</td><td>Improve top-k precision</td><td>Useful when corpus is large/noisy; adds latency</td></tr>
+  <tr><td>Context packing</td><td>Fit best evidence into token budget</td><td>Dedupe, order by relevance, preserve headings</td></tr>
+</table>
+
 <h3 id="tradeoffs-rag">Trade-offs to mention</h3>
 <ul>
   <li><strong>Pure fine-tuning vs RAG:</strong> RAG is better when knowledge changes frequently.</li>
   <li><strong>Latency vs quality:</strong> reranking improves relevance but adds delay.</li>
   <li><strong>Chunk size:</strong> too small loses context; too large hurts retrieval precision.</li>
   <li><strong>Freshness:</strong> need incremental indexing or event-driven reindexing.</li>
+</ul>
+
+<h3 id="rag-evals">RAG evaluation</h3>
+<table>
+  <tr><th scope="col">Metric</th><th scope="col">Question it answers</th></tr>
+  <tr><td>Retrieval recall@k</td><td>Did we retrieve the document that contains the answer?</td></tr>
+  <tr><td>Context precision</td><td>Are the retrieved chunks actually relevant?</td></tr>
+  <tr><td>Faithfulness / groundedness</td><td>Is the answer supported by retrieved context?</td></tr>
+  <tr><td>Answer relevance</td><td>Did the answer address the user's question?</td></tr>
+  <tr><td>Citation accuracy</td><td>Do links point to the evidence actually used?</td></tr>
+  <tr><td>Permission leakage rate</td><td>Did unauthorized content appear?</td></tr>
+</table>
+
+<h3 id="rag-failure-modes">RAG failure modes</h3>
+<ul>
+  <li><strong>Missing document:</strong> connector or index freshness problem.</li>
+  <li><strong>Bad chunking:</strong> answer spans chunks or tables were parsed poorly.</li>
+  <li><strong>Wrong retrieval:</strong> embedding misses exact keyword or acronym.</li>
+  <li><strong>Lost context:</strong> relevant chunk retrieved but dropped during context packing.</li>
+  <li><strong>Hallucinated synthesis:</strong> model answers beyond supplied context.</li>
+  <li><strong>ACL bug:</strong> retrieval sees data the user cannot access.</li>
 </ul>
 
 <div>
@@ -234,6 +537,30 @@
         -> human approval (for sensitive actions)
         -> final response + audit log`}</Ascii>
 
+<h3 id="agent-state-machine">Agent state-machine view</h3>
+<Ascii>{`  START
+    |
+    v
+  understand goal
+    |
+    v
+  plan steps ---- invalid/unsafe ----> refuse or ask human
+    |
+    v
+  execute next tool
+    |
+    +--> tool failed? -> retry / alternate / escalate
+    |
+    +--> needs approval? -> pause -> human approves/denies
+    |
+    v
+  update task state
+    |
+    +--> done? no -> execute next tool
+    |
+    v
+  final answer + audit log`}</Ascii>
+
 <h3 id="what-the-interviewer-wants-agent">What the interviewer wants to hear</h3>
 <ul>
   <li><strong>Tool use is constrained:</strong> the model should not have unrestricted access.</li>
@@ -252,8 +579,41 @@
   <tr><td>Retries</td><td>Idempotent actions, bounded retries, circuit breakers</td></tr>
 </table>
 
+<h3 id="tool-contracts-agent">Tool contracts</h3>
+<p>Tools should be typed, narrow, permission-aware, and observable. Avoid giving the model broad tools like <code>run_sql(any_query)</code> or <code>http_request(any_url)</code> unless heavily sandboxed.</p>
+
+```json
+{
+  "name": "create_refund_case",
+  "description": "Open a refund review case. Does not issue refund.",
+  "input_schema": {
+    "customer_id": "string",
+    "order_id": "string",
+    "reason": "string",
+    "evidence_ids": ["string"]
+  },
+  "requires_approval": false,
+  "timeout_ms": 2000,
+  "idempotency_key": "conversation_id + order_id"
+}
+```
+
+<h3 id="agent-observability">Agent observability</h3>
+<ul>
+  <li>Plan version and generated steps</li>
+  <li>Tool selected, arguments, result, latency, error</li>
+  <li>Permission decision and policy version</li>
+  <li>Human approval decision and reviewer</li>
+  <li>Loop count, token usage, total cost</li>
+  <li>Final action IDs and rollback/compensation status</li>
+</ul>
+
 <h3 id="big-risk-agent">Big risk</h3>
 <p>The main failure mode is not just hallucination — it is <strong>incorrect action</strong>. So the architecture should emphasize permissions, validation, and reversible workflows more than just answer quality.</p>
+
+<Callout variant="warn" title="Interview trap">
+  Do not design an agent as an infinite loop around an LLM. A production answer needs bounded iterations, state persistence, typed tools, policy checks, approval gates, idempotency, and traceability.
+</Callout>
 
 <hr />
 
@@ -271,6 +631,29 @@
         -> final recommendations
         -> feedback loop (clicks, dwell, purchases)`}</Ascii>
 
+<h3 id="rec-expanded-architecture">Expanded recommendation architecture</h3>
+<Ascii>{`  OFFLINE
+    events + catalog + user profiles
+        -> feature pipelines
+        -> embeddings / co-visitation / popularity tables
+        -> candidate indexes
+        -> train ranking model
+        -> offline eval + model registry
+
+  ONLINE
+    user request
+        -> fetch user/context features
+        -> candidate generators in parallel
+             - similar items
+             - personalized ANN
+             - trending/popular
+             - business rules
+        -> merge + dedupe + filter
+        -> ranker
+        -> diversity/exploration rules
+        -> recommendations
+        -> impression/click/purchase logs`}</Ascii>
+
 <h3 id="why-two-stage">Why two-stage</h3>
 <p>You usually cannot score millions of items with an expensive model on every request. So you:</p>
 <ol>
@@ -286,6 +669,25 @@
   <li>Feedback labels: clicks, likes, watch time, purchases</li>
 </ul>
 
+<h3 id="candidate-generation-rec">Candidate generation strategies</h3>
+<table>
+  <tr><th scope="col">Strategy</th><th scope="col">Good for</th><th scope="col">Weakness</th></tr>
+  <tr><td>Popularity/trending</td><td>Cold start, robust fallback</td><td>Not personalized</td></tr>
+  <tr><td>Collaborative filtering</td><td>Users/items with interaction history</td><td>Weak for new users/items</td></tr>
+  <tr><td>Content similarity</td><td>New items with metadata/text/images</td><td>Can be narrow/repetitive</td></tr>
+  <tr><td>Embedding ANN</td><td>Large catalog semantic matching</td><td>Needs embedding quality and index freshness</td></tr>
+  <tr><td>Rules/business candidates</td><td>Promotions, compliance, inventory constraints</td><td>Can hurt relevance if overused</td></tr>
+</table>
+
+<h3 id="ranking-features-rec">Ranking features</h3>
+<ul>
+  <li><strong>User features:</strong> preferences, historical categories, price sensitivity, language.</li>
+  <li><strong>Item features:</strong> category, age, quality score, inventory, creator/seller reputation.</li>
+  <li><strong>Interaction features:</strong> user-item similarity, previous impressions, recency.</li>
+  <li><strong>Context features:</strong> time, device, location, session query, entry surface.</li>
+  <li><strong>Business/safety features:</strong> blocked categories, availability, policy flags.</li>
+</ul>
+
 <h3 id="production-points-rec">Production points to mention</h3>
 <ul>
   <li><strong>Cold start:</strong> new users and new items need fallback strategies.</li>
@@ -293,6 +695,17 @@
   <li><strong>Exploration vs exploitation:</strong> do not overfit to existing popular items only.</li>
   <li><strong>Bias/fairness:</strong> recommendations can amplify popularity and creator imbalance.</li>
 </ul>
+
+<h3 id="rec-metrics">Recommendation metrics</h3>
+<table>
+  <tr><th scope="col">Metric</th><th scope="col">Use</th></tr>
+  <tr><td>Precision@k / Recall@k</td><td>Offline relevance quality</td></tr>
+  <tr><td>NDCG@k</td><td>Ranking quality with position weighting</td></tr>
+  <tr><td>CTR / conversion / watch time</td><td>Online product impact</td></tr>
+  <tr><td>Diversity / novelty</td><td>Avoid repetitive recommendations</td></tr>
+  <tr><td>Coverage</td><td>How much of catalog gets exposure</td></tr>
+  <tr><td>Guardrail metrics</td><td>Policy violations, unfair exposure, spam/abuse</td></tr>
+</table>
 
 <div>
   <div>Good interview line:</div>
@@ -316,6 +729,20 @@
         -> investigator tools + feedback labels
         -> retraining pipeline`}</Ascii>
 
+<h3 id="fraud-latency-path">Fraud latency path</h3>
+<Ascii>{`  transaction request
+      |
+      v
+  synchronous path, must be fast:
+    validate -> online features -> rules + model -> decision
+                                               |
+                                               v
+                               approve / challenge / block
+
+  async path, can be slower:
+    event stream -> graph features -> case linking -> investigator UI
+                 -> confirmed labels -> retrain / rule tuning`}</Ascii>
+
 <h3 id="good-answer-fraud">Good answer themes</h3>
 <ul>
   <li><strong>Hybrid system:</strong> rules + ML, not ML alone.</li>
@@ -325,8 +752,38 @@
   <li><strong>Explainability:</strong> risk reasons should be visible to analysts.</li>
 </ul>
 
+<h3 id="fraud-features">Useful fraud features</h3>
+<ul>
+  <li>Transaction amount compared with user baseline</li>
+  <li>Velocity: number/amount of transactions in last 1 min, 1 hour, 24 hours</li>
+  <li>Device fingerprint and device age</li>
+  <li>Geo distance from last known location</li>
+  <li>Merchant/category risk</li>
+  <li>Account age and recent profile changes</li>
+  <li>Graph signals: shared device, shared card, shared address, suspicious cluster</li>
+</ul>
+
+<h3 id="fraud-modeling">Modeling approach</h3>
+<table>
+  <tr><th scope="col">Layer</th><th scope="col">Purpose</th></tr>
+  <tr><td>Rules</td><td>Hard constraints, known attack patterns, compliance requirements</td></tr>
+  <tr><td>Supervised model</td><td>Risk score from labeled historical fraud/non-fraud</td></tr>
+  <tr><td>Anomaly model</td><td>Catch unusual behavior without labels</td></tr>
+  <tr><td>Graph features</td><td>Detect coordinated behavior and shared entities</td></tr>
+  <tr><td>Manual review</td><td>Handle uncertain cases and generate labels</td></tr>
+</table>
+
 <h3 id="tradeoff-fraud">Trade-off</h3>
 <p>False positives hurt customers, false negatives cost money. A mature design may have multiple thresholds: auto-approve low risk, manual-review medium risk, auto-block very high risk.</p>
+
+<Ascii>{`  risk score
+  0.0 ------------------------------------------------------ 1.0
+       approve        challenge / review          block
+       low friction   gather more signal          high confidence
+
+  Tune thresholds by business cost:
+    false positive cost = angry customer / lost sale
+    false negative cost = fraud loss / abuse / compliance risk`}</Ascii>
 
 <hr />
 
@@ -345,6 +802,33 @@
     -> streaming TTS
     -> audio output`}</Ascii>
 
+<h3 id="voice-session-architecture">Voice session architecture</h3>
+<Ascii>{`  client microphone
+      |
+      v
+  audio gateway / WebRTC
+      |
+      +--> voice activity detection
+      +--> streaming ASR partials
+               |
+               v
+          dialogue manager
+               |
+               +--> short-term conversation state
+               +--> tool calls / retrieval
+               +--> LLM response stream
+               |
+               v
+          streaming TTS
+               |
+               v
+          client speaker
+
+  side channels:
+    transcripts -> logs/evals
+    latency metrics -> monitoring
+    consent/PII policy -> governance`}</Ascii>
+
 <h3 id="critical-points-voice">Critical points</h3>
 <ul>
   <li><strong>Streaming everywhere:</strong> ASR, model output, and TTS should stream.</li>
@@ -352,6 +836,16 @@
   <li><strong>Latency budget:</strong> break down ASR, reasoning, tool calls, and TTS.</li>
   <li><strong>Fallbacks:</strong> if one model is slow, use a smaller one or shorter response mode.</li>
 </ul>
+
+<h3 id="voice-hard-parts">Voice hard parts</h3>
+<table>
+  <tr><th scope="col">Problem</th><th scope="col">Design response</th></tr>
+  <tr><td>Barge-in</td><td>Allow user to interrupt TTS; cancel current generation and update state</td></tr>
+  <tr><td>Partial transcripts</td><td>Use stable partials for early intent, wait for final transcript for risky actions</td></tr>
+  <tr><td>Noisy audio</td><td>Noise suppression, confidence thresholds, clarification prompts</td></tr>
+  <tr><td>Tool latency</td><td>Give short acknowledgement, run tool, stream final answer</td></tr>
+  <tr><td>Privacy</td><td>Consent, retention policy, PII redaction in transcripts</td></tr>
+</table>
 
 <h3 id="latency-budget-example-voice">Example latency budget</h3>
 <table>
@@ -366,6 +860,110 @@
 
 <hr />
 
+<h2 id="part-8-5">Part 8.5 — More common interview blueprints <Tag kind="neutral">EXAMPLE</Tag></h2>
+
+<h3 id="blueprint-document-processing">Blueprint: document processing / extraction</h3>
+<p>Prompt: "Design a system that extracts structured fields from invoices, contracts, or medical forms."</p>
+
+<Ascii>{`  document upload
+      -> object store
+      -> OCR / layout parser
+      -> document classifier
+      -> field extractor model / LLM
+      -> schema validation
+      -> confidence scoring
+      -> human review for low confidence
+      -> structured record + audit trail`}</Ascii>
+
+<ul>
+  <li><strong>Key trade-off:</strong> automation rate vs extraction accuracy.</li>
+  <li><strong>Hard part:</strong> tables, handwriting, scans, domain-specific fields, hallucinated values.</li>
+  <li><strong>Metrics:</strong> field-level precision/recall, exact-match rate, review rate, turnaround time.</li>
+  <li><strong>Safety:</strong> never invent missing fields; mark unknown with confidence.</li>
+</ul>
+
+<h3 id="blueprint-semantic-search">Blueprint: semantic search</h3>
+<p>Prompt: "Design search over a large internal knowledge base or product catalog."</p>
+
+<Ascii>{`  query
+    -> query understanding / spell correction / filters
+    -> hybrid retrieval
+         + keyword index
+         + vector index
+         + business filters
+    -> reranker
+    -> snippet/highlight generation
+    -> results page
+    -> click logs + query reformulation analytics`}</Ascii>
+
+<ul>
+  <li><strong>Key trade-off:</strong> exact keyword precision vs semantic recall.</li>
+  <li><strong>Hard part:</strong> ranking, freshness, permissions, synonyms, acronyms.</li>
+  <li><strong>Metrics:</strong> NDCG, MRR, zero-result rate, click-through, reformulation rate.</li>
+</ul>
+
+<h3 id="blueprint-content-moderation">Blueprint: content moderation</h3>
+<p>Prompt: "Design an AI system to detect harmful or policy-violating content."</p>
+
+<Ascii>{`  user content
+      -> lightweight rule checks
+      -> ML classifier / moderation model
+      -> policy decision engine
+          | low risk      -> allow
+          | uncertain     -> queue for review
+          | high risk     -> block / limit distribution
+      -> reviewer feedback
+      -> policy + model updates`}</Ascii>
+
+<ul>
+  <li><strong>Key trade-off:</strong> safety vs false positives and creator/user trust.</li>
+  <li><strong>Hard part:</strong> context, adversarial language, policy changes, multilingual content.</li>
+  <li><strong>Metrics:</strong> precision/recall by policy category, appeal overturn rate, review latency.</li>
+  <li><strong>Safety:</strong> policy versioning and explainable enforcement decisions.</li>
+</ul>
+
+<h3 id="blueprint-personalization-copilot">Blueprint: personalized copilot</h3>
+<p>Prompt: "Design a copilot that personalizes answers based on user history and preferences."</p>
+
+<Ascii>{`  user request
+      -> identity + consent check
+      -> retrieve user profile / preferences
+      -> retrieve task context
+      -> assemble minimal personalized prompt
+      -> model response
+      -> user feedback
+      -> memory write policy
+           - what to store?
+           - for how long?
+           - can user inspect/delete it?`}</Ascii>
+
+<ul>
+  <li><strong>Key trade-off:</strong> helpful personalization vs privacy and surprise.</li>
+  <li><strong>Hard part:</strong> stale memories, wrong assumptions, sensitive attributes.</li>
+  <li><strong>Metrics:</strong> task success, user correction rate, memory usefulness, deletion requests.</li>
+</ul>
+
+<h3 id="blueprint-forecasting">Blueprint: demand forecasting</h3>
+<p>Prompt: "Design a system that forecasts demand, traffic, or inventory needs."</p>
+
+<Ascii>{`  historical events + calendar + promotions + external signals
+      -> data validation
+      -> feature generation
+      -> forecasting model
+      -> prediction intervals
+      -> business constraints / overrides
+      -> dashboard + API
+      -> actuals arrive later
+      -> backtesting + drift monitoring`}</Ascii>
+
+<ul>
+  <li><strong>Key trade-off:</strong> model complexity vs interpretability and stability.</li>
+  <li><strong>Hard part:</strong> seasonality, promotions, holidays, sparse products, cold starts.</li>
+  <li><strong>Metrics:</strong> MAPE, WAPE, RMSE, calibration of prediction intervals.</li>
+</ul>
+
+<hr />
+
 <h2 id="part-9">Part 9 — Safety, evaluation, observability, and cost <Tag kind="core">★ CORE</Tag></h2>
 
 <h3 id="evaluation">Evaluation</h3>
@@ -374,6 +972,53 @@
   <li><strong>Online evals:</strong> A/B tests, user satisfaction, conversion, resolution rate.</li>
   <li><strong>Human review:</strong> especially for correctness, harmful outputs, and action safety.</li>
 </ul>
+
+<h3 id="eval-layering">Layered evaluation</h3>
+<p>Evaluate each layer separately, then evaluate the full end-to-end system. This helps you localize failures.</p>
+
+<Ascii>{`  input quality eval
+        |
+        v
+  retrieval / feature eval
+        |
+        v
+  model output eval
+        |
+        v
+  policy / safety eval
+        |
+        v
+  product outcome eval
+
+  Example RAG failure:
+    bad answer could be retrieval failure, prompt failure,
+    model failure, citation failure, or stale source data.`}</Ascii>
+
+<h3 id="eval-dataset-design">Eval dataset design</h3>
+<table>
+  <tr><th scope="col">Slice</th><th scope="col">Why include it</th></tr>
+  <tr><td>Common happy path</td><td>Protect core user experience</td></tr>
+  <tr><td>Edge cases</td><td>Catch rare but important failures</td></tr>
+  <tr><td>Adversarial prompts</td><td>Test prompt injection, jailbreaks, unsafe requests</td></tr>
+  <tr><td>Permission cases</td><td>Ensure users cannot access forbidden content</td></tr>
+  <tr><td>Freshness cases</td><td>Verify recently changed docs/features are reflected</td></tr>
+  <tr><td>Regression cases</td><td>Examples from previous production failures</td></tr>
+</table>
+
+<h3 id="llm-as-judge">LLM-as-judge</h3>
+<p>LLM judges are useful for scale, but they need calibration. Use explicit rubrics, spot-check with humans, and keep judge prompts/versioning stable.</p>
+
+```
+Rubric example:
+Score 1-5 on faithfulness.
+5 = every claim is directly supported by supplied evidence.
+3 = mostly supported, but some vague or weakly supported claims.
+1 = answer contradicts evidence or invents important facts.
+```
+
+<Callout variant="warn" title="Eval warning">
+  Never rely only on aggregate eval scores. Segment by query type, user group, language, document source, risk level, and model version. Many serious regressions hide inside a good-looking average.
+</Callout>
 
 <h3 id="observability">Observability</h3>
 <p>In AI systems, logs are not enough. You usually want:</p>
@@ -387,6 +1032,27 @@
   <li>user feedback and failure labels</li>
 </ul>
 
+<h3 id="observability-diagram">Observability diagram</h3>
+<Ascii>{`  request trace
+    span: api
+    span: auth
+    span: retrieval
+      attributes: index_version, top_k, doc_ids, scores
+    span: reranker
+    span: model_call
+      attributes: model, prompt_version, tokens_in, tokens_out, cost
+    span: guardrails
+      attributes: policy_version, decision
+    span: tool_call(s)
+    span: response
+
+  dashboards:
+    latency p50/p95/p99
+    cost per route/user/team
+    error and fallback rate
+    eval quality over time
+    drift / freshness / stale index alerts`}</Ascii>
+
 <h3 id="safety-and-governance">Safety and governance</h3>
 <ul>
   <li>PII detection and redaction</li>
@@ -396,6 +1062,35 @@
   <li>dataset and model versioning</li>
 </ul>
 
+<h3 id="safety-layers">Safety layers</h3>
+<Ascii>{`  user input
+      |
+      v
+  input checks
+    - prompt injection
+    - harmful request
+    - PII / secrets
+    - authorization
+      |
+      v
+  model / agent / tool execution
+      |
+      v
+  output checks
+    - groundedness
+    - PII leakage
+    - policy violation
+    - schema validation
+      |
+      v
+  action gate
+    - auto-allow
+    - human approval
+    - refuse
+      |
+      v
+  audit log`}</Ascii>
+
 <h3 id="cost-controls">Cost controls</h3>
 <ul>
   <li>cache common responses or retrieved context</li>
@@ -404,6 +1099,17 @@
   <li>truncate irrelevant context</li>
   <li>batch where possible</li>
 </ul>
+
+<h3 id="cost-breakdown">Cost breakdown</h3>
+<table>
+  <tr><th scope="col">Cost source</th><th scope="col">Controls</th></tr>
+  <tr><td>LLM input tokens</td><td>Context pruning, prompt compression, retrieval precision</td></tr>
+  <tr><td>LLM output tokens</td><td>Concise modes, streaming stop conditions, answer length limits</td></tr>
+  <tr><td>Multiple model calls</td><td>Routing, caching, fewer agent loops, batch evals offline</td></tr>
+  <tr><td>Vector/search infrastructure</td><td>Index compaction, quantization, TTLs for transient data</td></tr>
+  <tr><td>Human review</td><td>Confidence thresholds, active learning, reviewer tooling</td></tr>
+  <tr><td>GPU serving</td><td>Batching, quantization, autoscaling, smaller model distillation</td></tr>
+</table>
 
 <Callout variant="warn" title="A common weak answer">
   Saying "we'll just use GPT-4 for everything" is not a system design answer. A strong answer includes model routing, fallback behavior, caching, observability, and evaluation strategy.

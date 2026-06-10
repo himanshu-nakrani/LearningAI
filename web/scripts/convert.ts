@@ -209,14 +209,10 @@ async function processFile(map: FileMap) {
     .replace(/<\/tag>/g, "</Tag>");
   html = bodyToMdx(html);
 
-  const frontmatter = [
-    "---",
-    `title: "${escapeForFrontmatter(titleTag)}"`,
-    `description: "${escapeForFrontmatter(desc)}"`,
-    `slug: "${map.slug}"`,
-    "---",
-    "",
-  ].join("\n");
+  // Metadata is owned by src/lib/guides.ts and route metadata. Next's MDX
+  // pipeline in this app does not parse frontmatter, so emitting it here would
+  // render it as visible content at the top of each guide.
+  const frontmatter = "";
 
   const outRel =
     map.route === "guide"

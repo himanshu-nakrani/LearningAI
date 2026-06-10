@@ -1,9 +1,10 @@
 .root {
-  padding: 18px 20px;
+  padding: 16px 18px;
   margin: 1.45em 0;
-  border-radius: var(--radius-md);
-  border: 1px solid;
-  box-shadow: var(--shadow-sm);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  border-left-width: 3px;
+  box-shadow: none;
 }
 .title {
   display: block;
@@ -16,14 +17,14 @@
 .body :global(p):last-child { margin-bottom: 0; }
 
 .tip {
-  background: color-mix(in srgb, var(--tip-bg) 78%, var(--surface));
-  border-color: color-mix(in srgb, var(--tip-bd) 52%, var(--border));
+  background: var(--surface);
+  border-left-color: var(--tip-bd);
 }
 .warn {
-  background: color-mix(in srgb, var(--warn-bg) 78%, var(--surface));
-  border-color: color-mix(in srgb, var(--warn-bd) 58%, var(--border));
+  background: var(--surface);
+  border-left-color: var(--warn-bd);
 }
 .gap {
-  background: color-mix(in srgb, var(--gap-bg) 78%, var(--surface));
-  border-color: color-mix(in srgb, var(--gap-bd) 58%, var(--border));
+  background: var(--surface);
+  border-left-color: var(--gap-bd);
 }

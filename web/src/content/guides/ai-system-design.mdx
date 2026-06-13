@@ -14,9 +14,12 @@
   <li><a href="#part-0">Part 0 — How to answer an AI system design interview</a></li>
   <li><a href="#part-1">Part 1 — Reusable building blocks for AI systems</a></li>
   <li><a href="#part-1-5">Part 1.5 — AI-specific estimation</a></li>
+  <li><a href="#part-1-7">Part 1.7 — LLM inference internals every interviewer expects</a></li>
   <li><a href="#part-2">Part 2 — Core trade-offs interviewers expect</a></li>
+  <li><a href="#part-2-5">Part 2.5 — Retrieval, embeddings, and reranking choices</a></li>
   <li><a href="#part-3">Part 3 — Generic AI architecture template</a></li>
   <li><a href="#part-3-5">Part 3.5 — Data, model, and deployment lifecycle</a></li>
+  <li><a href="#part-3-7">Part 3.7 — AI gateway, model routing, and multi-tenancy</a></li>
   <li><a href="#part-4">Part 4 — Example: design a RAG assistant</a></li>
   <li><a href="#part-5">Part 5 — Example: design an agentic workflow system</a></li>
   <li><a href="#part-6">Part 6 — Example: design a recommendation system</a></li>
@@ -24,7 +27,10 @@
   <li><a href="#part-8">Part 8 — Example: design real-time voice AI</a></li>
   <li><a href="#part-8-5">Part 8.5 — More common interview blueprints</a></li>
   <li><a href="#part-9">Part 9 — Safety, evaluation, observability, and cost</a></li>
+  <li><a href="#part-9-5">Part 9.5 — GPU capacity planning and inference economics</a></li>
   <li><a href="#part-10">Part 10 — Final interview checklist</a></li>
+  <li><a href="#part-11">Part 11 — Question catalog with approach hints</a></li>
+  <li><a href="#part-12">Part 12 — Anti-patterns that fail AI system design interviews</a></li>
 </ol>
 </div>
 
@@ -208,6 +214,124 @@
 
 <hr />
 
+<h2 id="part-1-7">Part 1.7 — LLM inference internals every interviewer expects <Tag kind="core">★ CORE</Tag></h2>
+
+<p>For senior AI system design rounds, interviewers expect you to talk about LLM serving with the same fluency you would talk about database indexes. You do not need to derive attention from scratch, but you do need to explain the runtime cost shape, how serving frameworks exploit it, and how those properties show up in your design.</p>
+
+<h3 id="prefill-vs-decode">Prefill vs decode: the two phases that drive everything</h3>
+
+<p>An LLM forward pass during generation has two distinct phases with different cost shapes. Almost every serving optimization is about exploiting this asymmetry.</p>
+
+<Ascii>{`  PREFILL (process the prompt)              DECODE (generate tokens, one at a time)
+  -------------------------------            -----------------------------------------
+  parallel over all input tokens             sequential, one token per step
+  compute-bound (matmul heavy)               memory-bandwidth-bound (load KV cache)
+  good GPU utilization                       low GPU utilization unless batched
+  cost ~ O(N_in)                             cost ~ O(N_out) per request
+  affects: time-to-first-token (TTFT)        affects: tokens-per-second (TPS / TPOT)`}</Ascii>
+
+<table>
+  <tr><th scope="col">Metric</th><th scope="col">What it measures</th><th scope="col">User-visible effect</th></tr>
+  <tr><td>TTFT (time to first token)</td><td>Prefill time + queueing + first decode step</td><td>How "snappy" the response feels</td></tr>
+  <tr><td>TPOT (time per output token)</td><td>Inverse of decode throughput per request</td><td>How fast the answer streams</td></tr>
+  <tr><td>End-to-end latency</td><td>TTFT + N_out * TPOT</td><td>Total wait for a complete answer</td></tr>
+  <tr><td>Throughput (tokens/sec/GPU)</td><td>Aggregate across all concurrent requests</td><td>Cost per million tokens</td></tr>
+</table>
+
+<h3 id="kv-cache">KV cache: why it dominates memory</h3>
+
+<p>During autoregressive decoding, attention needs the keys and values of every prior token. Recomputing them each step would be quadratic, so they are cached. The KV cache is the largest dynamic memory consumer on the GPU during inference, and it scales with <em>tokens in flight</em>, not parameter count.</p>
+
+<Ascii>{`  KV cache size per request:
+    2 * n_layers * n_heads * head_dim * seq_len * dtype_bytes
+
+  Concrete example (Llama-like, 70B class):
+    n_layers = 80, n_kv_heads = 8, head_dim = 128, dtype = fp16 (2 bytes)
+    per token:  2 * 80 * 8 * 128 * 2 = ~320 KB / token
+    8k context: ~2.5 GB per request just for KV cache
+
+  Why it matters in design:
+    batch size at serving time is gated by KV memory, not FLOPs.
+    longer contexts -> fewer concurrent users per GPU -> higher cost/token.`}</Ascii>
+
+<h3 id="batching-strategies">Batching strategies</h3>
+
+<table>
+  <tr><th scope="col">Strategy</th><th scope="col">How it works</th><th scope="col">Trade-off</th></tr>
+  <tr><td>Static batching</td><td>Wait for N requests, run them together to completion</td><td>Easy, but slow requests block fast ones (head-of-line blocking)</td></tr>
+  <tr><td>Dynamic batching</td><td>Bucket by length, flush on timer or size</td><td>Better utilization, still suffers from variable output length</td></tr>
+  <tr><td>Continuous batching (in-flight)</td><td>New requests join the batch every decode step; finished requests leave</td><td>Standard for vLLM, TensorRT-LLM, TGI; 2–10x throughput gain</td></tr>
+  <tr><td>Chunked prefill</td><td>Split long prompts into chunks interleaved with decode steps of other requests</td><td>Keeps decode latency low while serving long-context prefills</td></tr>
+</table>
+
+<h3 id="paged-attention">Paged attention and memory fragmentation</h3>
+
+<p>Naive KV cache allocates one contiguous block per request sized to <code>max_seq_len</code>, wasting most of it. Paged attention (vLLM) treats KV cache like virtual memory: small fixed-size blocks, allocated on demand, addressed by a per-request block table. Result: 2–4x more concurrent requests on the same GPU.</p>
+
+<Ascii>{`  Without paging:                       With paged attention:
+  [Req A: 8192 reserved | used 200 ]    blocks: [A0][B0][A1][C0][B1][A2]...
+  [Req B: 8192 reserved | used 100 ]    A's table: [0, 2, 5, ...]
+  [Req C: 8192 reserved | used 50  ]    B's table: [1, 4, ...]
+                                        C's table: [3, ...]
+
+  internal fragmentation high           internal fragmentation ~ 1 block / req
+  rejects requests early                packs many short requests densely`}</Ascii>
+
+<h3 id="speculative-decoding">Speculative decoding</h3>
+
+<p>A small "draft" model proposes K tokens; the large "verifier" model checks them in one forward pass and accepts the longest matching prefix. Net effect: decode throughput goes up because the expensive model does fewer sequential steps. Acceptance rate determines the speedup (typical 2–3x for similar-distribution drafters).</p>
+
+<Ascii>{`  draft model (small) -> proposes: "the cat sat on the"
+  target model (big)  -> verifies all 5 in parallel
+                         accepts "the cat sat on" (4), rejects "the", resamples 5th
+
+  Variants:
+    - Medusa heads (extra heads on the same model predict multiple tokens)
+    - EAGLE (uses target model's hidden state to draft)
+    - Lookahead decoding (no draft model, uses Jacobi iteration)`}</Ascii>
+
+<h3 id="quantization-table">Quantization choices</h3>
+
+<table>
+  <tr><th scope="col">Format</th><th scope="col">Bits</th><th scope="col">When to use</th><th scope="col">Caveat</th></tr>
+  <tr><td>FP16 / BF16</td><td>16</td><td>Default for training and high-quality inference</td><td>BF16 has wider range, better for training stability</td></tr>
+  <tr><td>FP8 (E4M3 / E5M2)</td><td>8</td><td>H100/H200 inference for new training runs</td><td>Requires recent hardware and calibration</td></tr>
+  <tr><td>INT8 (SmoothQuant, W8A8)</td><td>8</td><td>2x throughput on most GPUs, small quality drop</td><td>Outlier channels need handling</td></tr>
+  <tr><td>INT4 (GPTQ, AWQ)</td><td>4 weight / 16 act</td><td>Fits 70B on a single 80GB GPU; on-device deploys</td><td>Weight-only; activations stay fp16</td></tr>
+  <tr><td>KV cache quant (FP8 / INT4)</td><td>varies</td><td>Doubles concurrent requests at long context</td><td>Long-context tasks regress more</td></tr>
+</table>
+
+<h3 id="parallelism">Distributed inference parallelism</h3>
+
+<ul>
+  <li><strong>Tensor parallel (TP):</strong> shard each layer's matmuls across GPUs in a node. Low latency, high bandwidth required (NVLink). Used for models that don't fit on one GPU.</li>
+  <li><strong>Pipeline parallel (PP):</strong> split layers across nodes. Higher latency but cheaper interconnect; usually combined with TP, not used alone for serving.</li>
+  <li><strong>Expert parallel (EP):</strong> for MoE models, route each expert to a different GPU. Activates only top-k experts per token; saves compute, increases routing/comm complexity.</li>
+  <li><strong>Sequence/context parallel:</strong> shard the sequence dimension; useful for very long context (&gt;100k tokens).</li>
+  <li><strong>Replication:</strong> for throughput scaling, just replicate the whole model across GPUs and load-balance.</li>
+</ul>
+
+<h3 id="prefix-caching">Prefix caching</h3>
+
+<p>If many requests share a prefix (system prompt, few-shot examples, long document), reuse the KV cache for the shared portion across requests. Cuts TTFT dramatically for chat apps and RAG with stable system prompts. Most modern serving stacks (vLLM, TensorRT-LLM, SGLang) support this.</p>
+
+<Callout variant="tip" title="Interview shortcut">
+  When asked about LLM latency, lead with: "There are two phases — prefill (compute-bound, sets TTFT) and decode (memory-bound, sets TPOT). I'd optimize TTFT with prefix caching and chunked prefill, optimize TPOT with continuous batching and speculative decoding, and reduce KV memory with paged attention plus KV quantization to raise concurrency." That single sentence signals seniority.
+</Callout>
+
+<h3 id="serving-stack-choices">Serving stack choices</h3>
+
+<table>
+  <tr><th scope="col">Option</th><th scope="col">Best for</th><th scope="col">Note</th></tr>
+  <tr><td>vLLM</td><td>Open-source default; paged attention + continuous batching</td><td>Strong throughput, broad model support</td></tr>
+  <tr><td>TensorRT-LLM</td><td>Maximum throughput on NVIDIA GPUs</td><td>Per-model engine build; less flexible</td></tr>
+  <tr><td>TGI (HuggingFace)</td><td>Easy ops, broad model support</td><td>Good for medium-scale production</td></tr>
+  <tr><td>SGLang</td><td>Programs/agents with shared prefixes, structured output</td><td>RadixAttention for prefix sharing</td></tr>
+  <tr><td>Hosted API (Anthropic / OpenAI / Bedrock)</td><td>You don't want to run GPUs at all</td><td>Pay per token; opaque latency variance</td></tr>
+</table>
+
+<hr />
+
 <h2 id="part-2">Part 2 — Core trade-offs interviewers expect <Tag kind="concept">◆ CONCEPT</Tag></h2>
 
 <h3 id="accuracy-vs-latency-vs-cost">Accuracy vs latency vs cost</h3>
@@ -256,6 +380,102 @@
     policy version      = pii_policy_v7
     tool outputs        = account_api response IDs
     final output        = exact text/action returned`}</Ascii>
+
+<hr />
+
+<h2 id="part-2-5">Part 2.5 — Retrieval, embeddings, and reranking choices <Tag kind="core">★ CORE</Tag></h2>
+
+<p>Retrieval is where most production RAG systems succeed or fail. Interviewers want you to name specific algorithms and explain the trade-offs, not just say "use a vector DB."</p>
+
+<h3 id="ann-index-types">ANN index choices</h3>
+
+<table>
+  <tr><th scope="col">Index</th><th scope="col">How it works</th><th scope="col">When to pick</th><th scope="col">Caveats</th></tr>
+  <tr><td>Flat / brute force</td><td>Exact cosine/L2 over all vectors</td><td>&lt; 100k vectors, or eval ground truth</td><td>O(N) per query; doesn't scale</td></tr>
+  <tr><td>HNSW (graph)</td><td>Layered proximity graph, greedy descent</td><td>General default; high recall at low latency</td><td>Memory hungry; rebuilds slow; updates degrade graph</td></tr>
+  <tr><td>IVF + PQ</td><td>Coarse cluster (IVF) then product-quantized codes</td><td>Very large corpora (100M+) where memory matters</td><td>Recall drops with aggressive quantization</td></tr>
+  <tr><td>ScaNN</td><td>Anisotropic quantization + tree search</td><td>Billion-scale, Google ecosystem</td><td>Less common outside Google stack</td></tr>
+  <tr><td>DiskANN / Vamana</td><td>Graph index on SSD</td><td>Vectors don't fit in RAM</td><td>Higher tail latency than in-memory</td></tr>
+</table>
+
+<h3 id="vector-db-products">Vector database options</h3>
+
+<ul>
+  <li><strong>Postgres + pgvector:</strong> small to medium corpora, transactional consistency with your app data. Easiest if you already run Postgres.</li>
+  <li><strong>Elastic / OpenSearch:</strong> hybrid keyword + vector in one index, mature ACL/aggregation story.</li>
+  <li><strong>Pinecone / Weaviate / Qdrant / Milvus:</strong> dedicated vector stores with managed sharding and replication; pick when scale outgrows pgvector or you need namespaces/multi-tenancy.</li>
+  <li><strong>FAISS:</strong> library, not a service. Wrap it in your own server when you need full control.</li>
+  <li><strong>LanceDB / Chroma:</strong> embedded; good for local agents and notebooks.</li>
+</ul>
+
+<h3 id="chunking-strategies">Chunking strategies</h3>
+
+<table>
+  <tr><th scope="col">Strategy</th><th scope="col">Good for</th><th scope="col">Risk</th></tr>
+  <tr><td>Fixed-size with overlap (e.g. 800 tok / 100 overlap)</td><td>Generic prose, default starting point</td><td>Cuts mid-sentence; loses structure</td></tr>
+  <tr><td>Recursive structural (by heading then paragraph)</td><td>Wiki, docs, contracts</td><td>Needs a good parser per format</td></tr>
+  <tr><td>Sentence-window</td><td>QA on dense text</td><td>Many small chunks; reranker becomes critical</td></tr>
+  <tr><td>Semantic chunking (cluster sentences by embedding distance)</td><td>Long-form articles, transcripts</td><td>Slower to ingest; non-deterministic</td></tr>
+  <tr><td>Page or row level</td><td>PDFs, tables, spreadsheets</td><td>One chunk may be much larger than others</td></tr>
+  <tr><td>Parent-child (small for retrieval, large for context)</td><td>When retrieval precision and context fullness conflict</td><td>Doubles storage</td></tr>
+</table>
+
+<h3 id="bi-encoder-vs-cross-encoder">Bi-encoder vs cross-encoder</h3>
+
+<Ascii>{`  BI-ENCODER (used for retrieval)              CROSS-ENCODER (used for reranking)
+  embed(query) and embed(doc) separately       feed [query; doc] together into model
+  similarity = cosine(q_vec, d_vec)            output a relevance score directly
+  fast: precompute doc vectors, ANN lookup     slow: must run per (q, d) pair
+  use to fetch top-100 candidates              use to rerank top-100 -> top-5
+  example: sentence-transformers, OpenAI       example: cohere-rerank, BGE-reranker,
+           text-embedding-3, e5, bge                    monoT5, ColBERT (late-interact)`}</Ascii>
+
+<h3 id="hybrid-retrieval">Hybrid retrieval (almost always wins)</h3>
+
+<p>BM25 (sparse, keyword) and dense embeddings (semantic) have complementary failure modes. Combining them beats either alone on most enterprise corpora because acronyms, IDs, product codes, and rare names don't embed well.</p>
+
+<Ascii>{`  query
+    |
+    +---> BM25 / keyword search  -> top-50 (sparse)
+    +---> dense vector search    -> top-50 (semantic)
+            |
+            v
+       fusion: RRF (reciprocal rank fusion) or weighted score
+            |
+            v
+       reranker (cross-encoder) on top-50
+            |
+            v
+       top-5 passed to LLM with citations`}</Ascii>
+
+<h3 id="advanced-rag-patterns">Advanced RAG patterns worth naming</h3>
+
+<ul>
+  <li><strong>Query rewriting / decomposition:</strong> turn "compare our PTO policy to Acme's" into two sub-queries.</li>
+  <li><strong>HyDE (hypothetical document embedding):</strong> ask the LLM to draft a hypothetical answer, embed that, use it as the retrieval query. Helps short queries with sparse vocabulary overlap.</li>
+  <li><strong>Multi-vector / ColBERT-style:</strong> store one vector per token (late interaction). Higher recall, much more storage.</li>
+  <li><strong>Self-querying:</strong> LLM emits a structured filter (date range, owner, doc type) alongside the semantic query, executed as metadata filter + vector search.</li>
+  <li><strong>GraphRAG:</strong> build an entity/relationship graph from the corpus offline; retrieve subgraphs for queries that need multi-hop reasoning ("who reports to the person who owns project X").</li>
+  <li><strong>Contextual retrieval (prefix each chunk with a short LLM-generated summary of its surroundings):</strong> cheap quality lift, popularized by Anthropic.</li>
+</ul>
+
+<h3 id="adaptation-menu">Model adaptation menu (what's actually being tuned)</h3>
+
+<table>
+  <tr><th scope="col">Technique</th><th scope="col">What it changes</th><th scope="col">When to use</th><th scope="col">Trade-off</th></tr>
+  <tr><td>Prompting / few-shot</td><td>Nothing (inference only)</td><td>Fastest iteration; small behavior tweaks</td><td>Token cost grows with examples</td></tr>
+  <tr><td>RAG</td><td>Context, not weights</td><td>Knowledge changes frequently</td><td>Retrieval quality is the new bottleneck</td></tr>
+  <tr><td>Supervised fine-tuning (SFT)</td><td>All weights, full precision</td><td>Domain-specific style or skill</td><td>Expensive, needs labeled data</td></tr>
+  <tr><td>LoRA / QLoRA (PEFT)</td><td>Small adapter matrices; base frozen</td><td>Many narrow variants on one base model</td><td>Quality usually within a few % of full SFT</td></tr>
+  <tr><td>DPO / KTO / ORPO</td><td>Aligns to preference pairs</td><td>Tone, refusal behavior, safety nudges</td><td>Needs preference data, not just labels</td></tr>
+  <tr><td>RLHF / RLAIF</td><td>Optimizes against a reward model</td><td>Complex behaviors hard to describe by examples</td><td>Highest complexity; reward hacking risk</td></tr>
+  <tr><td>Distillation</td><td>Train smaller model on larger model's outputs</td><td>Cut serving cost after quality is solved</td><td>Caps at teacher quality on covered cases</td></tr>
+  <tr><td>Continued pretraining</td><td>Base weights, on raw domain text</td><td>Truly new vocabulary or modality</td><td>Most expensive option</td></tr>
+</table>
+
+<Callout variant="tip" title="The ladder">
+  In interviews, walk up this ladder: "Start with prompting + RAG. If style/format is the problem, do LoRA SFT. If tone/safety is the problem, layer DPO. Only do full fine-tuning or continued pretraining if those fail." This sequencing is what staff-level candidates say.
+</Callout>
 
 <hr />
 
@@ -400,6 +620,103 @@
 <Callout variant="warn" title="Do not ignore prompts and indexes">
   In LLM/RAG systems, the deployed artifact is not just the model. The prompt template, retrieval index, chunking strategy, reranker, tool schemas, and guardrail policy are all part of the deployable system.
 </Callout>
+
+<hr />
+
+<h2 id="part-3-7">Part 3.7 — AI gateway, model routing, and multi-tenancy <Tag kind="core">★ CORE</Tag></h2>
+
+<p>Any non-trivial AI product ends up putting a gateway between application code and model providers. Interviewers asking "how would you scale this across the company?" expect you to describe this layer.</p>
+
+<h3 id="ai-gateway-responsibilities">Gateway responsibilities</h3>
+
+<table>
+  <tr><th scope="col">Responsibility</th><th scope="col">Why it lives here</th></tr>
+  <tr><td>Provider abstraction</td><td>Swap Anthropic/OpenAI/Bedrock/in-house without changing app code</td></tr>
+  <tr><td>Auth and key vaulting</td><td>App services hold app credentials; provider keys never leak past the gateway</td></tr>
+  <tr><td>Per-tenant quotas and rate limits</td><td>Stops one team or customer from exhausting org-level rate limits</td></tr>
+  <tr><td>Cost attribution</td><td>Token usage tagged by team, feature, environment for chargeback</td></tr>
+  <tr><td>Caching</td><td>Exact-match and semantic cache for popular prompts</td></tr>
+  <tr><td>Prompt and policy enforcement</td><td>Inject system prompts, redact PII, enforce content policies centrally</td></tr>
+  <tr><td>Observability</td><td>Trace IDs, token counts, latencies, retries, fallbacks in one place</td></tr>
+  <tr><td>Failover and circuit breaking</td><td>If primary provider degrades, route to secondary; trip circuit on error rate</td></tr>
+</table>
+
+<h3 id="gateway-diagram">Gateway architecture</h3>
+
+<Ascii>{`  application services
+        |
+        v
+  AI GATEWAY
+    auth + tenant resolution
+    request shaping (prompt template, redaction)
+    cache lookup
+        |  miss
+        v
+    model router
+      +--- by intent (cheap classifier on prompt)
+      +--- by cost budget for this tenant
+      +--- by latency SLO (small model if user is waiting)
+      +--- by capability (only some models do tool use, vision, JSON mode)
+        |
+        v
+    provider client(s)        --->  OpenAI / Anthropic / Bedrock / vLLM cluster
+        |
+        v
+    response normalization (unified schema, token usage, finish reasons)
+        |
+        v
+    output guardrails
+        |
+        v
+    cache write + audit log + metrics
+        |
+        v
+    application
+
+  side outputs:
+    - usage events -> billing/metering
+    - traces -> observability backend
+    - flagged outputs -> review queue`}</Ascii>
+
+<h3 id="caching-tiers">Caching tiers</h3>
+
+<ul>
+  <li><strong>Exact-match cache:</strong> hash of (model, prompt, params). High hit rate on repeated tool prompts and system messages.</li>
+  <li><strong>Semantic cache:</strong> embed the query, look up nearest cached queries above a similarity threshold. Risky for personalized or stateful answers; great for FAQ-like traffic.</li>
+  <li><strong>Provider-side prompt cache:</strong> Anthropic/OpenAI/Bedrock all expose a cache-breakpoint mechanism that reuses KV for stable prefixes; often the biggest single cost win for chat apps and agents.</li>
+  <li><strong>Retrieval cache:</strong> memoize embedding + retrieval results for identical queries within a TTL.</li>
+</ul>
+
+<Callout variant="tip" title="Cache layering rule">
+  When asked to cut LLM cost, name the layers in order: exact-match → provider prompt cache → retrieval cache → semantic cache → distillation to a smaller model. Each layer is cheaper to build than the next and usually buys 20–60% on its own.
+</Callout>
+
+<h3 id="multi-tenancy">Multi-tenancy patterns</h3>
+
+<table>
+  <tr><th scope="col">Concern</th><th scope="col">Design choice</th></tr>
+  <tr><td>Data isolation</td><td>Per-tenant index/namespace in vector DB; row-level security in feature/profile stores; per-tenant encryption keys for regulated data</td></tr>
+  <tr><td>Compute isolation</td><td>Shared model pool for most; dedicated endpoints for noisy/regulated tenants; separate clusters for "BYOC" deployments</td></tr>
+  <tr><td>Quota fairness</td><td>Token-bucket per tenant with burst allowance; global circuit breaker for provider-level limits</td></tr>
+  <tr><td>Prompt isolation</td><td>Never concatenate tenant-supplied text into another tenant's system prompt; treat user text as data, not instructions</td></tr>
+  <tr><td>Model selection</td><td>Allowlist of models per tenant (some can't use frontier models for data-residency reasons)</td></tr>
+  <tr><td>Audit and retention</td><td>Per-tenant retention policy; signed audit logs for regulated industries</td></tr>
+</table>
+
+<h3 id="rate-limiting-tokens">Rate limiting in token-shaped traffic</h3>
+
+<p>Standard request-per-second limits don't fit LLMs because a single request can consume 100x more tokens than another. Use <strong>token-per-minute</strong> (TPM) and <strong>requests-per-minute</strong> (RPM) buckets together, mirroring how provider APIs charge.</p>
+
+<Ascii>{`  on request:
+    estimate input_tokens (count locally) + max_output_tokens (param)
+    check: tenant TPM bucket has capacity?
+    check: tenant RPM bucket has capacity?
+    check: global provider TPM has capacity?
+        any miss -> 429 with retry-after, or fall through to smaller/cheaper model
+
+  on response:
+    refund unused output tokens (we reserved max, used less)
+    record actual usage for billing`}</Ascii>
 
 <hr />
 
@@ -962,6 +1279,91 @@ Response:
   <li><strong>Metrics:</strong> MAPE, WAPE, RMSE, calibration of prediction intervals.</li>
 </ul>
 
+<h3 id="blueprint-code-copilot">Blueprint: code copilot / IDE assistant</h3>
+<p>Prompt: "Design an IDE autocomplete and chat assistant like Copilot or Cursor."</p>
+
+<Ascii>{`  IDE event (keystroke / chat / accept)
+      -> client-side debounce + context window builder
+           - current file (cursor +/- N lines)
+           - open tabs, recently edited files
+           - repo-level retrieval (BM25 over symbols + embedding over chunks)
+           - LSP signals (types, definitions, diagnostics)
+      -> server: prompt assembly + speculative cache lookup
+      -> small fast model (FIM-trained) for completions
+         large model for chat / refactor
+      -> stream tokens back
+      -> client: ghost-text render, telemetry on accept/reject
+      -> offline: train acceptance reward model, retrain ranker`}</Ascii>
+
+<ul>
+  <li><strong>Key trade-off:</strong> latency vs context size; completions need ~200ms TTFT or users disable the feature.</li>
+  <li><strong>Hard part:</strong> repo context selection (which files to send), FIM (fill-in-the-middle) prompt format, deduping low-value suggestions.</li>
+  <li><strong>Metrics:</strong> accept rate, retained-in-IDE-after-N-seconds, characters-per-accepted-suggestion, server cost per accept.</li>
+  <li><strong>Safety:</strong> license-aware filtering of training and outputs; never echo secrets pasted into prompt.</li>
+</ul>
+
+<h3 id="blueprint-image-generation">Blueprint: image generation service</h3>
+<p>Prompt: "Design a text-to-image generation service like Midjourney or DALL-E."</p>
+
+<Ascii>{`  prompt + style + reference image (optional)
+      -> safety: prompt classifier (CSAM, IP, named persons)
+      -> prompt rewriter (expand style, add negative prompts)
+      -> queue (image gen is seconds-to-minutes, not interactive)
+      -> GPU worker pool (batched diffusion)
+           - choose model variant by tier (fast / quality)
+           - apply LoRAs / control nets if requested
+      -> output safety: NSFW classifier, watermark, C2PA signing
+      -> object store + CDN
+      -> notify client (websocket / poll)
+      -> feedback: upvotes, regenerations, reports`}</Ascii>
+
+<ul>
+  <li><strong>Key trade-off:</strong> latency (steps, resolution) vs quality vs GPU cost.</li>
+  <li><strong>Hard part:</strong> async UX (long jobs), abuse prevention, copyright and likeness policy, GPU spot-instance reliability.</li>
+  <li><strong>Metrics:</strong> queue wait, success rate, regeneration rate, safety filter precision/recall.</li>
+</ul>
+
+<h3 id="blueprint-multimodal-extraction">Blueprint: multimodal document understanding</h3>
+<p>Prompt: "Design a system that answers questions over PDFs that include text, tables, and figures."</p>
+
+<Ascii>{`  PDF upload
+      -> layout parser (Mathpix / Unstructured / proprietary)
+           - text blocks + reading order
+           - table extraction -> structured rows
+           - figure crops -> stored separately
+      -> per-element embeddings
+           - text -> text embedding
+           - figure -> CLIP / vision-language embedding
+           - table -> serialized cells + text embedding
+      -> index (vector + metadata: page, element type)
+      -> query path: hybrid retrieval -> rerank -> VLM
+         (vision-language model sees crops + text together)
+      -> answer with element-level citations (page, bbox)`}</Ascii>
+
+<ul>
+  <li><strong>Key trade-off:</strong> parsing fidelity vs ingestion latency and cost.</li>
+  <li><strong>Hard part:</strong> tables that span pages, figure-text alignment, multi-column layouts, handwritten annotations.</li>
+  <li><strong>Metrics:</strong> answer accuracy stratified by element type, table-cell exactness, bbox citation precision.</li>
+</ul>
+
+<h3 id="blueprint-ads-ranking">Blueprint: ads / sponsored content ranking</h3>
+<p>Prompt: "Design a system that ranks ads for a feed or search results page."</p>
+
+<Ascii>{`  request (user, context, query/feed slot)
+      -> retrieval: targeting filters (campaign, budget remaining, eligibility)
+      -> candidate generation: bidding-aware ANN over ad embeddings
+      -> pCTR / pCVR model (online inference, strict latency budget)
+      -> auction: bid * pCTR * quality_score (eCPM ranking)
+      -> pacing / budget controller (offline + online feedback)
+      -> impression logging, attributed conversions
+      -> offline: train pCTR, calibrate, detect click fraud, fairness audits`}</Ascii>
+
+<ul>
+  <li><strong>Key trade-off:</strong> revenue (eCPM) vs user experience vs advertiser ROI.</li>
+  <li><strong>Hard part:</strong> calibration of pCTR (must reflect true probability, not just rank well), budget pacing, position bias in training data.</li>
+  <li><strong>Metrics:</strong> revenue per mille (RPM), CTR, advertiser ROAS, calibration error, budget utilization.</li>
+</ul>
+
 <hr />
 
 <h2 id="part-9">Part 9 — Safety, evaluation, observability, and cost <Tag kind="core">★ CORE</Tag></h2>
@@ -1117,6 +1519,89 @@ Score 1-5 on faithfulness.
 
 <hr />
 
+<h2 id="part-9-5">Part 9.5 — GPU capacity planning and inference economics <Tag kind="core">★ CORE</Tag></h2>
+
+<p>If the interviewer asks "how many GPUs?" or "what does this cost at 1M users?", they want a back-of-envelope grounded in real numbers. Memorize a few anchor figures and a derivation pattern.</p>
+
+<h3 id="gpu-anchors">Anchor figures to remember (2025-era)</h3>
+
+<table>
+  <tr><th scope="col">GPU</th><th scope="col">VRAM</th><th scope="col">Mem BW</th><th scope="col">Rough use</th></tr>
+  <tr><td>A100 80GB</td><td>80 GB HBM2e</td><td>~2 TB/s</td><td>13B–70B serving (with TP); workhorse</td></tr>
+  <tr><td>H100 80GB</td><td>80 GB HBM3</td><td>~3.4 TB/s</td><td>Frontier serving and training; FP8 support</td></tr>
+  <tr><td>H200 / B200</td><td>141 GB / 192 GB</td><td>4.8+ TB/s</td><td>Frontier 100B+ models, very long context</td></tr>
+  <tr><td>L40S / L4</td><td>48 GB / 24 GB</td><td>~864 GB/s / 300 GB/s</td><td>Cost-efficient inference for &lt; 13B models, embedding</td></tr>
+</table>
+
+<h3 id="memory-budget">Memory budget on a single GPU</h3>
+
+<Ascii>{`  total VRAM (e.g. 80 GB)
+    - model weights        (params * bytes_per_param)
+    - activations          (small at inference)
+    - KV cache             (the big variable)
+    - framework overhead
+  = headroom for concurrent requests
+
+  example: 70B model, fp16 weights
+    weights: 70e9 * 2  = 140 GB  -> needs TP across 2x80GB or quantize
+    int4 weights: 70e9 * 0.5 = ~35 GB -> fits one 80GB, plenty of KV headroom
+
+  example: 8B model, fp16 weights, 80GB GPU
+    weights:  ~16 GB
+    headroom: ~64 GB
+    KV per token (Llama-3-8B):  ~128 KB
+    at 8k context -> ~1 GB/req -> ~60 concurrent requests`}</Ascii>
+
+<h3 id="throughput-derivation">Throughput derivation pattern</h3>
+
+<Ascii>{`  Step 1: pick a target model and quantization
+  Step 2: compute max concurrent requests = headroom / (KV per token * avg seq_len)
+  Step 3: measure or look up tokens/sec/GPU at that concurrency
+            (typical: 8B fp16 ~ 3-6k tok/s; 70B int4 ~ 1-2k tok/s on H100)
+  Step 4: tokens/day = tok/s * 86,400
+  Step 5: divide by tokens/day from workload estimate -> GPU count
+  Step 6: multiply by ~1.5x for peak headroom and ~1.2x for failures/maintenance`}</Ascii>
+
+<h3 id="worked-gpu-example">Worked example: chatbot at 1M DAU</h3>
+
+<Ascii>{`  Workload:
+    1M DAU * 6 sessions/day * 4 turns * 800 output tokens = ~19B output tokens/day
+    Plus input tokens ~3x output during prefill (but prefill is cheap with prefix cache)
+
+  Serving choice: Llama-3-70B int4, H100, vLLM
+    decode throughput per H100 ~= 1,500 tok/s in batched steady state
+    daily tokens per H100      ~= 1,500 * 86,400 ~= 130M tokens
+
+  GPUs needed for decode:
+    19B / 130M ~= 146 H100s steady state
+    peak (3x avg) -> 440 H100s, or burst to provider API for overflow
+
+  Cost order of magnitude (rented H100 ~ $2-3/hr):
+    146 * 24 * 2.5 ~= $8,760/day steady, ~$3.2M/year
+    At $3 per million tokens hosted equivalent: 19B * $3/M = $57k/day
+    Self-hosting wins at this scale; below ~10B tok/day, hosted is usually cheaper.
+
+  Levers if budget is tight:
+    - speculative decoding -> 1.5-2x throughput
+    - smaller model for easy queries (router) -> 30-60% of traffic offloaded
+    - prefix cache + answer cache -> 20-40% of input tokens skipped
+    - distill 70B answers into 8B for narrow domains`}</Ascii>
+
+<Callout variant="tip" title="When to self-host">
+  Rule of thumb: below ~5–10B tokens/day, the per-token cost of a hosted API beats running your own GPUs once you factor on-call, capacity headroom, and engineer time. Above that, self-hosting (or reserved cloud capacity) usually wins — and you also get latency, privacy, and customization control. Say this trade-off explicitly when asked "build vs buy."
+</Callout>
+
+<h3 id="autoscaling-gpu">Autoscaling GPU workloads</h3>
+
+<ul>
+  <li><strong>Cold start is the enemy:</strong> loading a 70B model takes 1–5 minutes. Pre-warm pools; don't scale to zero for latency-sensitive tiers.</li>
+  <li><strong>Scale on tokens, not requests:</strong> queue depth in tokens or expected decode-seconds is a better signal than HTTP RPS.</li>
+  <li><strong>Right-size by tier:</strong> separate pools for premium (low latency, low utilization) and batch (high utilization, queued).</li>
+  <li><strong>Spot instances for batch and training only:</strong> reclaim risk is unacceptable for synchronous serving unless you have hot standby capacity.</li>
+</ul>
+
+<hr />
+
 <h2 id="part-10">Part 10 — Final interview checklist <Tag kind="core">★ CORE</Tag></h2>
 
 <ul>
@@ -1135,4 +1620,90 @@ Score 1-5 on faithfulness.
 
 <Callout variant="tip" title="How to practice">
   Practice giving the same structure across 5–6 prompts: RAG assistant, recommendation engine, fraud detection, support copilot, voice assistant, and autonomous agent workflow. Repetition makes your interview answers feel senior and calm.
+</Callout>
+
+<hr />
+
+<h2 id="part-11">Part 11 — Question catalog with approach hints <Tag kind="neutral">EXAMPLE</Tag></h2>
+
+<p>These are the AI system design prompts that come up most often. For each, the first move is to disambiguate the goal and pick the pattern; the second move is to draw the online/offline split. The hints below are the headline trade-off the interviewer is looking for, not the full answer.</p>
+
+<h3 id="catalog-retrieval-llm">Retrieval / LLM</h3>
+<table>
+  <tr><th scope="col">Prompt</th><th scope="col">Lead with</th></tr>
+  <tr><td>Design an internal "ask the docs" assistant</td><td>Hybrid retrieval + ACL-aware index; citations and faithfulness evals</td></tr>
+  <tr><td>Design ChatGPT / a consumer chatbot</td><td>Streaming, prefix cache, model routing, abuse mitigation at scale</td></tr>
+  <tr><td>Design a customer support copilot</td><td>RAG over tickets + KB; agent for actions; human-in-the-loop for refunds</td></tr>
+  <tr><td>Design "talk to your data" / NL-to-SQL</td><td>Schema retrieval, validated query generation, sandboxed execution, result summarization</td></tr>
+  <tr><td>Design a long-context summarization system</td><td>Map-reduce or hierarchical summarization; cite source spans; eval against human summaries</td></tr>
+  <tr><td>Design an enterprise search engine</td><td>Hybrid index, permission propagation, freshness pipeline, reranker</td></tr>
+</table>
+
+<h3 id="catalog-agentic">Agents and workflows</h3>
+<table>
+  <tr><th scope="col">Prompt</th><th scope="col">Lead with</th></tr>
+  <tr><td>Design an autonomous coding agent</td><td>Sandboxed execution, plan trees, tool typing, reversible actions, budget caps</td></tr>
+  <tr><td>Design a meeting assistant that books follow-ups</td><td>Calendar tools with approval gates, idempotent action keys, privacy of transcripts</td></tr>
+  <tr><td>Design a browser-using agent</td><td>DOM/screenshot dual signal, action allowlist, anti-exfiltration on tool outputs</td></tr>
+  <tr><td>Design a multi-agent orchestrator</td><td>Roles, message bus, deterministic supervisor, total cost cap, escape hatches</td></tr>
+</table>
+
+<h3 id="catalog-classical">Classical ML / decisioning</h3>
+<table>
+  <tr><th scope="col">Prompt</th><th scope="col">Lead with</th></tr>
+  <tr><td>Design YouTube/TikTok video recs</td><td>Two-stage retrieval + ranker, watch-time vs engagement, exploration, freshness</td></tr>
+  <tr><td>Design news feed ranking</td><td>Multi-objective ranker, integrity signals, position-bias correction, rapid retraining</td></tr>
+  <tr><td>Design fraud detection</td><td>Rules + ML, online features, low latency, investigator feedback loop</td></tr>
+  <tr><td>Design Uber/DoorDash ETA</td><td>Real-time features, calibrated regression, geo-shard models, drift on weather/events</td></tr>
+  <tr><td>Design dynamic pricing</td><td>Elasticity models, business constraints, fairness audit, A/B with holdouts</td></tr>
+  <tr><td>Design ads ranking</td><td>pCTR calibration, eCPM auction, pacing, position bias, anti-fraud</td></tr>
+</table>
+
+<h3 id="catalog-multimodal">Multimodal and media</h3>
+<table>
+  <tr><th scope="col">Prompt</th><th scope="col">Lead with</th></tr>
+  <tr><td>Design real-time voice AI</td><td>Streaming ASR/LLM/TTS pipeline, barge-in, sub-1.5s perceived response</td></tr>
+  <tr><td>Design a text-to-image service</td><td>Async job queue, GPU pool, prompt/output safety, watermarking</td></tr>
+  <tr><td>Design Shazam / audio identification</td><td>Fingerprint extraction, inverted hash index, robust to noise, latency target</td></tr>
+  <tr><td>Design visual search (image-to-product)</td><td>CLIP-like embeddings, ANN, attribute filters, ranking by inventory and price</td></tr>
+  <tr><td>Design document understanding for invoices</td><td>OCR + layout + extractor, confidence gating, human review queue, audit trail</td></tr>
+  <tr><td>Design content moderation at scale</td><td>Tiered classifiers, policy versioning, reviewer workflow, appeal path</td></tr>
+</table>
+
+<h3 id="catalog-infra">Platform and infra</h3>
+<table>
+  <tr><th scope="col">Prompt</th><th scope="col">Lead with</th></tr>
+  <tr><td>Design an LLM serving platform for the company</td><td>AI gateway, model router, multi-tenant quotas, observability, eval harness</td></tr>
+  <tr><td>Design a feature store</td><td>Offline/online consistency, point-in-time joins, freshness SLAs, monitoring</td></tr>
+  <tr><td>Design an ML experimentation platform</td><td>Trial registry, dataset/version pinning, offline+online evals, deployment gates</td></tr>
+  <tr><td>Design a vector database</td><td>HNSW/IVF, sharding, replication, hybrid filters, snapshot+WAL durability</td></tr>
+  <tr><td>Design a training data pipeline</td><td>Dedup, decontamination, PII handling, lineage, dataset versioning</td></tr>
+</table>
+
+<hr />
+
+<h2 id="part-12">Part 12 — Anti-patterns that fail AI system design interviews <Tag kind="concept">◆ CONCEPT</Tag></h2>
+
+<p>These are the moves interviewers flag as junior. Read them once before any AI design round.</p>
+
+<table>
+  <tr><th scope="col">Anti-pattern</th><th scope="col">Why it fails</th><th scope="col">What to say instead</th></tr>
+  <tr><td>"Use GPT-4 / Claude for everything"</td><td>No routing, no cost story, no fallback</td><td>Tier by intent and risk; small model first, large model on escalation</td></tr>
+  <tr><td>Jumping to architecture without clarifying</td><td>Misses the actual product constraint</td><td>Spend 3–5 min on users, mode, risk, latency, scale, success metric</td></tr>
+  <tr><td>"Just embed it and put it in a vector DB"</td><td>Ignores hybrid retrieval, ACLs, chunking, freshness</td><td>Hybrid (BM25 + dense) + reranker + ACL filter + incremental ingestion</td></tr>
+  <tr><td>Infinite agent loop with broad tools</td><td>Unbounded cost, unsafe actions, no observability</td><td>Bounded steps, typed tools, idempotency, approval gates, audit log</td></tr>
+  <tr><td>Treating prompts as ephemeral</td><td>No rollback, no eval, no incident response</td><td>Versioned prompts in a registry alongside models and indexes</td></tr>
+  <tr><td>"We'll evaluate with vibes / spot checks"</td><td>Quality regressions ship silently</td><td>Layered evals: retrieval, output, safety, product outcome; segment by slice</td></tr>
+  <tr><td>Online path doing training-time work</td><td>Latency and cost explode</td><td>Push embedding, indexing, feature recompute offline; cache aggressively</td></tr>
+  <tr><td>One global rate limit on requests</td><td>Doesn't protect against a single tenant burning all tokens</td><td>Per-tenant TPM + RPM, plus global circuit breaker per provider</td></tr>
+  <tr><td>Skipping permission checks at retrieval</td><td>Data leakage from the index</td><td>Filter ACLs during retrieval, not after generation</td></tr>
+  <tr><td>"We'll fine-tune to fix it"</td><td>Slow loop, wrong tool for knowledge problems</td><td>Climb the ladder: prompt → RAG → LoRA → DPO → full FT, only if needed</td></tr>
+  <tr><td>No drift or freshness monitoring</td><td>Silent quality decay on changing data</td><td>Index-age dashboards, feature freshness SLAs, periodic re-evals</td></tr>
+  <tr><td>"Hallucinations are an LLM problem, not a system problem"</td><td>Abdicates the design</td><td>Ground with retrieval, validate with rubric, gate risky outputs with humans</td></tr>
+  <tr><td>Treating LLM output as instruction-safe input to next tool</td><td>Prompt injection chains</td><td>Schema-validate tool args, restrict tool capabilities, sandbox execution</td></tr>
+  <tr><td>One giant prompt that does everything</td><td>Impossible to debug or roll back partial regressions</td><td>Decompose into classifier → retriever → composer → validator stages</td></tr>
+</table>
+
+<Callout variant="tip" title="Final framing">
+  The senior signal in AI system design is treating the LLM as one stage in a versioned, monitored, multi-stage pipeline — not as a magic box. Show that you separate online from offline, that you name specific algorithms and trade-offs, and that you can reason about latency, cost, and safety as concrete numbers and gates. That combination is what passes a staff-level bar.
 </Callout>

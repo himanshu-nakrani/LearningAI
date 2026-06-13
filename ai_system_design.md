@@ -31,6 +31,11 @@
 - [Part 10 — Final interview checklist](#part-10)
 - [Part 11 — Question catalog with approach hints](#part-11)
 - [Part 12 — Anti-patterns that fail AI system design interviews](#part-12)
+- [Part 13 — Training infrastructure at scale](#part-13)
+- [Part 13.5 — Advanced inference: MoE, long context, reasoning models](#part-13-5)
+- [Part 14 — Leadership scenarios for Lead/Staff/Principal rounds](#part-14)
+- [Part 15 — Behavioral story bank (STAR scaffolds)](#part-15)
+- [Part 16 — Post-mortem case studies](#part-16)
 
 ## Part 0 — How to answer an AI system design interview **★ CORE**
 
@@ -1752,4 +1757,467 @@ These are the moves interviewers flag as junior. Read them once before any AI de
 
 > **💡 TIP: Final framing**
 > The senior signal in AI system design is treating the LLM as one stage in a versioned, monitored, multi-stage pipeline — not as a magic box. Show that you separate online from offline, that you name specific algorithms and trade-offs, and that you can reason about latency, cost, and safety as concrete numbers and gates. That combination is what passes a staff-level bar.
+
+---
+
+## Part 13 — Training infrastructure at scale **★ CORE**
+
+Lead-level interviews probe whether you can reason about training systems, not just serving. You won't be asked to derive backprop, but you will be asked how a 70B model gets trained on 1k+ GPUs without melting, what happens when a node dies mid-run, and where the bottlenecks actually live.
+
+### Training memory: where it actually goes
+
+Inference memory is dominated by weights and KV cache. Training memory is a different beast — gradients, optimizer states, and activations each rival the model size.
+
+```text
+  For Adam/AdamW with mixed precision (bf16 compute, fp32 master):
+    weights (bf16)            : 2 bytes/param
+    gradients (bf16)          : 2 bytes/param
+    optimizer state m, v (fp32): 8 bytes/param
+    master weights (fp32)     : 4 bytes/param
+    --------------------------------------------
+    total                     : ~16 bytes/param
+
+  70B model -> ~1.1 TB just for state, before any activations.
+  H100 has 80 GB. That's why training is inherently distributed.
+
+  Activation memory (per layer, per token):
+    O(batch * seq_len * hidden_dim * n_layers)
+    For 70B at seq_len=8192, batch=4 micro: 100s of GB more.
+    Mitigated by gradient (activation) checkpointing.
+```
+
+### The 4D parallelism cheat sheet
+
+| Strategy | What gets sharded | Comm pattern | When to use |
+| --- | --- | --- | --- |
+| Data parallel (DP) | Batch across replicas | All-reduce gradients per step | Default; scales linearly until comm dominates |
+| Tensor parallel (TP) | Each layer's matmuls split across GPUs | All-reduce inside every layer | Model doesn't fit on one GPU; needs NVLink |
+| Pipeline parallel (PP) | Layer groups across nodes | Point-to-point activations between stages | Cross-node scaling; needs careful microbatching |
+| Sequence parallel (SP) | Sequence dim of activations | Reduce-scatter / all-gather | Long-context training (32k+) |
+| Expert parallel (EP) | MoE experts across GPUs | All-to-all for token routing | Only for MoE architectures |
+| Context parallel (CP) | Attention computed in chunks across GPUs | Ring all-reduce on K/V | Very long context (128k+, ring attention) |
+
+```text
+  Typical 3D recipe for a 70B dense model on 512 H100s:
+    TP = 8   (inside one DGX node, NVLink)
+    PP = 8   (across nodes, IB or RoCE)
+    DP = 8   (remaining replicas for throughput)
+    8 * 8 * 8 = 512 GPUs
+
+  Microbatching for pipeline:
+    global batch = micro_batch * grad_accum * DP
+    grad_accum must be >= PP to keep the pipeline full (otherwise bubbles)
+    1F1B (one-forward-one-backward) interleaved schedule reduces bubble
+```
+
+### ZeRO / FSDP: the memory unlock
+
+ZeRO (DeepSpeed) and FSDP (PyTorch) shard optimizer state, gradients, and weights across the data-parallel group. Conceptually they trade more communication for dramatically less per-GPU memory.
+
+| Stage | What's sharded | Per-GPU memory cost | Comm overhead |
+| --- | --- | --- | --- |
+| ZeRO-1 | Optimizer state | ~8x reduction on optimizer | Slight (reduce-scatter) |
+| ZeRO-2 | Optimizer + gradients | ~4x further | Modest |
+| ZeRO-3 / FSDP | Optimizer + gradients + weights | ~Nx (N = DP size) | All-gather weights per fwd/bwd pass |
+| ZeRO-Infinity | + CPU/NVMe offload | Train far larger than VRAM | Much slower; for research, not production |
+
+### Checkpointing and fault tolerance
+
+- **Async checkpointing:** snapshot GPU state to host, write to object store from CPU. Foreground training continues. PyTorch's DCP, Megatron's distributed checkpointer.
+- **Cadence:** typical 30 min – 4 hours depending on cluster MTBF. Cost of a restart = (interval / 2) + restart overhead.
+- **Sharded checkpoints:** each rank writes its shard; replay tools resharded on restore (lets you change parallelism on resume).
+- **Resilient training:** torchelastic / Megatron-LM with auto-replace of dead nodes; spot/preemptible instances need extra care.
+
+```text
+  Failure math at scale:
+    Per-GPU MTBF ~ 10,000 hours
+    Cluster of 1,024 GPUs -> expected failure every ~10 hours
+    -> checkpoint every 1-2 hours, or lose >5% of compute to restarts
+
+  Common failure modes:
+    - GPU ECC errors (silent data corruption -> NaN losses)
+    - NVLink/IB transient errors
+    - PSU / cooling events
+    - Stragglers (one slow GPU drags global step latency)
+```
+
+### Training data pipeline
+
+```text
+  Raw sources (web crawl, code, books, internal data)
+    -> language ID + quality filtering (Gopher rules, FastText)
+    -> dedup
+         - exact (hash)
+         - near-dup (MinHash LSH at document and paragraph level)
+    -> PII redaction (regex + NER)
+    -> decontamination against eval sets (n-gram overlap check)
+    -> domain tagging + sampling weights
+    -> tokenization (BPE/SentencePiece) into shards
+    -> versioned dataset in object store with manifest + lineage
+    -> streamed via WebDataset / Mosaic StreamingDataset
+    -> per-rank deterministic shuffle with seed in checkpoint
+```
+
+### Training observability
+
+- **Loss curves, gradient norms, weight norms** per layer — diverging norms predict instability hours before NaN.
+- **Throughput in tokens/sec/GPU and MFU** (model FLOPs utilization) — 40–60% MFU on H100 is healthy; below 30% means a comm or data bottleneck.
+- **Loss spike alerting** with automatic rollback to last good checkpoint and learning-rate reduction.
+- **Per-rank profiling** for stragglers (NCCL kernel times, host-side dataloader latency).
+- **Eval during training** on a frozen holdout every N steps, not just at end — catches overfitting to recent data shards.
+
+> **⚠️ WARN: The hidden cost of failed runs**
+> At 1,000+ GPUs, a single bad config (wrong learning rate schedule, broken data shard, NaN in mixed precision) can burn $50k–500k before someone notices. Lead-level answers mention dry-run policies, automatic loss-spike detection, deterministic restart, and human review gates before launching multi-week runs.
+
+### Post-training: SFT, DPO, RLHF
+
+```text
+  Base model
+    -> SFT (supervised fine-tune on curated instruction data)
+         dataset: 10k - 1M high-quality (prompt, response) pairs
+         loss: standard next-token, masked on prompt tokens
+    -> Preference data collection
+         pairs of (chosen, rejected) responses from human raters or stronger model
+    -> DPO / KTO / IPO (direct preference optimization, no reward model)
+         OR
+    -> Reward model training -> PPO/RLHF rollout
+         PPO is finicky at scale; most teams now ship DPO first
+    -> Safety tuning (rule-based + adversarial red team data)
+    -> Eval gauntlet (capability + safety + regression)
+    -> Release candidate
+```
+
+### Cluster and network topology
+
+- **Intra-node:** NVLink/NVSwitch — 600–900 GB/s between GPUs in a DGX/HGX box. TP lives here.
+- **Inter-node:** InfiniBand NDR/HDR or RoCE — 400 Gbps per NIC, often multiple NICs per node. PP/DP lives here.
+- **Topology matters:** rail-aligned fat-tree (one rail per NIC) keeps all-reduce collectives on dedicated links; blocking ratios under 1:1 hurt at scale.
+- **Storage:** NVMe-backed parallel filesystem (Weka, Lustre) for dataset streaming + checkpoint writes; object store (S3/GCS) for archive.
+
+---
+
+## Part 13.5 — Advanced inference: MoE, long context, reasoning models **◆ CONCEPT**
+
+### Mixture-of-Experts serving
+
+MoE models (Mixtral, DeepSeek-V3, Grok, Llama-4) have far more parameters than active compute per token. They are cheaper to serve at quality but harder to operate.
+
+| Aspect | Dense model | MoE model |
+| --- | --- | --- |
+| Params vs compute | All params active per token | Top-k experts (usually 2 of 8–256) active |
+| Memory | Modest weights, big KV | Huge weights (must hold all experts), normal KV |
+| Throughput | Predictable batched | Imbalanced; depends on routing |
+| Parallelism | TP / PP | Add expert parallel (EP); all-to-all dominant cost |
+
+```text
+  MoE failure modes the interviewer expects you to name:
+    - Routing collapse (a few experts get all traffic, rest are dead)
+       fix: load-balancing loss during training; capacity factor at inference
+    - Token drop (expert at capacity; tokens skip MLP layer)
+       fix: tune capacity factor; expert-choice routing instead of token-choice
+    - All-to-all bottleneck (every token must route across the EP group)
+       fix: keep EP within a high-bandwidth domain (single node or NVLink switch)
+    - Cold cache on rare experts (first request after warmup is slow)
+       fix: pin all experts in VRAM; don't offload to CPU at serving time
+```
+
+### Long-context serving (100k–1M tokens)
+
+- **KV memory dominates everything:** at 1M tokens, a single request can need 100+ GB of KV cache. Quantize KV to FP8 or INT4 to fit.
+- **Ring attention:** shard the sequence across GPUs; each GPU computes attention against a rotating slice of K/V from peers. Enables training and inference past single-GPU memory.
+- **Attention sinks / StreamingLLM:** keep the first few tokens plus a sliding window of recent tokens; drops middle KV. Works for chat but lossy for retrieval-style long context.
+- **Sparse/hybrid attention:** Mamba/RWKV-style state-space layers interleaved with attention reduce O(N²) cost for very long inputs.
+- **Prefill chunking is mandatory:** a 1M-token prefill held single-threaded would block every other user for tens of seconds. Chunk into 4–16k pieces interleaved with decode.
+
+### Reasoning models and test-time compute
+
+"Reasoning" models (o1, o3, Claude with extended thinking, DeepSeek-R1) trade more inference compute for higher accuracy by generating long internal chains of thought before answering. This changes the cost model and the latency model.
+
+```text
+  Latency profile of a reasoning model:
+    classical chat:  TTFT 300ms, 80 tok/s -> answer in 1-3s
+    reasoning model: TTFT 300ms, 60 tok/s, BUT generates 2k-30k thinking tokens
+                     -> visible answer in 10s - 5min
+
+  Design implications:
+    - UX needs progress hints ("thinking..." or stream the trace)
+    - Token budget per request must be explicit (compute caps)
+    - Async pattern: enqueue task, poll/webhook on completion
+    - Caching: thinking traces are expensive; cache by problem signature
+    - Routing: only route to reasoning model when difficulty justifies cost
+       (a small classifier on the prompt is a 10x cost lever)
+```
+
+### Structured output and constrained decoding
+
+- **Grammar-constrained decoding** (outlines, LMQL, vLLM guided decoding): force outputs to match a regex / JSON schema / context-free grammar by masking invalid tokens at sampling time. Reliability bump, ~5–15% latency cost.
+- **Function-calling / tool-use** APIs use a similar mechanism under the hood; prefer the provider's native mode over freeform JSON-in-text parsing.
+- **Speculative + structured:** some stacks combine speculative decoding with grammar constraints by re-validating drafted tokens against the grammar.
+
+### Evaluation rigor at the lead level
+
+| Pitfall | What it looks like | Mitigation |
+| --- | --- | --- |
+| Underpowered comparison | "New model wins by 2%" on 100 examples | Pre-register sample size; paired bootstrap CIs; require Δ > 2× CI width |
+| Eval-set contamination | Training corpus contains the benchmark | n-gram decontamination at build time; held-out private evals |
+| Judge bias | LLM judge prefers verbose answers / its own family | Rotate judges; calibrate against human labels; rubric-based not pairwise |
+| Goodharting one metric | BLEU goes up, users hate it | Multi-metric dashboard with product KPI gating release |
+| Aggregate hides regressions | +1% average, -15% on safety slice | Per-slice eval as a release gate, not just headline |
+| Win-rate without Elo | Pairwise A>B reported without transitivity check | Bradley-Terry or Elo on a tournament of versions |
+
+> **💡 TIP: Lead signal on evals**
+> When asked "how do you know the new model is better?", the senior answer is "pre-registered eval set, slice-level metrics with paired bootstrap CIs, human-judged head-to-head on a fixed rubric, plus a live A/B with a product KPI as the primary outcome." Saying just "MMLU went up" is a junior tell.
+
+---
+
+## Part 14 — Leadership scenarios for Lead/Staff/Principal rounds **★ CORE**
+
+Lead-level interviews spend 30–50% of the loop on judgment, organization, and prioritization questions. The answers below are not scripts — they're shapes for how to reason out loud.
+
+### How to structure an AI org
+
+```text
+  Common four-team split at a 50-200 person AI org:
+
+    APPLIED AI / PRODUCT TEAMS
+      own feature surfaces, prompts, evals, integration
+      report into product or engineering org
+      success metric: product KPIs
+
+    AI PLATFORM
+      owns gateway, model registry, eval harness, training infra
+      one team enables all applied teams
+      success metric: applied teams shipping faster, lower $/token
+
+    RESEARCH / MODEL TEAM
+      owns base model training, fine-tuning recipes
+      tight loop with platform on infra
+      success metric: capability + safety eval lifts
+
+    SAFETY / RESPONSIBLE AI
+      owns policy, red team, deployment gates
+      independent reporting line (often to legal or CTO)
+      success metric: incident rate, gate-pass rate
+
+  Anti-patterns:
+    - "Every team trains its own model"  -> wasted GPUs, fragmented evals
+    - "Safety is everyone's job"          -> in practice nobody owns it
+    - "Research ships features"           -> research timelines kill products
+```
+
+### Build vs buy framework
+
+| Question | Lean BUY (hosted API) | Lean BUILD (self-host / train) |
+| --- | --- | --- |
+| Volume | < 5B tokens/day | > 10B tokens/day sustained |
+| Latency SLO | ≥ 1s acceptable | Sub-300ms TTFT required |
+| Data sensitivity | OK to leave premises (with BAA/DPA) | Regulated / customer-isolated |
+| Differentiation | Capability is table stakes | Capability is the moat |
+| Team strength | No GPU SRE on staff | You have ML infra engineers |
+| Time-to-market | Weeks matter | Quarters are OK |
+
+> **💡 TIP: Hybrid is usually the right answer**
+> Most mature orgs end up with: hosted APIs for prototyping and burst traffic, self-hosted open-weight for high-volume / regulated paths, and one or two fine-tuned models for the narrow domains where it matters. Saying "we'll be hybrid and here's the routing logic" is a stronger answer than picking one side.
+
+### Roadmapping when the next frontier model ships in 3 months
+
+- **Layer your bets:** ship today on current best model; have a "snap-in" plan for the next one; keep an exploratory bet on something disruptive (open-weight, on-device).
+- **Build moats that compound:** evals, data, distribution, trust. These survive a model swap.
+- **Avoid model-specific moats:** heavy prompt engineering against one model's quirks becomes a liability when it's deprecated.
+- **Be honest about wait-vs-build:** if next quarter's frontier model trivially solves your problem, your roadmap item should be "be ready to integrate it" not "spend 2 quarters fine-tuning around current limits."
+- **Capability ladders:** design product surfaces that get better automatically as models improve (e.g., longer context = better summaries) without code changes.
+
+### Safety governance for product launches
+
+```text
+  Pre-launch gate checklist (use this almost verbatim in an interview):
+
+    1. Threat model
+        what can go wrong? misuse, hallucination, bias, privacy leak,
+        action abuse, prompt injection, IP infringement
+    2. Red team
+        domain experts try to break the system; results documented
+    3. Eval gauntlet
+        capability + safety + regression sets, with release thresholds
+    4. Reversibility
+        which actions can we undo? which are permanent?
+    5. Blast radius
+        who is affected if the worst case happens?
+    6. Monitoring plan
+        what would tell us something is wrong in production?
+    7. Rollback plan
+        prompt / model / index / policy independently revertable
+    8. Disclosure
+        what does the user see? consent, limitations, escalation path
+    9. Cross-functional sign-off
+        legal, security, policy, customer support trained
+
+  Decision: launch / canary / hold / iterate
+```
+
+### AI incident response
+
+- **Detect:** automatic safety/quality drift alerts; user reports; reviewer queue spikes.
+- **Mitigate first, root-cause later:** revert prompt/model/index, narrow scope, increase human review threshold. Buy time before debugging.
+- **Triage roles:** incident commander, comms lead, eng lead. Same as classical SRE but with an extra "model owner" role.
+- **Post-mortem within 72h:** what was the failure mode (data, model, prompt, retrieval, policy)? Add to eval set so it can't regress silently.
+- **Learning loop:** incident corpus becomes a permanent eval slice; lead engineers review monthly.
+
+### What to look for when hiring
+
+| Role | Strong signal | Weak signal |
+| --- | --- | --- |
+| ML Engineer (applied) | Has shipped a model end-to-end; pragmatic about evals; product instinct | Only Kaggle / papers; can't describe a real production trade-off |
+| Research Engineer | Reproduces papers, debugs training instability, reads CUDA kernels | Can describe but not implement; needs a roadmap to start |
+| AI Platform / Infra | Distributed systems background + LLM-specific knowledge (KV cache, vLLM) | Pure backend with no exposure to GPU economics |
+| AI Product Engineer | Writes prompts *and* evals; iterates on UX given probabilistic outputs | Treats LLM as a black box; no eval discipline |
+| Safety / Red Team | Adversarial mindset; familiar with policy frameworks; can write evals | Pure policy background with no engineering vocabulary |
+
+### Economics conversations with non-technical leaders
+
+- **Unit economics:** $ per successful task, not $ per token. Maps cost to product value.
+- **Gross margin shape:** AI features often start at low/negative margin and improve via routing, caching, distillation. Communicate the trajectory.
+- **Capacity commitments:** reserved GPU contracts trade flexibility for unit cost. Worth it once usage is predictable within ~30%.
+- **The "cheaper next quarter" problem:** token prices drop ~3–5x/year. Build with this in mind — features uneconomic today may be obvious next year.
+
+---
+
+## Part 15 — Behavioral story bank (STAR scaffolds) **EXAMPLE**
+
+Lead/Staff loops include 2–4 behavioral rounds. Prepare 6–8 stories that flex across multiple prompts. Each story should hit Situation → Task → Action → Result and end with one sentence on what you'd do differently.
+
+### Story prompts to have a real answer for
+
+| Prompt | What the interviewer is testing | Story shape |
+| --- | --- | --- |
+| "Tell me about an AI system you took from 0 to production" | End-to-end ownership; ability to ship | Problem → MVP → metrics → scale milestone |
+| "Tell me about a model rollback or production incident" | Judgment under pressure; blameless culture | Detection → mitigation → root cause → permanent fix |
+| "When did you say no to a feature request?" | Prioritization; strategic thinking | Request → analysis → reframe → outcome |
+| "Tell me about a time your eval missed a real problem" | Humility; eval rigor | Shipped → user feedback → gap in eval → new eval added |
+| "How did you handle a cost overrun on an AI feature?" | Business judgment; pragmatism | Spike → root cause → routing/caching/distillation → 60–80% reduction |
+| "Tell me about a hard cross-functional disagreement" | Influence without authority | Tension → listening → data → compromise / decision |
+| "When did you push back on a leader's direction?" | Courage + judgment | Concern → evidence → escalation → outcome |
+| "Describe mentoring an engineer through an AI project" | People growth; technical leadership | Skill gap → structured support → measurable growth |
+| "Tell me about a safety / responsible-AI tradeoff you made" | Values + execution | Risk identified → gate added → product impact accepted |
+| "What's the hardest technical bug you debugged?" | Depth; debugging methodology | Symptom → hypotheses → bisection → root cause → systemic fix |
+
+### Reusable STAR scaffold
+
+```text
+  SITUATION (1 sentence)
+    Where, when, scale, stakes — anchor the listener.
+    "At <company>, our <product> hit ~<scale> and we noticed <problem>."
+
+  TASK (1 sentence)
+    Your specific role — singular "I", not "we".
+    "As <role>, I owned <scope> and was asked to <objective>."
+
+  ACTION (2-4 sentences)
+    What YOU did, decisions and trade-offs, not a tutorial.
+    Include one non-obvious choice and why.
+    "I considered X and Y; I chose Z because <reason>.
+     I led <team>, set up <process>, shipped <thing>."
+
+  RESULT (1-2 sentences)
+    Numbers when possible. Connect to business or user outcome.
+    "<metric> moved by <amount>, <user/$ outcome>."
+
+  REFLECTION (1 sentence)
+    What you'd do differently. Shows growth, not weakness.
+    "Looking back, I'd <change>; the lesson was <generalization>."
+```
+
+### AI-specific anchors that make stories land
+
+- **Mention an eval you built or insisted on** — this single signal distinguishes ML-mature engineers from prompt-tinkerers.
+- **Mention a rollback or kill switch you designed in advance** — shows you treat AI as probabilistic and plan for failure.
+- **Mention a cost lever you pulled** (routing, caching, distillation, smaller model) with a concrete % reduction.
+- **Mention a safety/policy decision** where you blocked or scoped a launch, even when it slowed you down.
+- **Mention an org change you drove** (eval team, gateway, model-of-record process) — Lead is about leverage, not just hands-on work.
+
+> **⚠️ WARN: Behavioral red flags interviewers downgrade for**
+> Constant "we" (no individual contribution), no numbers, no failure stories, blaming teammates or vendors, no reflection, claiming you single-handedly built things that obviously needed a team. Be specific, be honest about constraints, give credit, and own the call that didn't work.
+
+---
+
+## Part 16 — Post-mortem case studies **EXAMPLE**
+
+Lead-level pattern recognition comes from incidents. The five vignettes below are composites of real production failure modes. Each ends with the systemic fix that would have prevented it — that systemic fix is the senior signal.
+
+### Incident 1 — The silent retrieval regression
+
+**Symptom:** Internal RAG assistant satisfaction drops from 78% to 64% over two weeks. No deploys. No model changes.
+
+**Investigation:** Ingestion pipeline had been silently failing on a connector update, so new docs (including a major policy revision) never reached the index. Retrieval still returned *something*, so eval headline numbers stayed flat; the regression hid in the "recent docs" slice.
+
+**Root cause:** No index-age dashboards. No per-source ingestion success rate alerts. Eval set had no freshness slice.
+
+**Systemic fix:**
+
+- Alert on per-source last-successful-ingest age (red after 2× expected cadence).
+- Freshness slice in the eval set (queries whose answers depend on docs < 7 days old).
+- Synthetic canary: inject a known doc nightly, query for it, alert if not retrieved.
+
+### Incident 2 — The cost spike at 3am
+
+**Symptom:** Daily LLM bill spikes 12× overnight. On-call paged.
+
+**Investigation:** A customer integration started sending PDFs with embedded HTML that produced 200k-token prompts. The agent looped up to 30 tool calls per request. Per-tenant TPM limit existed but was set generously and the global circuit breaker hadn't tripped.
+
+**Root cause:** No per-request token cap. No per-tenant cost alert. Agent loop bound was step count, not token total.
+
+**Systemic fix:**
+
+- Hard max_tokens per request, enforced at gateway.
+- Per-tenant dollar-per-hour alert with auto-throttle at 5× baseline.
+- Agent budget cap measured in tokens AND steps AND wallclock.
+- Input-token preview check before expensive route (refuse or downgrade if > threshold).
+
+### Incident 3 — The eval that lied
+
+**Symptom:** New model wins offline evals by 8%, ships, A/B test shows users prefer the *old* model 60–40.
+
+**Investigation:** Offline judge was the new model's own family. It rewarded verbose, hedged answers. Real users wanted concise direct ones. The eval optimized for what the model liked, not what users wanted.
+
+**Root cause:** Single-judge eval, no human calibration, no product KPI in the release gate.
+
+**Systemic fix:**
+
+- Rotate two different judge families; require both to agree on wins.
+- Calibrate judge against 200 human-labeled examples; report judge accuracy.
+- Release gate requires offline win AND online A/B on product KPI (not satisfaction proxy).
+- Add length-bias eval: pairs of (concise, verbose) answers with same content; judge must not always prefer the longer one.
+
+### Incident 4 — The agent that emailed a customer's lawyer
+
+**Symptom:** Support copilot, used by trained agents, autonomously composed and sent a reply to opposing counsel on a legal matter. Reply contained internal-only context.
+
+**Investigation:** The "send reply" tool was approval-gated for first-time recipients but cached as "approved" once a recipient had been confirmed earlier in the day. A different ticket from the same email thread reused the cached approval and skipped the gate.
+
+**Root cause:** Approval cached at the wrong scope (recipient instead of ticket). Audit log existed but wasn't reviewed proactively.
+
+**Systemic fix:**
+
+- Approvals scoped per-action, not per-recipient. No carry-over.
+- Recipient-classification on every send (legal, executive, regulator → always human-approval).
+- Daily sample audit of agent-sent emails by a human reviewer.
+- "Anti-exfiltration" check: outbound content scanned against internal-only context that was injected by retrieval.
+
+### Incident 5 — The training run that quietly diverged
+
+**Symptom:** Two-week 1,024-GPU pretraining run completed; downstream eval crashed by 30% vs the prior run.
+
+**Investigation:** A single data shard had a tokenization bug (BOM character corrupted ~0.4% of sequences). Loss curves looked fine — within noise. Per-shard loss telemetry didn't exist.
+
+**Root cause:** No data validation step between tokenization and training. No per-shard loss tracking. No "smoke" eval during training, only at end.
+
+**Systemic fix:**
+
+- Per-shard checksum and sample-decode validation before training launch.
+- Per-shard loss curves; alert on shards that drift > 2σ from cohort.
+- Mini-eval gauntlet every N steps; auto-pause if any capability eval drops > 10%.
+- Mandatory dry-run on 1% of compute before launching a multi-week run.
+
+> **💡 TIP: Pattern across all five**
+> Every senior-level incident has the same shape: **a guardrail existed but at the wrong scope, the monitoring metric existed but didn't include the failing slice, the eval covered the happy path but not the failure mode.** When you describe AI systems in interviews, name the slices and scopes explicitly — that's what tells the interviewer you've actually run these systems in production.
 

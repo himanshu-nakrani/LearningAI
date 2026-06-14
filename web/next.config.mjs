@@ -3,6 +3,7 @@ import remarkGfm from "remark-gfm";
 import rehypeSlug from "rehype-slug";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import rehypeShiki from "@shikijs/rehype";
+import rehypeWrapTables from "./scripts/rehype-wrap-tables.cjs";
 
 const isProd = process.env.NODE_ENV === "production";
 const REPO = "LearningAI";
@@ -21,6 +22,7 @@ const withMDX = createMDX({
           defaultColor: false,
         },
       ],
+      rehypeWrapTables,
     ],
   },
 });

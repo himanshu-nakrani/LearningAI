@@ -1,0 +1,46 @@
+.card { display: flex; flex-direction: column; gap: 10px; padding: 16px; }
+.eyebrow {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--soft);
+}
+.placeholder { height: 76px; }
+.empty {
+  font-family: var(--sans);
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.recent {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-subtle);
+  text-decoration: none;
+  color: var(--fg);
+  border-left: 3px solid var(--accent);
+  transition: background 0.15s ease;
+}
+.recent:hover { background: var(--surface-2); }
+.recentHead { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.recentTitle {
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  color: var(--fg);
+  line-height: 1.25;
+}
+.recentTime { font-size: 11px; color: var(--soft); flex-shrink: 0; }
+.recentMeta { display: flex; gap: 6px; flex-wrap: wrap; }
+.recentCta {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--accent);
+  margin-top: 2px;
+}

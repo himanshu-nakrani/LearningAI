@@ -1,0 +1,13 @@
+.row {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  font-family: var(--sans);
+  color: var(--muted);
+  gap: 0;
+}
+.sm { font-size: 12px; }
+.md { font-size: 13px; }
+.item { display: inline-flex; align-items: center; gap: 5px; }
+.sep { color: var(--soft); margin: 0 6px; }
+.icon { display: inline-flex; }

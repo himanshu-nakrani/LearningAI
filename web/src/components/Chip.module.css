@@ -1,0 +1,56 @@
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--sans);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  border-radius: var(--radius-xs);
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.sm { font-size: 10.5px; padding: 3px 7px; text-transform: uppercase; }
+.md { font-size: 12px; padding: 4px 9px; text-transform: none; }
+
+.neutral {
+  background: var(--bg-subtle);
+  color: var(--muted);
+  border-color: var(--border);
+}
+.core {
+  background: var(--chrome-accent-soft);
+  color: var(--chrome-accent);
+  border-color: var(--chrome-accent-soft-border);
+}
+.advanced {
+  background: var(--lavender-soft);
+  color: var(--lavender);
+  border-color: var(--lavender-soft);
+}
+.reference {
+  background: var(--bg-subtle);
+  color: var(--muted);
+  border-color: var(--border);
+}
+.warning {
+  background: var(--warning-soft);
+  color: var(--warning);
+  border-color: var(--warning-soft);
+}
+.lavender {
+  background: var(--lavender-soft);
+  color: var(--lavender);
+  border-color: var(--lavender-soft);
+}
+.cobalt {
+  background: var(--cobalt-soft);
+  color: var(--cobalt);
+  border-color: var(--cobalt-soft);
+}
+.success {
+  background: var(--success-soft);
+  color: var(--success);
+  border-color: var(--success-soft);
+}

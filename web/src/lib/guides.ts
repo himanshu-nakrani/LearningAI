@@ -12,6 +12,12 @@ export type GuideSlug =
   | "ai-system-design"
   | "interview-prep";
 
+/** Top-level nav groupings used in the sidebar / command palette. */
+export type NavGroup = "ai" | "agents" | "cloud" | "fundamentals" | "interview" | "reference";
+
+export type Difficulty = "Beginner" | "Intermediate" | "Advanced" | "Reference";
+export type GuideStatus = "Core" | "Advanced" | "Reference";
+
 export type GuideMeta = {
   slug: GuideSlug;
   title: string;
@@ -21,7 +27,16 @@ export type GuideMeta = {
   accentDark: string;
   accentSoft: string;
   accentSoftDark: string;
+  /** Coarse grouping used in the legacy home page (kept for back-compat). */
   group: "ai" | "cloud" | "fundamentals";
+  /** Sidebar nav group. Drives the Study OS sidebar taxonomy. */
+  navGroup: NavGroup;
+  /** Difficulty bucket. Defaults to Intermediate. */
+  difficulty?: Difficulty;
+  /** Optional status chip (Core / Advanced / Reference). */
+  status?: GuideStatus;
+  /** Estimated read time in minutes. */
+  readMinutes?: number;
 };
 
 export const GUIDES: GuideMeta[] = [
@@ -36,6 +51,10 @@ export const GUIDES: GuideMeta[] = [
     accentSoft: "#e3f1f3",
     accentSoftDark: "#1f1f1f",
     group: "ai",
+    navGroup: "ai",
+    difficulty: "Intermediate",
+    status: "Core",
+    readMinutes: 55,
   },
   {
     slug: "agentic-ai",
@@ -48,6 +67,10 @@ export const GUIDES: GuideMeta[] = [
     accentSoft: "#e7e6fb",
     accentSoftDark: "#22214a",
     group: "ai",
+    navGroup: "agents",
+    difficulty: "Advanced",
+    status: "Core",
+    readMinutes: 70,
   },
   {
     slug: "llm-inference",
@@ -60,6 +83,25 @@ export const GUIDES: GuideMeta[] = [
     accentSoft: "#fbe8e6",
     accentSoftDark: "#3a2826",
     group: "ai",
+    navGroup: "ai",
+    difficulty: "Advanced",
+    readMinutes: 60,
+  },
+  {
+    slug: "ai-system-design",
+    title: "AI System Design (High Level)",
+    shortTitle: "AI System Design",
+    description:
+      "High-level AI interview architectures for RAG, agents, recommendations, ranking, and voice systems.",
+    accent: "#7c3aed",
+    accentDark: "#b79af5",
+    accentSoft: "#efe7ff",
+    accentSoftDark: "#261a3a",
+    group: "ai",
+    navGroup: "ai",
+    difficulty: "Advanced",
+    status: "Core",
+    readMinutes: 80,
   },
   {
     slug: "aws",
@@ -71,6 +113,9 @@ export const GUIDES: GuideMeta[] = [
     accentSoft: "#fbeede",
     accentSoftDark: "#3a2c1a",
     group: "cloud",
+    navGroup: "cloud",
+    difficulty: "Intermediate",
+    readMinutes: 50,
   },
   {
     slug: "azure",
@@ -82,6 +127,9 @@ export const GUIDES: GuideMeta[] = [
     accentSoft: "#e3f0fb",
     accentSoftDark: "#1a2a3a",
     group: "cloud",
+    navGroup: "cloud",
+    difficulty: "Intermediate",
+    readMinutes: 50,
   },
   {
     slug: "gcp",
@@ -93,6 +141,9 @@ export const GUIDES: GuideMeta[] = [
     accentSoft: "#e8f0fe",
     accentSoftDark: "#1a2a3a",
     group: "cloud",
+    navGroup: "cloud",
+    difficulty: "Intermediate",
+    readMinutes: 50,
   },
   {
     slug: "cloud-ai-comparison",
@@ -104,6 +155,9 @@ export const GUIDES: GuideMeta[] = [
     accentSoft: "#efe9f6",
     accentSoftDark: "#241f33",
     group: "cloud",
+    navGroup: "cloud",
+    difficulty: "Intermediate",
+    readMinutes: 35,
   },
   {
     slug: "python",
@@ -115,6 +169,10 @@ export const GUIDES: GuideMeta[] = [
     accentSoft: "#e4eef7",
     accentSoftDark: "#1a2530",
     group: "fundamentals",
+    navGroup: "fundamentals",
+    difficulty: "Beginner",
+    status: "Core",
+    readMinutes: 60,
   },
   {
     slug: "dsa",
@@ -126,6 +184,9 @@ export const GUIDES: GuideMeta[] = [
     accentSoft: "#f5ecde",
     accentSoftDark: "#2c2218",
     group: "fundamentals",
+    navGroup: "fundamentals",
+    difficulty: "Beginner",
+    readMinutes: 70,
   },
   {
     slug: "system-design",
@@ -137,17 +198,10 @@ export const GUIDES: GuideMeta[] = [
     accentSoft: "#e0eee6",
     accentSoftDark: "#1a2a20",
     group: "fundamentals",
-  },
-  {
-    slug: "ai-system-design",
-    title: "AI System Design (High Level)",
-    shortTitle: "AI System Design",
-    description: "High-level AI interview architectures for RAG, agents, recommendations, ranking, and voice systems.",
-    accent: "#7c3aed",
-    accentDark: "#b79af5",
-    accentSoft: "#efe7ff",
-    accentSoftDark: "#261a3a",
-    group: "ai",
+    navGroup: "fundamentals",
+    difficulty: "Intermediate",
+    status: "Core",
+    readMinutes: 80,
   },
   {
     slug: "interview-prep",
@@ -159,10 +213,38 @@ export const GUIDES: GuideMeta[] = [
     accentSoft: "#f7e4e7",
     accentSoftDark: "#33181d",
     group: "fundamentals",
+    navGroup: "interview",
+    difficulty: "Advanced",
+    readMinutes: 120,
   },
 ];
 
-export const GUIDE_BY_SLUG: Record<GuideSlug, GuideMeta> = GUIDES.reduce(
-  (acc, g) => ({ ...acc, [g.slug]: g }),
-  {} as Record<GuideSlug, GuideMeta>,
-);
+export const GUIDE_BY_SLUG: Record<GuideSlug, GuideMeta> = Object.fromEntries(
+  GUIDES.map((g) => [g.slug, g]),
+) as Record<GuideSlug, GuideMeta>;
+
+/** Apply safe defaults to a guide record (used by new Study OS components). */
+export function withDefaults(g: GuideMeta): Required<Pick<GuideMeta, "difficulty" | "readMinutes">> & GuideMeta {
+  return {
+    ...g,
+    difficulty: g.difficulty ?? "Intermediate",
+    readMinutes: g.readMinutes ?? 30,
+  };
+}
+
+/** Guides in a given nav group, preserving the canonical GUIDES order. */
+export function guidesByNavGroup(group: NavGroup): GuideMeta[] {
+  return GUIDES.filter((g) => g.navGroup === group);
+}
+
+/** Glossary entry — not a real guide, lives at /glossary. Used in sidebar / cards. */
+export const GLOSSARY_META = {
+  slug: "glossary" as const,
+  title: "Glossary",
+  shortTitle: "Glossary",
+  description:
+    "Brief definitions of the key concepts and acronyms used across the guides — AI/ML, agents, inference, cloud, hardware, system design, Python, DSA.",
+  href: "/glossary",
+  difficulty: "Reference" as const,
+  readMinutes: 15,
+};

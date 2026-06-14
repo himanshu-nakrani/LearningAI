@@ -1,58 +1,181 @@
-/* ─── tokens ──────────────────────────────────────────────────────────── */
+/* ─── Design tokens ────────────────────────────────────────────────────── */
+/* Two accent layers:
+   --accent        = per-guide article accent (h2 bar, reading progress, prose links)
+   --chrome-accent = fixed teal accent for the app shell (sidebar, topbar, focus rings, primary CTAs)
+   They are intentionally separate so the shell feels consistent while each guide keeps its identity. */
+
 :root {
-  --fg: #161614;
-  --muted: #62625a;
-  --soft: #8a897e;
-  --bg: #fbfaf8;
-  --bg-subtle: #f6f4ef;
-  --surface: #fffefa;
-  --surface-raised: #ffffff;
-  --border: #dfddd4;
-  --border-strong: #c9c5ba;
-  --code-bg: #f3f0e9;
-  --code-fg: #25231f;
-  --warn-bg: #fff7db;
-  --warn-bd: #d9b84f;
-  --tip-bg: #eaf4ed;
-  --tip-bd: #72a77b;
-  --gap-bg: #fbe8e6;
-  --gap-bd: #c45f53;
-  --shadow-sm: none;
-  --shadow-md: 0 18px 55px rgba(25, 22, 18, 0.12);
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 18px;
-  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-  --serif: Charter, "Iowan Old Style", Georgia, serif;
-  --mono: "SF Mono", Menlo, Consolas, monospace;
-  /* defaults: overridden per-guide */
+  /* Surfaces & ink */
+  --bg: #FAFAF9;
+  --bg-subtle: #F5F5F4;
+  --surface: #FFFFFF;
+  --surface-2: #F5F5F4;
+  --surface-raised: #FFFFFF;
+  --border: #E7E5E4;
+  --border-strong: #D6D3D1;
+
+  /* Ink scale */
+  --fg: #1C1917;
+  --fg-secondary: #44403C;
+  --muted: #57534E;
+  /* --soft darkened from #A8A29E (~2.1:1 on #FAFAF9) to #78716C (~4.6:1) for AA. */
+  --soft: #78716C;
+  --code-bg: #F5F5F4;
+  --code-fg: #1C1917;
+
+  /* Chrome (shell) accent — teal */
+  --chrome-accent: #0D9488;
+  --chrome-accent-hover: #0F766E;
+  --chrome-accent-soft: #CCFBF1;
+  --chrome-accent-soft-border: #99F6E4;
+  --chrome-accent-fg-on: #FFFFFF;
+
+  /* Soft green for completion / progress indicators (per brief). */
+  --progress: #10B981;
+  --progress-dark: #047857;
+
+  /* Secondary / tertiary accents */
+  --cobalt: #2563EB;
+  --cobalt-soft: #DBEAFE;
+  --lavender: #A78BFA;
+  --lavender-soft: #EDE9FE;
+  --success: #10B981;
+  --success-soft: #D1FAE5;
+  --warning: #F59E0B;
+  --warning-soft: #FEF3C7;
+  --danger: #DC2626;
+  --danger-soft: #FEE2E2;
+
+  /* Per-guide article accent — overridden per guide by GuideShell */
   --accent: #0f7b8a;
   --accent-soft: #e3f1f3;
+
+  /* Callout palettes (article) */
+  --tip-bg: #ECFDF5;
+  --tip-bd: #10B981;
+  --warn-bg: #FFFBEB;
+  --warn-bd: #F59E0B;
+  --gap-bg: #FEF2F2;
+  --gap-bd: #DC2626;
+
+  /* Radii — slightly tighter per brief */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+
+  /* Shadow — at most 1px-blur cards, hover slightly elevated */
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-card-hover: 0 2px 4px rgba(0, 0, 0, 0.06), 0 0 0 1px var(--border);
+  --shadow-popover: 0 12px 32px rgba(0, 0, 0, 0.12), 0 0 0 1px var(--border);
+
+  /* Z-index scale */
+  --z-sticky-top: 50;
+  --z-sticky-side: 40;
+  --z-dropdown: 60;
+  --z-modal: 80;
+  --z-toast: 100;
+
+  /* Typography */
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, "Inter", sans-serif;
+  --serif: Charter, "Iowan Old Style", "Source Serif Pro", Georgia, serif;
+  --mono: "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+
+  /* Layout */
+  --sidebar-width: 248px;
+  --sidebar-collapsed-width: 52px;
+  --topbar-height: 56px;
+  --right-rail-width: 240px;
+  --content-max: 1320px;
+  --prose-max: 740px;
 }
 
 html.dark {
-  --fg: #f2f0ea;
-  --muted: #b9b5aa;
-  --soft: #878277;
-  --bg: #141412;
-  --bg-subtle: #1a1a17;
-  --surface: #1d1d1a;
-  --surface-raised: #24231f;
-  --border: #36352f;
-  --border-strong: #4a473e;
-  --code-bg: #23231f;
-  --code-fg: #e5e0d5;
-  --warn-bg: #342b18;
-  --warn-bd: #aa8730;
-  --tip-bg: #1f3024;
-  --tip-bd: #6ba577;
-  --gap-bg: #342320;
-  --gap-bd: #c45f53;
-  --shadow-sm: none;
-  --shadow-md: 0 24px 70px rgba(0, 0, 0, 0.42);
+  --bg: #0C0A09;
+  --bg-subtle: #1C1917;
+  --surface: #1C1917;
+  --surface-2: #292524;
+  --surface-raised: #292524;
+  --border: #2C2925;
+  --border-strong: #3F3A36;
+
+  --fg: #FAFAF9;
+  --fg-secondary: #D6D3D1;
+  --muted: #A8A29E;
+  /* --soft lightened from #57534E (~2.4:1 on #0C0A09) to #8A8580 (~5.5:1) for AA. */
+  --soft: #8A8580;
+  --code-bg: #1F1C1A;
+  --code-fg: #E7E5E4;
+
+  --chrome-accent: #2DD4BF;
+  --chrome-accent-hover: #5EEAD4;
+  --chrome-accent-soft: #134E4A;
+  --chrome-accent-soft-border: #115E59;
+  --chrome-accent-fg-on: #0C0A09;
+
+  --progress: #34D399;
+  --progress-dark: #10B981;
+
+  --cobalt: #60A5FA;
+  --cobalt-soft: #1E3A8A;
+  --lavender: #C4B5FD;
+  --lavender-soft: #2E1065;
+  --success: #34D399;
+  --success-soft: #064E3B;
+  --warning: #FBBF24;
+  --warning-soft: #451A03;
+  --danger: #F87171;
+  --danger-soft: #450A0A;
+
+  --accent: #6fb0b9;          /* per-guide dark accent — overridden by data-accent */
+  --accent-soft: #1f1f1f;
+
+  --tip-bg: #042F2E;
+  --tip-bd: #10B981;
+  --warn-bg: #451A03;
+  --warn-bd: #F59E0B;
+  --gap-bg: #450A0A;
+  --gap-bd: #DC2626;
+
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-card-hover: 0 2px 4px rgba(0, 0, 0, 0.4), 0 0 0 1px var(--border);
+  --shadow-popover: 0 16px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px var(--border);
 }
 
-/* ─── shiki theme switch ───────────────────────────────────────────────── */
+/* ─── Per-guide accents via data-accent on the article root ──────────── */
+/* Scoped to .guide-shell-root[data-accent] so only the article picks them up.
+   Light theme gets the per-guide vivid accent; dark theme gets the muted
+   dark-mode variant. The base --accent token (defined above) is the
+   fallback for /glossary which has no data-accent. */
+[data-accent="ai-engineering"] { --accent: #0f7b8a; --accent-soft: #e3f1f3; }
+[data-accent="agentic-ai"]     { --accent: #4338ca; --accent-soft: #e7e6fb; }
+[data-accent="llm-inference"]   { --accent: #b8453a; --accent-soft: #fbe8e6; }
+[data-accent="ai-system-design"] { --accent: #7c3aed; --accent-soft: #efe7ff; }
+[data-accent="aws"]             { --accent: #d97300; --accent-soft: #fbeede; }
+[data-accent="azure"]           { --accent: #0078d4; --accent-soft: #e3f0fb; }
+[data-accent="gcp"]             { --accent: #1a73e8; --accent-soft: #e8f0fe; }
+[data-accent="cloud-ai-comparison"] { --accent: #6a4c93; --accent-soft: #efe9f6; }
+[data-accent="python"]          { --accent: #306998; --accent-soft: #e4eef7; }
+[data-accent="dsa"]             { --accent: #8b5e34; --accent-soft: #f5ecde; }
+[data-accent="system-design"]   { --accent: #2c6e49; --accent-soft: #e0eee6; }
+[data-accent="interview-prep"]  { --accent: #a5374a; --accent-soft: #f7e4e7; }
+[data-accent="glossary"]        { --accent: #6b8e2e; --accent-soft: #eef2e0; }
+
+html.dark [data-accent="ai-engineering"] { --accent: #6fb0b9; --accent-soft: #1f1f1f; }
+html.dark [data-accent="agentic-ai"]     { --accent: #a5a0f0; --accent-soft: #22214a; }
+html.dark [data-accent="llm-inference"]   { --accent: #e08a82; --accent-soft: #3a2826; }
+html.dark [data-accent="ai-system-design"] { --accent: #b79af5; --accent-soft: #261a3a; }
+html.dark [data-accent="aws"]             { --accent: #f0a050; --accent-soft: #3a2c1a; }
+html.dark [data-accent="azure"]           { --accent: #6cb8f0; --accent-soft: #1a2a3a; }
+html.dark [data-accent="gcp"]             { --accent: #7ab0f0; --accent-soft: #1a2a3a; }
+html.dark [data-accent="cloud-ai-comparison"] { --accent: #a78cc8; --accent-soft: #241f33; }
+html.dark [data-accent="python"]          { --accent: #7fa9d4; --accent-soft: #1a2530; }
+html.dark [data-accent="dsa"]             { --accent: #c89870; --accent-soft: #2c2218; }
+html.dark [data-accent="system-design"]   { --accent: #80b598; --accent-soft: #1a2a20; }
+html.dark [data-accent="interview-prep"]  { --accent: #d88090; --accent-soft: #33181d; }
+html.dark [data-accent="glossary"]        { --accent: #a8c476; --accent-soft: #232818; }
+
+/* ─── Shiki code-block theme switch ─────────────────────────────────────── */
 html.dark .shiki, html.dark .shiki span { color: var(--shiki-dark) !important; background-color: var(--shiki-dark-bg) !important; }
 .shiki { color: var(--shiki-light); background-color: var(--shiki-light-bg); }
 
@@ -60,34 +183,70 @@ html.dark .shiki, html.dark .shiki span { color: var(--shiki-dark) !important; b
 *, *::before, *::after { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 body {
-  font-family: var(--serif);
+  font-family: var(--sans);
   color: var(--fg);
   background: var(--bg);
   margin: 0;
-  line-height: 1.68;
-  font-size: 18px;
+  line-height: 1.55;
+  font-size: 15px;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-feature-settings: "kern", "liga", "calt";
   text-wrap: pretty;
 }
-body, .booknav, pre, code, .callout {
+body, nav, aside, pre, code, .callout {
   transition:
-    background-color 0.3s ease,
-    color 0.3s ease,
-    border-color 0.3s ease;
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
 }
 
 ::selection {
-  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  background: color-mix(in srgb, var(--chrome-accent) 22%, transparent);
+  color: var(--fg);
 }
 
-/* ─── prose layout ─────────────────────────────────────────────────────── */
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button { font-family: inherit; }
+
+/* ─── prefers-reduced-motion guard ──────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ─── Focus rings — visible, chrome teal, 2px with offset ──────────────── */
+*:focus { outline: none; }
+*:focus-visible {
+  outline: 2px solid var(--chrome-accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ─── Prose layout (article body) — preserved from before, only colors tokenized ── */
 .prose {
-  max-width: 740px;
+  max-width: var(--prose-max);
   margin: 0 auto;
   padding: 64px 32px 100px;
+  font-family: var(--serif);
+  font-size: 17px;
+  line-height: 1.72;
+  color: var(--fg);
+  min-width: 0;
+  overflow-wrap: break-word;
+}
+.guide-shell-root {
+  min-width: 0;
+  overflow: hidden; /* prevent inner overflow from pushing the page horizontally */
 }
 .prose h1, .prose h2, .prose h3, .prose h4 {
   font-family: var(--sans);
@@ -99,7 +258,7 @@ body, .booknav, pre, code, .callout {
   scroll-margin-top: 88px;
 }
 .prose h1 {
-  font-size: clamp(2rem, 4.2vw, 3.2rem);
+  font-size: clamp(2rem, 4.2vw, 3rem);
   border-bottom: 1px solid var(--border);
   padding-bottom: 24px;
   margin-top: 0.15em;
@@ -108,12 +267,20 @@ body, .booknav, pre, code, .callout {
 }
 .prose h2 {
   font-size: clamp(1.55rem, 3vw, 2.08rem);
-  margin-top: 3em;
+  margin-top: 2.6em;
   margin-bottom: 0.82em;
   letter-spacing: -0.02em;
+  position: relative;
+  padding-top: 0.4em;
 }
 .prose h2::before {
-  display: none;
+  content: "";
+  display: block;
+  width: 36px;
+  height: 3px;
+  background: var(--accent);
+  border-radius: 2px;
+  margin-bottom: 0.6em;
 }
 .prose h3 { font-size: 1.22em; color: var(--fg); letter-spacing: -0.012em; }
 .prose h4 { font-size: 0.86em; color: var(--muted); text-transform: uppercase; letter-spacing: 0.09em; font-weight: 700; }
@@ -121,7 +288,7 @@ body, .booknav, pre, code, .callout {
 .prose ul, .prose ol { padding-left: 1.35em; }
 .prose li { margin: 0.42em 0; padding-left: 0.1em; }
 
-/* link styling — subtle until hover */
+/* link styling — uses per-guide accent inside the article */
 .prose a {
   color: var(--accent);
   text-decoration: underline;
@@ -142,9 +309,10 @@ body, .booknav, pre, code, .callout {
   background: var(--code-bg);
   color: var(--code-fg);
   padding: 0.08em 0.38em;
-  border: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
-  border-radius: 6px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
   font-size: 0.86em;
+  word-break: break-word;
 }
 .prose pre {
   position: relative;
@@ -156,12 +324,14 @@ body, .booknav, pre, code, .callout {
   box-shadow: none;
   overflow-x: auto;
   font-size: 0.86em;
-  line-height: 1.5;
+  line-height: 1.55;
   margin: 1.25em 0;
 }
-.prose pre code { background: transparent; border: none; padding: 0; font-size: 1em; }
+.prose pre code { background: transparent; border: none; padding: 0; font-size: 1em; white-space: pre; word-break: normal; }
 
-/* tables */
+/* tables — wrapped via .tablewrap div so they scroll on overflow */
+.prose .tablewrap { overflow-x: auto; max-width: 100%; }
+.prose .tablewrap table { margin: 0; }
 .prose table {
   border-collapse: separate;
   border-spacing: 0;
@@ -191,7 +361,7 @@ body, .booknav, pre, code, .callout {
 
 /* blockquote */
 .prose blockquote {
-  border-left: 3px solid var(--border-strong);
+  border-left: 3px solid var(--accent);
   margin: 1.4em 0;
   padding: 0.5em 1.1em;
   color: var(--muted);
@@ -212,7 +382,7 @@ body, .booknav, pre, code, .callout {
   color: var(--muted);
   letter-spacing: 0.5em;
   font-size: 1em;
-  font-family: -apple-system, sans-serif;
+  font-family: var(--sans);
 }
 
 .prose .meta { color: var(--muted); font-size: 0.9em; margin-bottom: 2em; }
@@ -234,31 +404,26 @@ body, .booknav, pre, code, .callout {
 .prose .toc ol { margin: 0; padding-left: 1.25em; }
 .prose .toc li { margin: 0.28em 0; }
 
-/* focus ring */
-a:focus-visible, button:focus-visible {
-  outline: 3px solid var(--accent);
-  outline-offset: 2px;
-  border-radius: 3px;
-}
-
-/* reading progress + scroll-top */
+/* ─── Reading-progress bar (top of viewport) ─────────────────────────── */
 .reading-progress {
   position: fixed;
   top: 0;
   left: 0;
   height: 2px;
-  background: var(--accent);
-  z-index: 1001;
+  background: var(--progress);
+  z-index: var(--z-toast);
   width: 0%;
   pointer-events: none;
   transition: width 0.1s ease;
 }
+
+/* ─── Scroll-top floating button (legacy, still used) ─────────────────── */
 .scroll-top {
   position: fixed;
   bottom: 24px;
   right: 24px;
-  background: var(--accent);
-  color: #fff;
+  background: var(--chrome-accent);
+  color: var(--chrome-accent-fg-on);
   border: none;
   border-radius: var(--radius-sm);
   width: 44px;
@@ -270,23 +435,22 @@ a:focus-visible, button:focus-visible {
   font-size: 1.3rem;
   line-height: 1;
   padding: 0;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-card);
   opacity: 0;
   pointer-events: none;
-  z-index: 999;
+  z-index: var(--z-sticky-top);
   transition: opacity 0.3s ease, background-color 0.15s ease;
 }
 .scroll-top.visible { opacity: 1; pointer-events: auto; }
-.scroll-top:hover { background: var(--fg); }
-html.dark .scroll-top { box-shadow: none; }
+.scroll-top:hover { background: var(--chrome-accent-hover); }
 
-/* skip link */
+/* ─── Skip link ────────────────────────────────────────────────────────── */
 .skip-link {
   position: absolute;
   top: -40px;
   left: 8px;
-  background: var(--accent);
-  color: #fff;
+  background: var(--chrome-accent);
+  color: var(--chrome-accent-fg-on);
   padding: 8px 16px;
   z-index: 9999;
   text-decoration: none;
@@ -295,12 +459,13 @@ html.dark .scroll-top { box-shadow: none; }
 }
 .skip-link:focus { top: 0; }
 
+/* ─── Mobile prose padding — unchanged ───────────────────────────────── */
 @media (max-width: 700px) {
   .prose { padding: 48px 22px 76px; }
 }
 @media (max-width: 480px) {
-  body { font-size: 17px; }
-  .prose { padding: 36px 18px 64px; }
+  body { font-size: 14px; }
+  .prose { padding: 36px 18px 64px; font-size: 16px; }
   .prose h1 { font-size: 2.1rem; }
   .prose h2 { font-size: 1.45em; }
   .prose h3 { font-size: 1.15em; }
@@ -310,7 +475,6 @@ html.dark .scroll-top { box-shadow: none; }
   .prose .toc { padding: 18px; border-radius: var(--radius-md); }
 }
 @media (max-width: 375px) {
-  body { font-size: 16px; }
   .prose { padding: 20px 14px 50px; }
   .prose h1 { font-size: 1.6em; }
   .prose h2 { font-size: 1.25em; }

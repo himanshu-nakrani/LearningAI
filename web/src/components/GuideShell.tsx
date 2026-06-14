@@ -1,9 +1,13 @@
 import type { ReactNode } from "react";
 import type { GuideMeta } from "@/lib/guides";
-import { ReadingProgress } from "./ReadingProgress";
 import { ScrollTop } from "./ScrollTop";
 import { CopyButton } from "./CopyButton";
 
+/**
+ * Article shell — wraps the MDX content in .prose and applies the per-guide
+ * accent via the data-accent attribute. The reading progress bar lives in
+ * GuideLayout (which owns the guide reading chrome).
+ */
 export function GuideShell({
   guide,
   children,
@@ -11,16 +15,11 @@ export function GuideShell({
   guide?: GuideMeta;
   children: ReactNode;
 }) {
-  const style = guide
-    ? ({
-        "--accent": guide.accent,
-        "--accent-soft": guide.accentSoft,
-      } as React.CSSProperties)
-    : undefined;
-
   return (
-    <div style={style}>
-      <ReadingProgress />
+    <div
+      data-accent={guide?.slug}
+      className="guide-shell-root"
+    >
       <a className="skip-link" href="#main">
         Skip to main content
       </a>
@@ -29,14 +28,6 @@ export function GuideShell({
       </main>
       <ScrollTop />
       <CopyButton />
-      {guide && (
-        <style
-          // per-guide accent for dark mode too
-          dangerouslySetInnerHTML={{
-            __html: `html.dark { --accent: ${guide.accentDark}; --accent-soft: ${guide.accentSoftDark}; }`,
-          }}
-        />
-      )}
     </div>
   );
 }

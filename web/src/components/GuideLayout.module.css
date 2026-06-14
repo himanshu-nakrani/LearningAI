@@ -1,0 +1,31 @@
+.layout {
+  display: grid;
+  grid-template-columns: 200px minmax(0, 1fr);
+  gap: 28px;
+  align-items: start;
+  max-width: 100%;
+}
+.guideNav {
+  position: sticky;
+  top: calc(var(--topbar-height) + 32px);
+  align-self: start;
+  max-height: calc(100vh - var(--topbar-height) - 48px);
+  overflow-y: auto;
+  padding-right: 4px;
+}
+.article {
+  min-width: 0;
+  display: flex;
+  justify-content: center;
+}
+
+/* Hide the in-guide left nav below 1440px — the article needs the room
+   to reach the brief's 720–760px target. The right TOC (provided by
+   AppShell) stays visible at ≥1280px. */
+.compact { grid-template-columns: minmax(0, 1fr); }
+.compact .guideNav { display: none; }
+
+@media (max-width: 1439px) {
+  .layout { grid-template-columns: minmax(0, 1fr); }
+  .guideNav { display: none; }
+}

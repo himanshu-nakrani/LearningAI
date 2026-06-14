@@ -1,17 +1,16 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import "./globals.css";
-import { BookNav } from "@/components/BookNav";
 import { SearchProvider } from "@/components/SearchContext";
-import { SearchOverlay } from "@/components/SearchOverlay";
+import { CommandSearch } from "@/components/CommandSearch";
 
 export const metadata: Metadata = {
   title: {
-    default: "Learning AI",
-    template: "%s — Learning AI",
+    default: "LearningAI Study OS",
+    template: "%s — LearningAI",
   },
   description:
-    "Long-form study notes covering AI engineering, agentic AI, LLM inference, cloud AI platforms, and core software fundamentals.",
+    "Long-form study notes for AI engineering, agents, cloud AI, and software engineering fundamentals.",
 };
 
 const noFlashScript = `
@@ -26,15 +25,14 @@ const noFlashScript = `
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: noFlashScript }} />
       </head>
       <body>
         <SearchProvider>
-          <BookNav />
           {children}
-          <SearchOverlay />
+          <CommandSearch />
         </SearchProvider>
       </body>
     </html>

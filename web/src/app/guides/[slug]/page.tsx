@@ -1,6 +1,10 @@
 import { notFound } from "next/navigation";
-import { GUIDES, GUIDE_BY_SLUG, type GuideSlug } from "@/lib/guides";
-import { GuideShell } from "@/components/GuideShell";
+import { GUIDES, GUIDE_BY_SLUG, guidesByNavGroup, type GuideSlug, type GuideMeta } from "@/lib/guides";
+import { AppShell } from "@/components/AppShell";
+import { GuideLayout } from "@/components/GuideLayout";
+import { GuideTOC } from "@/components/GuideTOC";
+import { RelatedGuides } from "@/components/RelatedGuides";
+import { RecordRecentVisit } from "@/components/RecordRecentVisit";
 
 export function generateStaticParams() {
   return GUIDES.map((g) => ({ slug: g.slug }));
@@ -32,9 +36,47 @@ export default async function GuidePage({
   const mod = await import(`@/content/guides/${slug}.mdx`);
   const Mdx = mod.default;
 
+  // Sibling guides = same navGroup, excluding the current one.
+  const siblings = guidesByNavGroup(guide.navGroup).filter((g) => g.slug !== guide.slug);
+
+  // Related guides = same-group first, then cross-group, prefer "Core" status, capped at 3.
+  const others = GUIDES.filter((g) => g.slug !== guide.slug);
+  const ranked = [
+    ...others.filter((g) => g.navGroup === guide.navGroup),
+    ...others.filter((g) => g.navGroup !== guide.navGroup && g.status === "Core"),
+    ...others.filter((g) => g.navGroup !== guide.navGroup),
+  ];
+  const related = ranked.slice(0, 3);
+
+  const groupLabel =
+    guide.navGroup === "agents" ? "Agents"
+    : guide.navGroup === "ai" ? "AI"
+    : guide.navGroup === "cloud" ? "Cloud"
+    : guide.navGroup === "fundamentals" ? "Fundamentals"
+    : guide.navGroup === "interview" ? "Interview Prep"
+    : "Reference";
+
+  const breadcrumb = [
+    { label: "Home", href: "/" },
+    { label: groupLabel, href: "/" },
+    { label: guide.shortTitle },
+  ];
+
   return (
-    <GuideShell guide={guide}>
-      <Mdx />
-    </GuideShell>
+    <AppShell
+      breadcrumb={breadcrumb}
+      rightRail={
+        <>
+          <GuideTOC />
+          <RelatedGuides guides={related} />
+        </>
+      }
+      defaultCollapsed
+    >
+      <RecordRecentVisit guide={guide} />
+      <GuideLayout guide={guide} siblings={siblings} currentSlug={guide.slug}>
+        <Mdx />
+      </GuideLayout>
+    </AppShell>
   );
 }

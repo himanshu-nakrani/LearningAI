@@ -1,0 +1,101 @@
+.sidebar {
+  width: var(--sidebar-width);
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  font-family: var(--sans);
+  overflow-y: auto;
+  overflow-x: hidden;
+  /* Sticky positioning lives on the .sidebarHost in AppShell.module.css —
+     keeping it on the inner element would create two scrollable surfaces. */
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: var(--topbar-height);
+  padding: 0 20px;
+  color: var(--fg);
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: -0.015em;
+  border-bottom: 1px solid var(--border);
+  text-decoration: none;
+  flex-shrink: 0;
+}
+.brandMark {
+  color: var(--chrome-accent);
+  font-size: 14px;
+  line-height: 1;
+}
+.brandText { white-space: nowrap; }
+
+.nav {
+  flex: 1 1 auto;
+  padding: 12px 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.section { display: flex; flex-direction: column; gap: 4px; }
+.sectionLabel {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--soft);
+  padding: 0 10px 4px;
+}
+.list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 1px; }
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 540;
+  line-height: 1.3;
+  text-decoration: none;
+  border-left: 2px solid transparent;
+  margin-left: -2px;
+  transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.item:hover { background: var(--bg-subtle); color: var(--fg); }
+.item.active {
+  background: var(--chrome-accent-soft);
+  color: var(--chrome-accent);
+  border-left-color: var(--chrome-accent);
+  font-weight: 600;
+}
+.icon { width: 16px; text-align: center; font-size: 13px; flex-shrink: 0; opacity: 0.85; }
+.label { overflow: hidden; text-overflow: ellipsis; }
+
+.footer {
+  padding: 10px 20px 14px;
+  border-top: 1px solid var(--border);
+  color: var(--soft);
+  font-size: 11px;
+  flex-shrink: 0;
+}
+.version { letter-spacing: 0.05em; }
+
+/* Collapsed state — icons only */
+.collapsed { width: var(--sidebar-collapsed-width); }
+.collapsed .brand { padding: 0; justify-content: center; }
+.collapsed .brandText { display: none; }
+.collapsed .item { justify-content: center; padding: 8px 0; margin-left: 0; border-left: none; }
+.collapsed .item.active { border-left: none; }
+.collapsed .label { display: none; }
+.collapsed .footer { padding: 10px 0 14px; text-align: center; }
+
+@media (max-width: 1023px) {
+  /* Sidebar is rendered as a drawer below this breakpoint — hide the sticky one. */
+  .sidebar { display: none; }
+}

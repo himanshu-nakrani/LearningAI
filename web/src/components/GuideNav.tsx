@@ -1,7 +1,6 @@
 "use client";
 import Link from "next/link";
-import { useArticleHeadings } from "@/lib/useArticleHeadings";
-import type { GuideMeta } from "@/lib/guides";
+import type { GuideMeta, NavGroup } from "@/lib/guides";
 import styles from "./GuideNav.module.css";
 
 type Props = {
@@ -12,58 +11,46 @@ type Props = {
   currentSlug: string;
 };
 
-export function GuideNav({ guide, siblings, currentSlug }: Props) {
-  const headings = useArticleHeadings();
+const groupLabels: Record<NavGroup, string> = {
+  ai: "AI guides",
+  agents: "Agent guides",
+  cloud: "Cloud guides",
+  fundamentals: "Fundamentals",
+  interview: "Interview prep",
+  reference: "Reference",
+};
 
-  // The left nav only shows top-level (H2) sections — the right rail TOC
-  // is where H3 sub-sections live.
-  const topHeadings = headings.filter((h) => h.level === 2);
+export function GuideNav({ guide, siblings, currentSlug }: Props) {
+  if (siblings.length === 0) return null;
 
   return (
-    <aside className={styles.nav} aria-label={`Sections in ${guide.shortTitle}`}>
+    <aside className={styles.nav} aria-label={`More in ${groupLabels[guide.navGroup]}`}>
       <div className={styles.section}>
-        <div className={styles.eyebrow}>In this guide</div>
-        {topHeadings.length === 0 ? (
-          <div className={styles.placeholder}>&nbsp;</div>
-        ) : (
-          <ul className={styles.list}>
-            {topHeadings.map((h) => (
-              <li key={h.id}>
-                <a href={`#${h.id}`} className={styles.link}>{h.text}</a>
+        <div className={styles.eyebrow}>{groupLabels[guide.navGroup]}</div>
+        <ul className={styles.list}>
+          {siblings.map((g) => {
+            const active = g.slug === currentSlug;
+            return (
+              <li key={g.slug}>
+                <Link
+                  href={`/guides/${g.slug}`}
+                  className={`${styles.sibling} ${active ? styles.siblingActive : ""}`}
+                  style={
+                    {
+                      "--accent": g.accent,
+                    } as React.CSSProperties
+                  }
+                >
+                  <span className={styles.siblingTitle}>{g.shortTitle}</span>
+                  <span className={styles.siblingMeta}>
+                    {g.readMinutes ?? 30} min
+                  </span>
+                </Link>
               </li>
-            ))}
-          </ul>
-        )}
+            );
+          })}
+        </ul>
       </div>
-
-      {siblings.length > 0 && (
-        <div className={styles.section}>
-          <div className={styles.eyebrow}>Related guides</div>
-          <ul className={styles.list}>
-            {siblings.map((g) => {
-              const active = g.slug === currentSlug;
-              return (
-                <li key={g.slug}>
-                  <Link
-                    href={`/guides/${g.slug}`}
-                    className={`${styles.sibling} ${active ? styles.siblingActive : ""}`}
-                    style={
-                      {
-                        "--accent": g.accent,
-                      } as React.CSSProperties
-                    }
-                  >
-                    <span className={styles.siblingTitle}>{g.shortTitle}</span>
-                    <span className={styles.siblingMeta}>
-                      {g.readMinutes ?? 30} min
-                    </span>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      )}
     </aside>
   );
 }

@@ -71,7 +71,6 @@ export default async function GuidePage({
           <RelatedGuides guides={related} />
         </>
       }
-      defaultCollapsed
     >
       <RecordRecentVisit guide={guide} />
       <GuideLayout guide={guide} siblings={siblings} currentSlug={guide.slug}>

@@ -203,7 +203,7 @@ graph TD
     CALC --> OPT
     PROB --> OPT
     LA --> PROB
-    OPT --> LITMUS{ "<b>Litmus test</b><br/>Derive softmax cross-entropy<br/>forward + backward in NumPy<br/>with finite-difference check" }:::goal
+    OPT --> LITMUS["<b>Litmus test</b><br/>Derive softmax cross-entropy<br/>forward + backward in NumPy<br/>with finite-difference check"]:::goal
     LA --> LITMUS
     PROB --> LITMUS
     NUM --> LITMUS

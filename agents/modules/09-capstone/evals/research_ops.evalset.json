@@ -1,0 +1,121 @@
+{
+  "eval_set_id": "research_ops_required",
+  "name": "Research Ops required eval cases",
+  "description": "Capstone required: happy path knowledge hit + failure path + multi-topic.",
+  "eval_cases": [
+    {
+      "eval_id": "eval_knowledge_hit",
+      "conversation": [
+        {
+          "invocation_id": "inv-eval-hit-001",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "Use the knowledge base to research evaluation best practices."
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "Evaluation should cover tool trajectories and final response quality, with regression tests in CI."
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "search_knowledge_base",
+                "args": { "topic": "evaluation" }
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "research_ops_assistant",
+        "user_id": "eval_user",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "eval_knowledge_miss",
+      "conversation": [
+        {
+          "invocation_id": "inv-eval-miss-001",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "Search the knowledge base for quantum teleportation recipes."
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "I could not find knowledge base entries for that topic."
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "search_knowledge_base",
+                "args": { "topic": "quantum teleportation recipes" }
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "research_ops_assistant",
+        "user_id": "eval_user",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "eval_plugins_topic",
+      "conversation": [
+        {
+          "invocation_id": "inv-eval-plugins-001",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "Research plugins and guardrails using the knowledge base."
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "Plugins register once on the Runner and apply globally for logging and security policies."
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "search_knowledge_base",
+                "args": { "topic": "plugins" }
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "research_ops_assistant",
+        "user_id": "eval_user",
+        "state": {}
+      }
+    }
+  ]
+}

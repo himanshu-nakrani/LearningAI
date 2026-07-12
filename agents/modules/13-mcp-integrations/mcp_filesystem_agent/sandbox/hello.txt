@@ -1,0 +1,4 @@
+Hello from the ADK MCP filesystem lab!
+
+This file is served by @modelcontextprotocol/server-filesystem via McpToolset.
+If you can read this through the agent, MCP stdio integration is working.

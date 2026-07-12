@@ -1,0 +1,32 @@
+# Example only — adjust to your GCP project and ADK deploy flow.
+# Prefer: adk deploy cloud_run ... (see current ADK docs)
+
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: adk-sample-agent
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/minScale: "0"
+        autoscaling.knative.dev/maxScale: "10"
+    spec:
+      containerConcurrency: 40
+      timeoutSeconds: 300
+      containers:
+        - image: REGION-docker.pkg.dev/PROJECT_ID/REPO/adk-sample-agent:TAG
+          ports:
+            - containerPort: 8080
+          env:
+            - name: GOOGLE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: gemini-api-key
+                  key: latest
+            - name: ADK_MODEL
+              value: gemini-flash-latest
+          resources:
+            limits:
+              cpu: "2"
+              memory: 1Gi

@@ -1,0 +1,45 @@
+{
+  "eval_set_id": "research_ops_sample",
+  "name": "Sample capstone eval cases",
+  "description": "Starter cases — extend for your submission.",
+  "eval_cases": [
+    {
+      "eval_id": "knowledge_hit_evaluation",
+      "conversation": [
+        {
+          "invocation_id": "inv-research-eval-001",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "Research agent evaluation best practices for production."
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "Evaluation should cover tool trajectories and final response quality, with regression tests in CI."
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "search_knowledge_base",
+                "args": { "topic": "evaluation" }
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "research_ops_assistant",
+        "user_id": "eval_user",
+        "state": {}
+      }
+    }
+  ]
+}

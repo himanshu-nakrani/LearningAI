@@ -1,0 +1,75 @@
+{
+  "eval_set_id": "weather_sentiment_basic",
+  "name": "Weather sentiment basic cases",
+  "description": "Module 07 sample eval set for the weather_sentiment_agent lab.",
+  "eval_cases": [
+    {
+      "eval_id": "london_weather",
+      "conversation": [
+        {
+          "invocation_id": "inv-london-weather-001",
+          "user_content": {
+            "role": "user",
+            "parts": [{ "text": "What is the weather in London?" }]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "Cloudy in London, 18°C, with a chance of light rain."
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "get_weather_report",
+                "args": { "city": "London" }
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "weather_sentiment_agent",
+        "user_id": "eval_user",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "unknown_city",
+      "conversation": [
+        {
+          "invocation_id": "inv-unknown-city-001",
+          "user_content": {
+            "role": "user",
+            "parts": [{ "text": "Weather in Atlantis?" }]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "I do not have weather information for Atlantis."
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "get_weather_report",
+                "args": { "city": "Atlantis" }
+              }
+            ],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "weather_sentiment_agent",
+        "user_id": "eval_user",
+        "state": {}
+      }
+    }
+  ]
+}

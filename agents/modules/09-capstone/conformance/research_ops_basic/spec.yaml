@@ -1,0 +1,21 @@
+# Conformance baseline specification for Research Ops Assistant
+# Workflow (after ADK recording plugin available):
+#   1. adk web -v --extra_plugins=google.adk.cli.plugins.recordings_plugin.RecordingsPlugin modules/09-capstone
+#   2. adk conformance create modules/09-capstone/conformance/research_ops_basic
+#   3. adk conformance test modules/09-capstone/conformance/research_ops_basic
+
+name: research_ops_basic
+description: >
+  Verifies the research agent path uses search_knowledge_base for evaluation
+  topics and does not invent empty-tool answers.
+
+user_prompts:
+  - "Use the knowledge base to research evaluation best practices for agents."
+
+expected_tools:
+  - search_knowledge_base
+
+notes: |
+  generated-recordings.yaml and generated-session.yaml are produced by
+  `adk conformance create` — do not hand-author them.
+  Commit golden files once generated on your machine for CI.

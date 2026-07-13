@@ -88,6 +88,18 @@ python modules/18-graphs/run_loan_graph.py --text "loan of 5000"
 adk run modules/00-setup/setup_probe
 ```
 
+### Course webapp (browser)
+
+Interactive reader for all modules — tracks, search, and local progress:
+
+```bash
+cd agents/webapp
+python3 serve.py --build
+# → http://127.0.0.1:8765/
+```
+
+See [webapp/README.md](webapp/README.md).
+
 ---
 
 ## Capstone (deep track)

@@ -244,12 +244,26 @@ function renderSidebar() {
   });
 }
 
+/**
+ * Drawer mode must match CSS (@media max-width: 860px).
+ * Also enable drawer if the menu button is actually visible (avoids
+ * innerWidth / media-query mismatches where clicks were no-ops).
+ */
 function isMobileNav() {
   if (typeof window === "undefined") return false;
-  if (window.AdkUiState) {
-    return window.AdkUiState.isMobileWidth(window.innerWidth);
+  const max =
+    (window.AdkUiState && window.AdkUiState.MOBILE_MAX) || 860;
+  if (window.matchMedia(`(max-width: ${max}px)`).matches) return true;
+  const menu = document.getElementById("menu-btn");
+  if (menu) {
+    try {
+      const d = window.getComputedStyle(menu).display;
+      if (d && d !== "none") return true;
+    } catch {
+      /* ignore */
+    }
   }
-  return window.matchMedia("(max-width: 860px)").matches;
+  return false;
 }
 
 function drawerEls() {
@@ -263,12 +277,11 @@ function drawerEls() {
 
 function syncDrawerDom() {
   const mobile = isMobileNav();
-  // Desktop: rail always visible; never use drawer "open" presentation
-  const open = mobile ? state.drawerOpen : false;
+  // Desktop rail: never use off-canvas "open" presentation
+  const open = mobile ? !!state.drawerOpen : false;
   if (window.AdkUiState) {
     window.AdkUiState.applyDrawerState(drawerEls(), open, mobile);
   } else {
-    // Fallback if ui-state.js failed to load
     const { sidebar, backdrop, menuBtn, body } = drawerEls();
     if (sidebar) {
       sidebar.classList.toggle("open", open);
@@ -284,10 +297,14 @@ function syncDrawerDom() {
       menuBtn.setAttribute("aria-label", open && mobile ? "Close menu" : "Open menu");
     }
   }
+  // Keep close control interactive when drawer is open
+  const closeBtn = document.getElementById("sidebar-close");
+  if (closeBtn) {
+    closeBtn.tabIndex = open && mobile ? 0 : -1;
+  }
 }
 
 function openSidebar() {
-  if (!isMobileNav()) return;
   state.drawerOpen = true;
   syncDrawerDom();
 }
@@ -298,37 +315,55 @@ function closeSidebar() {
 }
 
 function toggleSidebar() {
-  if (!isMobileNav()) return;
   state.drawerOpen = !state.drawerOpen;
+  // If we somehow left drawer mode, force closed presentation
+  if (!isMobileNav()) state.drawerOpen = false;
   syncDrawerDom();
 }
 
 function wireChromeControls() {
-  const menuBtn = document.getElementById("menu-btn");
-  const closeBtn = document.getElementById("sidebar-close");
-  const backdrop = document.getElementById("sidebar-backdrop");
+  // Capture-phase delegation: survives focus quirks and nested hits
+  document.addEventListener(
+    "click",
+    (e) => {
+      const t = e.target;
+      if (!(t instanceof Element)) return;
+      if (t.closest("#menu-btn")) {
+        e.preventDefault();
+        e.stopPropagation();
+        toggleSidebar();
+        return;
+      }
+      if (t.closest("#sidebar-close")) {
+        e.preventDefault();
+        e.stopPropagation();
+        closeSidebar();
+        return;
+      }
+      if (t.id === "sidebar-backdrop" || t.closest("#sidebar-backdrop")) {
+        e.preventDefault();
+        closeSidebar();
+      }
+    },
+    true
+  );
 
-  menuBtn?.addEventListener("click", (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    toggleSidebar();
-  });
-
-  closeBtn?.addEventListener("click", (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    closeSidebar();
-  });
-
-  backdrop?.addEventListener("click", (e) => {
-    e.preventDefault();
-    closeSidebar();
-  });
-
-  window.matchMedia("(max-width: 860px)").addEventListener("change", () => {
-    if (!isMobileNav()) {
-      state.drawerOpen = false;
+  // Keyboard: Enter/Space on icon buttons (some UAs need this)
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Enter" && e.key !== " ") return;
+    const t = e.target;
+    if (!(t instanceof Element)) return;
+    if (t.id === "menu-btn" || t.closest("#menu-btn")) {
+      e.preventDefault();
+      toggleSidebar();
+    } else if (t.id === "sidebar-close" || t.closest("#sidebar-close")) {
+      e.preventDefault();
+      closeSidebar();
     }
+  });
+
+  window.matchMedia("(max-width: 860px)").addEventListener("change", (ev) => {
+    if (!ev.matches) state.drawerOpen = false;
     syncDrawerDom();
   });
 }

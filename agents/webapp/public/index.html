@@ -66,7 +66,6 @@
 
     <div class="main-wrap">
       <header class="topbar">
-        <button type="button" class="icon-btn menu-btn" id="menu-btn" aria-label="Open menu" aria-expanded="false" aria-controls="sidebar">☰</button>
         <div class="topbar-trail" id="breadcrumb" aria-label="Breadcrumb"></div>
         <div class="topbar-actions">
           <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Toggle color theme" title="Toggle theme">
@@ -74,6 +73,8 @@
             <span class="theme-label" id="theme-label">Light</span>
           </button>
           <button type="button" class="search-trigger" id="open-search" title="Search" aria-haspopup="dialog">Search <kbd>/</kbd></button>
+          <!-- Menu on the right so the open drawer never covers it -->
+          <button type="button" class="icon-btn menu-btn" id="menu-btn" aria-label="Open menu" aria-expanded="false" aria-controls="sidebar">☰</button>
         </div>
       </header>
       <main class="main" id="main" tabindex="-1"></main>

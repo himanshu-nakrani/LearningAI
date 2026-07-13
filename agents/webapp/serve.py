@@ -24,9 +24,13 @@ class QuietHandler(http.server.SimpleHTTPRequestHandler):
         sys.stderr.write("%s - %s\n" % (self.address_string(), fmt % args))
 
     def end_headers(self) -> None:
-        # Avoid stale course-data during local content rebuilds
-        if self.path.endswith(".json") or self.path.endswith(".js"):
-            self.send_header("Cache-Control", "no-cache")
+        # Avoid stale SPA assets during local development
+        if self.path.endswith((".json", ".js", ".css", ".html")) or self.path in (
+            "/",
+            "",
+        ):
+            self.send_header("Cache-Control", "no-store, no-cache, must-revalidate")
+            self.send_header("Pragma", "no-cache")
         super().end_headers()
 
 

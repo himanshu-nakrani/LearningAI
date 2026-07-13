@@ -132,8 +132,8 @@ input {
 .sidebar {
   position: fixed;
   inset: 0 auto 0 0;
-  /* Above topbar (45) so mobile close (×) receives clicks when open */
-  z-index: 50;
+  /* Above topbar so mobile close (×) receives clicks when open */
+  z-index: 200;
   display: flex;
   flex-direction: column;
   width: var(--sidebar-w);
@@ -181,7 +181,9 @@ input {
   display: none;
   flex-shrink: 0;
   position: relative;
-  z-index: 2;
+  z-index: 5;
+  pointer-events: auto;
+  touch-action: manipulation;
 }
 
 /* Mobile drawer backdrop */
@@ -387,13 +389,13 @@ input {
 .topbar {
   position: sticky;
   top: 0;
-  /* Above backdrop (35); below open sidebar (50) so drawer close is clickable */
-  z-index: 45;
+  /* Above backdrop (150) so right-side ☰ stays clickable; below sidebar (200) so × wins on the left */
+  z-index: 160;
   display: flex;
   align-items: center;
   gap: 0.85rem;
   padding: 0.85rem var(--pad-x);
-  background: color-mix(in srgb, var(--paper) 90%, transparent);
+  background: color-mix(in srgb, var(--paper) 92%, transparent);
   backdrop-filter: blur(8px);
   border-bottom: 1px solid transparent;
 }
@@ -407,6 +409,14 @@ input {
   position: relative;
   z-index: 2;
   flex-shrink: 0;
+  pointer-events: auto;
+  touch-action: manipulation;
+}
+
+/* When drawer is open, menu still usable (right side); reflect expanded state */
+body.sidebar-open .menu-btn {
+  border-color: var(--ink);
+  color: var(--ink);
 }
 
 body.search-open {
@@ -1359,12 +1369,14 @@ body.search-open {
   min-height: 44px;
   border: 1px solid var(--rule-strong);
   border-radius: 2px;
-  background: transparent;
+  background: var(--paper);
   font-size: 1.15rem;
   line-height: 1;
   color: var(--ink-soft);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  pointer-events: auto;
 }
 
 .icon-btn:hover {
@@ -1415,7 +1427,7 @@ body.search-open {
     display: block;
     position: fixed;
     inset: 0;
-    z-index: 35;
+    z-index: 150;
     background: var(--overlay);
     border: 0;
     padding: 0;

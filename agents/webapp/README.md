@@ -8,6 +8,7 @@ Interactive learning UI for the **Agentic AI with Google ADK** course. Reads mod
 - Markdown reader with syntax highlighting
 - Local progress (browser `localStorage`)
 - Full-text search (`/` keyboard shortcut)
+- Light / dark / system theme (toggle in top bar; preference persisted)
 - Resources: glossary, cheatsheet, curriculum, coverage matrix
 - No build toolchain required — plain HTML/CSS/JS
 
@@ -21,6 +22,9 @@ python3 scripts/build_content.py
 
 # Serve (rebuilds content if you pass --build)
 python3 serve.py --build
+
+# UI structure + pure drawer-state tests (no browser required)
+node scripts/verify_ui.js
 ```
 
 Open [http://127.0.0.1:8765/](http://127.0.0.1:8765/)

@@ -10,10 +10,29 @@
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;0,7..72,700;1,7..72,400&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github.min.css" />
   <link rel="stylesheet" href="styles.css" />
+  <script>
+    /* Prevent theme flash before app.js */
+    (function () {
+      try {
+        var k = "adk-course-theme-v1";
+        var stored = localStorage.getItem(k);
+        var dark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+        if (stored === "light" || stored === "dark") {
+          document.documentElement.setAttribute("data-theme", stored);
+        } else {
+          document.documentElement.removeAttribute("data-theme");
+        }
+        if (!stored && dark) {
+          /* system dark uses CSS media; no attr needed */
+        }
+      } catch (e) {}
+    })();
+  </script>
 </head>
 <body>
+  <div class="sidebar-backdrop" id="sidebar-backdrop" hidden aria-hidden="true"></div>
   <div class="app">
-    <aside class="sidebar" id="sidebar">
+    <aside class="sidebar" id="sidebar" aria-label="Course navigation">
       <div class="sidebar-brand">
         <button type="button" class="brand-btn" data-route="home" title="Home">
           <span class="brand-word">ADK Course</span>
@@ -23,15 +42,18 @@
       </div>
 
       <div class="sidebar-search">
+        <label class="visually-hidden" for="search-input">Filter modules</label>
         <input type="search" id="search-input" placeholder="Filter modules…" autocomplete="off" />
       </div>
 
-      <div class="progress-strip">
+      <div class="progress-strip" aria-label="Course progress">
         <div class="progress-meta">
           <span>Progress</span>
-          <span id="progress-label">0 / 29</span>
+          <span id="progress-label">0 / 0</span>
         </div>
-        <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+        <div class="progress-bar" role="progressbar" aria-valuemin="0" aria-valuenow="0" aria-valuemax="0" id="progress-fill-host">
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
       </div>
 
       <nav class="sidebar-nav" id="sidebar-nav" aria-label="Course modules"></nav>
@@ -44,22 +66,30 @@
 
     <div class="main-wrap">
       <header class="topbar">
-        <button type="button" class="icon-btn menu-btn" id="menu-btn" aria-label="Open menu">☰</button>
-        <div class="topbar-trail" id="breadcrumb"></div>
-        <button type="button" class="search-trigger" id="open-search" title="Search">Search <kbd>/</kbd></button>
+        <button type="button" class="icon-btn menu-btn" id="menu-btn" aria-label="Open menu" aria-expanded="false" aria-controls="sidebar">☰</button>
+        <div class="topbar-trail" id="breadcrumb" aria-label="Breadcrumb"></div>
+        <div class="topbar-actions">
+          <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Toggle color theme" title="Toggle theme">
+            <span class="theme-icon" id="theme-icon" aria-hidden="true">☀</span>
+            <span class="theme-label" id="theme-label">Light</span>
+          </button>
+          <button type="button" class="search-trigger" id="open-search" title="Search" aria-haspopup="dialog">Search <kbd>/</kbd></button>
+        </div>
       </header>
       <main class="main" id="main" tabindex="-1"></main>
     </div>
   </div>
 
-  <div class="search-overlay" id="search-overlay" hidden>
-    <div class="search-panel" role="dialog" aria-label="Search course">
+  <div class="search-overlay" id="search-overlay" hidden aria-hidden="true">
+    <div class="search-panel" id="search-panel" role="dialog" aria-modal="true" aria-label="Search course">
+      <label class="visually-hidden" for="search-modal-input">Search the course</label>
       <input type="search" id="search-modal-input" placeholder="Search the course…" autocomplete="off" />
-      <div class="search-results" id="search-results"></div>
+      <div class="search-results" id="search-results" role="listbox" aria-label="Search results"></div>
       <p class="search-hint">Esc to close · Enter to open</p>
     </div>
   </div>
 
+  <script src="ui-state.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked@15.0.7/marked.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
   <script src="app.js"></script>

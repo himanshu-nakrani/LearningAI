@@ -12,6 +12,8 @@ const state = {
   activeDoc: "readme",
   searchHits: [],
   searchActive: 0,
+  searchReturnFocus: null,
+  drawerOpen: false,
 };
 
 /* —— Progress —— */
@@ -57,8 +59,13 @@ function updateProgressUI() {
   const pct = total ? Math.round((n / total) * 100) : 0;
   const label = document.getElementById("progress-label");
   const fill = document.getElementById("progress-fill");
+  const host = document.getElementById("progress-fill-host");
   if (label) label.textContent = `${n} / ${total}`;
   if (fill) fill.style.width = `${pct}%`;
+  if (host) {
+    host.setAttribute("aria-valuenow", String(n));
+    host.setAttribute("aria-valuemax", String(total));
+  }
 }
 
 /* —— Routing —— */
@@ -180,7 +187,6 @@ function shortId(id) {
 function lastOpenedModule() {
   const entries = Object.entries(state.progress.completed || {});
   if (!entries.length) {
-    // prefer first incomplete
     return state.course?.modules.find((m) => !isDone(m.id)) || state.course?.modules[0];
   }
   entries.sort((a, b) => b[1] - a[1]);
@@ -189,10 +195,6 @@ function lastOpenedModule() {
   const idx = state.course.modules.findIndex((m) => m.id === lastDone.id);
   const next = state.course.modules.slice(idx + 1).find((m) => !isDone(m.id));
   return next || lastDone;
-}
-
-function trackColor(trackId) {
-  return trackById(trackId)?.color || "#2dd4bf";
 }
 
 /* —— Sidebar —— */
@@ -237,21 +239,198 @@ function renderSidebar() {
   nav.querySelectorAll("[data-module]").forEach((btn) => {
     btn.addEventListener("click", () => {
       navigate(`#/module/${btn.dataset.module}`);
-      closeSidebar();
+      if (isMobileNav()) closeSidebar();
     });
   });
 }
 
+function isMobileNav() {
+  if (typeof window === "undefined") return false;
+  if (window.AdkUiState) {
+    return window.AdkUiState.isMobileWidth(window.innerWidth);
+  }
+  return window.matchMedia("(max-width: 860px)").matches;
+}
+
+function drawerEls() {
+  return {
+    sidebar: document.getElementById("sidebar"),
+    backdrop: document.getElementById("sidebar-backdrop"),
+    menuBtn: document.getElementById("menu-btn"),
+    body: document.body,
+  };
+}
+
+function syncDrawerDom() {
+  const mobile = isMobileNav();
+  // Desktop: rail always visible; never use drawer "open" presentation
+  const open = mobile ? state.drawerOpen : false;
+  if (window.AdkUiState) {
+    window.AdkUiState.applyDrawerState(drawerEls(), open, mobile);
+  } else {
+    // Fallback if ui-state.js failed to load
+    const { sidebar, backdrop, menuBtn, body } = drawerEls();
+    if (sidebar) {
+      sidebar.classList.toggle("open", open);
+      sidebar.setAttribute("aria-hidden", mobile ? String(!open) : "false");
+    }
+    if (body) body.classList.toggle("sidebar-open", open && mobile);
+    if (backdrop) {
+      backdrop.hidden = !(open && mobile);
+      backdrop.setAttribute("aria-hidden", open && mobile ? "false" : "true");
+    }
+    if (menuBtn) {
+      menuBtn.setAttribute("aria-expanded", open && mobile ? "true" : "false");
+      menuBtn.setAttribute("aria-label", open && mobile ? "Close menu" : "Open menu");
+    }
+  }
+}
+
 function openSidebar() {
-  document.getElementById("sidebar")?.classList.add("open");
+  if (!isMobileNav()) return;
+  state.drawerOpen = true;
+  syncDrawerDom();
 }
 
 function closeSidebar() {
-  document.getElementById("sidebar")?.classList.remove("open");
+  state.drawerOpen = false;
+  syncDrawerDom();
+}
+
+function toggleSidebar() {
+  if (!isMobileNav()) return;
+  state.drawerOpen = !state.drawerOpen;
+  syncDrawerDom();
+}
+
+function wireChromeControls() {
+  const menuBtn = document.getElementById("menu-btn");
+  const closeBtn = document.getElementById("sidebar-close");
+  const backdrop = document.getElementById("sidebar-backdrop");
+
+  menuBtn?.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    toggleSidebar();
+  });
+
+  closeBtn?.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    closeSidebar();
+  });
+
+  backdrop?.addEventListener("click", (e) => {
+    e.preventDefault();
+    closeSidebar();
+  });
+
+  window.matchMedia("(max-width: 860px)").addEventListener("change", () => {
+    if (!isMobileNav()) {
+      state.drawerOpen = false;
+    }
+    syncDrawerDom();
+  });
+}
+
+/* —— Theme —— */
+const THEME_KEY =
+  (typeof window !== "undefined" && window.AdkUiState && window.AdkUiState.THEME_KEY) ||
+  "adk-course-theme-v1";
+
+function prefersDark() {
+  return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+}
+
+function loadThemePreference() {
+  try {
+    return localStorage.getItem(THEME_KEY) || "system";
+  } catch {
+    return "system";
+  }
+}
+
+function saveThemePreference(pref) {
+  try {
+    localStorage.setItem(THEME_KEY, pref);
+  } catch {
+    /* ignore */
+  }
+}
+
+function getThemeState() {
+  const stored = loadThemePreference();
+  if (window.AdkUiState) {
+    return window.AdkUiState.resolveTheme(stored, prefersDark());
+  }
+  const pref = stored === "light" || stored === "dark" || stored === "system" ? stored : "system";
+  const effective = pref === "system" ? (prefersDark() ? "dark" : "light") : pref;
+  return { preference: pref, effective };
+}
+
+function syncThemeUi() {
+  const { preference, effective } = getThemeState();
+  if (window.AdkUiState) {
+    window.AdkUiState.applyThemeToDocument(document.documentElement, preference, prefersDark());
+  } else if (preference === "system") {
+    document.documentElement.removeAttribute("data-theme");
+  } else {
+    document.documentElement.setAttribute("data-theme", effective);
+  }
+
+  const btn = document.getElementById("theme-toggle");
+  const icon = document.getElementById("theme-icon");
+  const label = document.getElementById("theme-label");
+  const short =
+    preference === "system" ? "Auto" : effective === "dark" ? "Dark" : "Light";
+  const full = window.AdkUiState
+    ? window.AdkUiState.themeToggleLabel(preference, effective)
+    : `Theme: ${short}`;
+  if (icon) {
+    icon.textContent = window.AdkUiState
+      ? window.AdkUiState.themeToggleIcon(effective)
+      : effective === "dark"
+        ? "☾"
+        : "☀";
+  }
+  if (label) label.textContent = short;
+  if (btn) {
+    btn.setAttribute("aria-label", full);
+    btn.title = full + " — click to cycle";
+  }
+}
+
+function cycleTheme() {
+  const current = getThemeState().preference;
+  const next = window.AdkUiState
+    ? window.AdkUiState.nextThemePreference(current)
+    : current === "light"
+      ? "dark"
+      : current === "dark"
+        ? "system"
+        : "light";
+  saveThemePreference(next);
+  syncThemeUi();
+}
+
+function wireThemeControls() {
+  syncThemeUi();
+  document.getElementById("theme-toggle")?.addEventListener("click", (e) => {
+    e.preventDefault();
+    cycleTheme();
+  });
+  if (window.matchMedia) {
+    window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
+      if (loadThemePreference() === "system" || !loadThemePreference()) {
+        syncThemeUi();
+      }
+    });
+  }
 }
 
 /* —— Views —— */
-function render() {
+function render(opts = {}) {
+  const { focusMain = false } = opts;
   state.route = parseHash();
   state.activeDoc = state.route.doc || "readme";
   const main = document.getElementById("main");
@@ -277,7 +456,9 @@ function render() {
       renderHome(main);
   }
 
-  main.focus({ preventScroll: true });
+  if (focusMain) {
+    main.focus({ preventScroll: true });
+  }
   window.scrollTo({ top: 0, behavior: "instant" in window ? "instant" : "auto" });
 }
 
@@ -289,9 +470,9 @@ function renderHome(main) {
 
   const continueBlock =
     cont && n > 0
-      ? `<p class="continue-line">Continue with <button type="button" data-module="${escAttr(cont.id)}">${esc(cleanTitle(cont.title))}</button></p>`
+      ? `<p class="continue-line">Continue with <button type="button" class="inline-link" data-module="${escAttr(cont.id)}">${esc(cleanTitle(cont.title))}</button></p>`
       : cont
-        ? `<p class="continue-line">Begin with <button type="button" data-module="${escAttr(cont.id)}">${esc(cleanTitle(cont.title))}</button></p>`
+        ? `<p class="continue-line">Begin with <button type="button" class="inline-link" data-module="${escAttr(cont.id)}">${esc(cleanTitle(cont.title))}</button></p>`
         : "";
 
   const grouped = c.tracks
@@ -352,19 +533,15 @@ function syllabusItem(m, opts = {}) {
   return `
     <button type="button" class="syllabus-item${done ? " done" : ""}" data-module="${escAttr(m.id)}">
       <span class="syl-num">${esc(shortId(m.id))}</span>
-      <div>
-        <h3 class="syl-title">${esc(cleanTitle(m.title))}</h3>
-        <p class="syl-sum">${esc(m.summary)}</p>
-      </div>
-      <div class="syl-meta">
+      <span class="syl-body">
+        <span class="syl-title">${esc(cleanTitle(m.title))}</span>
+        <span class="syl-sum">${esc(m.summary)}</span>
+      </span>
+      <span class="syl-meta">
         <span>${esc(m.hours)}</span>
         ${done ? `<span class="done-mark">done</span>` : hideTrack ? "" : `<span>${esc(m.track)}</span>`}
-      </div>
+      </span>
     </button>`;
-}
-
-function moduleRow(m) {
-  return syllabusItem(m);
 }
 
 function cleanTitle(title) {
@@ -423,13 +600,11 @@ function renderModule(main, id) {
   const done = isDone(m.id);
   const docId = state.activeDoc || "readme";
   let body = m.markdown;
-  let docTitle = "README";
 
   if (docId !== "readme" && m.extra_docs?.length) {
     const doc = m.extra_docs.find((d) => d.id === docId || d.title === docId);
     if (doc) {
       body = doc.markdown;
-      docTitle = doc.title;
     }
   }
 
@@ -445,12 +620,12 @@ function renderModule(main, id) {
 
   const tabs =
     m.extra_docs?.length > 0
-      ? `<div class="doc-tabs">
-          <button type="button" class="doc-tab${docId === "readme" ? " active" : ""}" data-doc="readme">README</button>
+      ? `<div class="doc-tabs" role="tablist" aria-label="Module documents">
+          <button type="button" role="tab" class="doc-tab${docId === "readme" ? " active" : ""}" data-doc="readme" aria-selected="${docId === "readme"}">README</button>
           ${m.extra_docs
             .map(
               (d) =>
-                `<button type="button" class="doc-tab${docId === d.id || docId === d.title ? " active" : ""}" data-doc="${escAttr(d.id)}">${esc(d.title)}</button>`
+                `<button type="button" role="tab" class="doc-tab${docId === d.id || docId === d.title ? " active" : ""}" data-doc="${escAttr(d.id)}" aria-selected="${docId === d.id || docId === d.title}">${esc(d.title)}</button>`
             )
             .join("")}
         </div>`
@@ -467,7 +642,7 @@ function renderModule(main, id) {
       <h1>${esc(cleanTitle(m.title))}</h1>
       <p class="reader-summary">${esc(m.summary)}</p>
       <div class="reader-actions">
-        <button type="button" class="btn btn-primary${done ? " done" : ""}" id="toggle-done">
+        <button type="button" class="btn btn-primary${done ? " done" : ""}" id="toggle-done" aria-pressed="${done}">
           ${done ? "Completed" : "Mark complete"}
         </button>
         <button type="button" class="btn btn-ghost" id="copy-path">Copy path</button>
@@ -475,7 +650,7 @@ function renderModule(main, id) {
     </header>
     ${tabs}
     <article class="markdown-body">${renderMarkdown(body)}</article>
-    <nav class="reader-nav">
+    <nav class="reader-nav" aria-label="Adjacent modules">
       ${
         prev
           ? `<button type="button" class="btn" data-nav="${escAttr(prev.id)}"><span>Previous</span><strong>${esc(cleanTitle(prev.title))}</strong></button>`
@@ -491,16 +666,22 @@ function renderModule(main, id) {
 
   document.getElementById("toggle-done")?.addEventListener("click", () => {
     toggleDone(m.id);
+    // Re-render module without stealing focus to <main>
     renderModule(main, id);
+    updateProgressUI();
+    renderSidebar();
+    document.getElementById("toggle-done")?.focus();
   });
 
   document.getElementById("copy-path")?.addEventListener("click", async () => {
+    const btn = document.getElementById("copy-path");
     try {
       await navigator.clipboard.writeText(`modules/${m.id}/`);
-      const btn = document.getElementById("copy-path");
       if (btn) {
         btn.textContent = "Copied!";
-        setTimeout(() => (btn.textContent = "Copy path"), 1200);
+        setTimeout(() => {
+          if (btn) btn.textContent = "Copy path";
+        }, 1200);
       }
     } catch {
       /* ignore */
@@ -530,8 +711,8 @@ function renderResources(main) {
         .map(
           (r) => `
         <button type="button" class="resource-row" data-resource="${escAttr(r.id)}">
-          <div class="kind">${esc(r.kind)}</div>
-          <h3>${esc(cleanTitle(r.title))}</h3>
+          <span class="kind">${esc(r.kind)}</span>
+          <span class="resource-title">${esc(cleanTitle(r.title))}</span>
         </button>`
         )
         .join("")}
@@ -569,16 +750,37 @@ function renderResource(main, id) {
 function openSearch() {
   const overlay = document.getElementById("search-overlay");
   const input = document.getElementById("search-modal-input");
+  const panel = document.getElementById("search-panel");
   if (!overlay || !input) return;
+  state.searchReturnFocus = document.activeElement;
   overlay.hidden = false;
+  overlay.setAttribute("aria-hidden", "false");
+  document.body.classList.add("search-open");
+  if (panel) panel.setAttribute("aria-modal", "true");
   input.value = document.getElementById("search-input")?.value || "";
-  input.focus();
+  // Defer focus so overlay is painted
+  requestAnimationFrame(() => input.focus());
   runSearch(input.value);
 }
 
 function closeSearch() {
   const overlay = document.getElementById("search-overlay");
-  if (overlay) overlay.hidden = true;
+  const panel = document.getElementById("search-panel");
+  if (overlay) {
+    overlay.hidden = true;
+    overlay.setAttribute("aria-hidden", "true");
+  }
+  document.body.classList.remove("search-open");
+  if (panel) panel.setAttribute("aria-modal", "false");
+  const back = state.searchReturnFocus;
+  state.searchReturnFocus = null;
+  if (back && typeof back.focus === "function") {
+    try {
+      back.focus();
+    } catch {
+      /* ignore */
+    }
+  }
 }
 
 function runSearch(q) {
@@ -658,37 +860,21 @@ function snippet(text, query) {
   return s;
 }
 
+function highlightSearchHit() {
+  document.querySelectorAll(".search-hit").forEach((el, i) => {
+    el.classList.toggle("active", i === state.searchActive);
+    if (i === state.searchActive) el.scrollIntoView({ block: "nearest" });
+  });
+}
+
 /* —— Bootstrap —— */
 async function init() {
-  configureMarked();
-  const main = document.getElementById("main");
-  main.innerHTML = `<div class="loading">Loading course…</div>`;
-
-  try {
-    const res = await fetch("course-data.json", { cache: "no-cache" });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    state.course = await res.json();
-  } catch (err) {
-    main.innerHTML = `
-      <div class="error-box">
-        <strong>Could not load course-data.json</strong>
-        <p>${esc(err.message)}</p>
-        <p>Run <code>python scripts/build_content.py</code> from the webapp folder, then serve <code>public/</code>.</p>
-      </div>`;
-    return;
-  }
-
-  document.title = state.course.title;
-  updateProgressUI();
-  render();
-
-  window.addEventListener("hashchange", () => render());
-
-  document.getElementById("menu-btn")?.addEventListener("click", openSidebar);
-  document.getElementById("sidebar-close")?.addEventListener("click", closeSidebar);
+  // Wire shell controls first so menu/close work even if content fails to load
+  wireChromeControls();
+  wireThemeControls();
+  syncDrawerDom();
   document.getElementById("open-search")?.addEventListener("click", openSearch);
 
-  // subtle topbar rule after scroll
   const onScroll = () => {
     document.querySelector(".topbar")?.classList.toggle("scrolled", window.scrollY > 8);
   };
@@ -700,7 +886,7 @@ async function init() {
       const r = btn.dataset.route;
       if (r === "home") navigate("#/");
       if (r === "resources") navigate("#/resources");
-      closeSidebar();
+      if (isMobileNav()) closeSidebar();
     });
   });
 
@@ -713,7 +899,9 @@ async function init() {
   });
 
   const sideSearch = document.getElementById("search-input");
-  sideSearch?.addEventListener("input", () => renderSidebar());
+  sideSearch?.addEventListener("input", () => {
+    if (state.course) renderSidebar();
+  });
   sideSearch?.addEventListener("keydown", (e) => {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -730,6 +918,7 @@ async function init() {
   modalInput?.addEventListener("input", () => runSearch(modalInput.value));
   modalInput?.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
+      e.preventDefault();
       closeSearch();
       return;
     }
@@ -757,22 +946,61 @@ async function init() {
   document.addEventListener("keydown", (e) => {
     const tag = (e.target && e.target.tagName) || "";
     const typing = tag === "INPUT" || tag === "TEXTAREA" || e.target?.isContentEditable;
-    if (e.key === "/" && !typing && !e.metaKey && !e.ctrlKey) {
+    const searchOpen = !document.getElementById("search-overlay")?.hidden;
+
+    if (e.key === "/" && !typing && !e.metaKey && !e.ctrlKey && !searchOpen) {
       e.preventDefault();
       openSearch();
     }
     if (e.key === "Escape") {
-      closeSearch();
-      closeSidebar();
+      if (searchOpen) {
+        e.preventDefault();
+        closeSearch();
+        return;
+      }
+      if (isMobileNav() && state.drawerOpen) {
+        e.preventDefault();
+        closeSidebar();
+      }
     }
   });
-}
 
-function highlightSearchHit() {
-  document.querySelectorAll(".search-hit").forEach((el, i) => {
-    el.classList.toggle("active", i === state.searchActive);
-    if (i === state.searchActive) el.scrollIntoView({ block: "nearest" });
+  window.addEventListener("hashchange", () => {
+    render({ focusMain: false });
+    if (isMobileNav()) closeSidebar();
   });
+
+  // Initial mobile state: drawer closed
+  state.drawerOpen = false;
+  syncDrawerDom();
+
+  configureMarked();
+  const main = document.getElementById("main");
+  main.innerHTML = `<div class="loading">Loading course…</div>`;
+
+  try {
+    const res = await fetch("course-data.json", { cache: "no-cache" });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    state.course = await res.json();
+    if (window.AdkUiState) {
+      const check = window.AdkUiState.validateCourseData(state.course);
+      if (!check.ok) {
+        console.warn("course-data shape warnings:", check.errors);
+      }
+    }
+  } catch (err) {
+    main.innerHTML = `
+      <div class="error-box">
+        <strong>Could not load course-data.json</strong>
+        <p>${esc(err.message)}</p>
+        <p>Run <code>python scripts/build_content.py</code> from the webapp folder, then serve <code>public/</code>.</p>
+      </div>`;
+    return;
+  }
+
+  document.title = state.course.title;
+  updateProgressUI();
+  render({ focusMain: true });
 }
 
 init();

@@ -1,0 +1,12 @@
+{
+  "name": "adk-course-webapp",
+  "private": true,
+  "description": "ADK course paper-reader SPA (static)",
+  "scripts": {
+    "test": "node scripts/verify_ui.js",
+    "serve": "python3 serve.py --no-open"
+  },
+  "devDependencies": {
+    "playwright": "^1.49.1"
+  }
+}

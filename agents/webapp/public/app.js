@@ -173,7 +173,22 @@ function modulesForTrack(trackId) {
 
 function shortId(id) {
   const m = String(id).match(/^(\d+)/);
-  return m ? m[1] : id.slice(0, 2);
+  if (!m) return id.slice(0, 2);
+  return m[1].padStart(2, "0");
+}
+
+function lastOpenedModule() {
+  const entries = Object.entries(state.progress.completed || {});
+  if (!entries.length) {
+    // prefer first incomplete
+    return state.course?.modules.find((m) => !isDone(m.id)) || state.course?.modules[0];
+  }
+  entries.sort((a, b) => b[1] - a[1]);
+  const lastDone = moduleById(entries[0][0]);
+  if (!lastDone) return state.course?.modules[0];
+  const idx = state.course.modules.findIndex((m) => m.id === lastDone.id);
+  const next = state.course.modules.slice(idx + 1).find((m) => !isDone(m.id));
+  return next || lastDone;
 }
 
 function trackColor(trackId) {
@@ -202,10 +217,7 @@ function renderSidebar() {
       if (filter && !mods.length) return "";
       return `
         <div class="nav-track" data-track="${escAttr(track.id)}">
-          <div class="nav-track-head">
-            <span class="nav-track-dot"></span>
-            ${esc(track.title)}
-          </div>
+          <div class="nav-track-head">${esc(track.title)}</div>
           ${mods
             .map((m) => {
               const done = isDone(m.id);
@@ -272,48 +284,60 @@ function render() {
 function renderHome(main) {
   const c = state.course;
   const n = completedCount();
+  const cont = lastOpenedModule();
   setBreadcrumb([{ label: "Home" }]);
 
-  main.innerHTML = `
-    <section class="hero">
-      <p class="hero-kicker">Course reader</p>
-      <h1>${esc(c.title)}</h1>
-      <p>${esc(c.subtitle)}</p>
-      <div class="hero-stats">
-        <span class="stat-chip"><strong>${c.moduleCount}</strong> modules</span>
-        <span class="stat-chip"><strong>${c.tracks.length}</strong> tracks</span>
-        <span class="stat-chip"><strong>${esc(c.version)}</strong></span>
-        <span class="stat-chip"><strong>${n}</strong> completed</span>
-      </div>
-    </section>
+  const continueBlock =
+    cont && n > 0
+      ? `<p class="continue-line">Continue with <button type="button" data-module="${escAttr(cont.id)}">${esc(cleanTitle(cont.title))}</button></p>`
+      : cont
+        ? `<p class="continue-line">Begin with <button type="button" data-module="${escAttr(cont.id)}">${esc(cleanTitle(cont.title))}</button></p>`
+        : "";
 
-    <div class="section-head">
-      <h2>Tracks</h2>
-      <span>Choose a path</span>
-    </div>
-    <div class="track-grid">
+  const grouped = c.tracks
+    .map((t) => {
+      const mods = modulesForTrack(t.id);
+      if (!mods.length) return "";
+      return `
+        <div class="syllabus-group">
+          <p class="syllabus-group-label">${esc(t.title)}</p>
+          ${mods.map((m) => syllabusItem(m, { hideTrack: true })).join("")}
+        </div>`;
+    })
+    .join("");
+
+  main.innerHTML = `
+    <p class="running-head">ADK Course</p>
+    <h1 class="page-title">${esc(c.title)}</h1>
+    <p class="lede">${esc(c.subtitle)}. Read modules here; run the matching labs from the repository when you are ready.</p>
+    <p class="meta-line">
+      <span>${c.moduleCount} modules</span>
+      <span>${c.tracks.length} tracks</span>
+      <span>${esc(c.version)}</span>
+      <span>${n} of ${c.moduleCount} complete</span>
+    </p>
+    ${continueBlock}
+
+    <nav class="track-links" aria-label="Tracks">
       ${c.tracks
         .map((t) => {
           const mods = modulesForTrack(t.id);
           const done = mods.filter((m) => isDone(m.id)).length;
           return `
-            <button type="button" class="track-card" data-track="${escAttr(t.id)}" style="--track-color:${escAttr(t.color)}">
-              <div class="track-dot"></div>
-              <h3>${esc(t.title)}</h3>
-              <p>${esc(t.blurb)}</p>
-              <div class="track-meta">${done} / ${mods.length} done</div>
+            <button type="button" class="track-link" data-track="${escAttr(t.id)}">
+              <span class="track-name">${esc(t.title)}</span>
+              <span class="track-blurb">${esc(t.blurb)}</span>
+              <span class="track-count">${done}/${mods.length}</span>
             </button>`;
         })
         .join("")}
-    </div>
+    </nav>
 
-    <div class="section-head">
-      <h2>All modules</h2>
-      <span>${c.moduleCount}</span>
+    <p class="section-label">Syllabus</p>
+    <div class="syllabus">
+      ${grouped}
     </div>
-    <div class="module-list">
-      ${c.modules.map((m) => moduleRow(m)).join("")}
-    </div>
+    <p class="page-footer">${esc(c.version)} · / to search</p>
   `;
 
   main.querySelectorAll("[data-track]").forEach((el) => {
@@ -322,24 +346,25 @@ function renderHome(main) {
   bindModuleRows(main);
 }
 
-function moduleRow(m) {
+function syllabusItem(m, opts = {}) {
   const done = isDone(m.id);
+  const hideTrack = opts.hideTrack;
   return `
-    <button type="button" class="module-row${done ? " done" : ""}" data-module="${escAttr(m.id)}">
-      <span class="mod-id">${esc(shortId(m.id))}</span>
-      <div class="mod-body">
-        <h3>${esc(cleanTitle(m.title))}</h3>
-        <p>${esc(m.summary)}</p>
+    <button type="button" class="syllabus-item${done ? " done" : ""}" data-module="${escAttr(m.id)}">
+      <span class="syl-num">${esc(shortId(m.id))}</span>
+      <div>
+        <h3 class="syl-title">${esc(cleanTitle(m.title))}</h3>
+        <p class="syl-sum">${esc(m.summary)}</p>
       </div>
-      <div class="mod-side">
-        <div class="mod-tags">
-          <span class="tag track-${escAttr(m.track)}">${esc(m.track)}</span>
-          <span class="tag level">${esc(m.level)}</span>
-          <span class="tag hours">${esc(m.hours)}</span>
-        </div>
-        <span class="mod-done" aria-hidden="true">✓</span>
+      <div class="syl-meta">
+        <span>${esc(m.hours)}</span>
+        ${done ? `<span class="done-mark">done</span>` : hideTrack ? "" : `<span>${esc(m.track)}</span>`}
       </div>
     </button>`;
+}
+
+function moduleRow(m) {
+  return syllabusItem(m);
 }
 
 function cleanTitle(title) {
@@ -369,17 +394,18 @@ function renderTrack(main, trackId) {
   ]);
 
   main.innerHTML = `
-    <section class="hero" style="--track-color:${escAttr(track.color)}">
-      <p class="hero-kicker" style="color:${escAttr(track.color)}">${esc(track.title)} track</p>
-      <h1>${esc(track.title)}</h1>
-      <p>${esc(track.blurb)}</p>
-      <div class="hero-stats">
-        <span class="stat-chip"><strong>${mods.length}</strong> modules</span>
-        <span class="stat-chip"><strong>${done}</strong> completed</span>
-      </div>
-    </section>
-    <div class="module-list">
-      ${mods.map((m) => moduleRow(m)).join("")}
+    <p class="running-head">${esc(track.title)} track</p>
+    <div class="track-intro">
+      <h1 class="page-title">${esc(track.title)}</h1>
+      <p class="lede">${esc(track.blurb)}</p>
+      <p class="meta-line">
+        <span>${mods.length} modules</span>
+        <span>${done} completed</span>
+      </p>
+    </div>
+    <p class="section-label">Syllabus</p>
+    <div class="syllabus">
+      ${mods.map((m) => syllabusItem(m)).join("")}
     </div>
   `;
   bindModuleRows(main);
@@ -432,18 +458,19 @@ function renderModule(main, id) {
 
   main.innerHTML = `
     <header class="reader-head">
-      <div class="reader-meta">
-        <span class="tag track-${escAttr(m.track)}">${esc(m.track)}</span>
-        <span class="tag level">${esc(m.level)}</span>
-        <span class="tag hours">${esc(m.hours)}</span>
-      </div>
+      <p class="reader-meta">
+        <span>${esc(m.track)}</span>
+        <span>${esc(m.level)}</span>
+        <span>${esc(m.hours)}</span>
+        <span>${esc(shortId(m.id))}</span>
+      </p>
       <h1>${esc(cleanTitle(m.title))}</h1>
       <p class="reader-summary">${esc(m.summary)}</p>
       <div class="reader-actions">
         <button type="button" class="btn btn-primary${done ? " done" : ""}" id="toggle-done">
-          ${done ? "✓ Completed" : "Mark complete"}
+          ${done ? "Completed" : "Mark complete"}
         </button>
-        <button type="button" class="btn" id="copy-path">Copy path</button>
+        <button type="button" class="btn btn-ghost" id="copy-path">Copy path</button>
       </div>
     </header>
     ${tabs}
@@ -451,12 +478,12 @@ function renderModule(main, id) {
     <nav class="reader-nav">
       ${
         prev
-          ? `<button type="button" class="btn" data-nav="${escAttr(prev.id)}"><span>← Previous</span><strong>${esc(cleanTitle(prev.title))}</strong></button>`
+          ? `<button type="button" class="btn" data-nav="${escAttr(prev.id)}"><span>Previous</span><strong>${esc(cleanTitle(prev.title))}</strong></button>`
           : `<span></span>`
       }
       ${
         next
-          ? `<button type="button" class="btn" data-nav="${escAttr(next.id)}" style="margin-left:auto;text-align:right"><span>Next →</span><strong>${esc(cleanTitle(next.title))}</strong></button>`
+          ? `<button type="button" class="btn" data-nav="${escAttr(next.id)}" style="margin-left:auto;text-align:right"><span>Next</span><strong>${esc(cleanTitle(next.title))}</strong></button>`
           : ""
       }
     </nav>
@@ -495,16 +522,14 @@ function renderModule(main, id) {
 function renderResources(main) {
   setBreadcrumb([{ label: "Home", href: "#/" }, { label: "Resources" }]);
   main.innerHTML = `
-    <section class="hero">
-      <p class="hero-kicker">Reference</p>
-      <h1>Resources</h1>
-      <p>Glossary, cheatsheet, curriculum, coverage matrix, and progress tracker.</p>
-    </section>
-    <div class="resource-grid">
+    <p class="running-head">Reference</p>
+    <h1 class="page-title">Resources</h1>
+    <p class="lede">Glossary, cheatsheet, curriculum, coverage matrix, and progress tracker.</p>
+    <div class="resource-list">
       ${state.course.resources
         .map(
           (r) => `
-        <button type="button" class="resource-card" data-resource="${escAttr(r.id)}">
+        <button type="button" class="resource-row" data-resource="${escAttr(r.id)}">
           <div class="kind">${esc(r.kind)}</div>
           <h3>${esc(cleanTitle(r.title))}</h3>
         </button>`
@@ -530,10 +555,10 @@ function renderResource(main, id) {
   ]);
   main.innerHTML = `
     <header class="reader-head">
-      <div class="reader-meta">
-        <span class="tag level">${esc(r.kind)}</span>
-        <span class="tag level">${esc(r.path)}</span>
-      </div>
+      <p class="reader-meta">
+        <span>${esc(r.kind)}</span>
+        <span>${esc(r.path)}</span>
+      </p>
       <h1>${esc(cleanTitle(r.title))}</h1>
     </header>
     <article class="markdown-body">${renderMarkdown(r.markdown)}</article>
@@ -653,7 +678,7 @@ async function init() {
     return;
   }
 
-  document.title = `${state.course.title} · Learn`;
+  document.title = state.course.title;
   updateProgressUI();
   render();
 
@@ -661,6 +686,14 @@ async function init() {
 
   document.getElementById("menu-btn")?.addEventListener("click", openSidebar);
   document.getElementById("sidebar-close")?.addEventListener("click", closeSidebar);
+  document.getElementById("open-search")?.addEventListener("click", openSearch);
+
+  // subtle topbar rule after scroll
+  const onScroll = () => {
+    document.querySelector(".topbar")?.classList.toggle("scrolled", window.scrollY > 8);
+  };
+  window.addEventListener("scroll", onScroll, { passive: true });
+  onScroll();
 
   document.querySelectorAll("[data-route]").forEach((btn) => {
     btn.addEventListener("click", () => {

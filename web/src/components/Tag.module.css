@@ -3,16 +3,17 @@
   font-size: 0.66em;
   font-weight: 700;
   padding: 3px 8px;
-  border-radius: 4px;
+  border-radius: 999px;
   margin-left: 6px;
   vertical-align: middle;
   font-family: var(--sans);
-  letter-spacing: 0.055em;
+  letter-spacing: 0.04em;
   color: #fff;
   line-height: 1;
+  text-transform: uppercase;
 }
-.core { background: var(--accent); }
-.concept { background: #4a7ba6; }
+.core { background: var(--chrome-accent); }
+.concept { background: var(--cobalt); }
 .prod { background: #b8453a; }
 .gap { background: #b8453a; }
 .neutral { background: var(--muted); }

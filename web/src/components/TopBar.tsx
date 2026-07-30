@@ -32,7 +32,7 @@ export function TopBar({ breadcrumb, onOpenMobileNav }: Props) {
           </IconButton>
         )}
         <Link href="/" className={styles.brand}>
-          <span className={styles.brandMark} aria-hidden>◆</span>
+          <span className={styles.brandMark} aria-hidden>AI</span>
           <span>LearningAI</span>
         </Link>
         {breadcrumb && breadcrumb.length > 0 && (
@@ -58,7 +58,7 @@ export function TopBar({ breadcrumb, onOpenMobileNav }: Props) {
             <circle cx="6" cy="6" r="4.5" stroke="currentColor" strokeWidth="1.4" />
             <path d="M9.5 9.5l3 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
           </svg>
-          <span className={styles.searchLabel}>Search guides</span>
+          <span className={styles.searchLabel}>Search guides…</span>
           <span className={styles.searchKbd}>
             <Kbd>⌘</Kbd>
             <Kbd>K</Kbd>

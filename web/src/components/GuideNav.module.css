@@ -7,14 +7,21 @@
 }
 .section { display: flex; flex-direction: column; gap: 8px; }
 .eyebrow {
-  font-size: 10.5px;
+  font-size: 10px;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--soft);
   padding: 0 2px;
 }
-.list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0; }
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
 .placeholder { height: 80px; }
 
 .link {
@@ -36,7 +43,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  padding: 6px 8px;
+  padding: 7px 8px;
   color: var(--muted);
   text-decoration: none;
   border-radius: var(--radius-sm);
@@ -45,12 +52,24 @@
   line-height: 1.3;
   transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
 }
-.sibling:hover { background: var(--bg-subtle); color: var(--fg); border-left-color: var(--accent); }
+.sibling:hover {
+  background: var(--bg-subtle);
+  color: var(--fg);
+  border-left-color: var(--accent);
+}
 .siblingActive {
   color: var(--fg);
-  background: var(--bg-subtle);
-  border-left-color: var(--accent);
-  font-weight: 600;
+  background: var(--chrome-accent-soft);
+  border-left-color: var(--chrome-accent);
+  font-weight: 650;
 }
-.siblingTitle { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.siblingMeta { font-size: 11.5px; color: var(--soft); flex-shrink: 0; }
+.siblingTitle {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.siblingMeta {
+  font-size: 11.5px;
+  color: var(--soft);
+  flex-shrink: 0;
+}

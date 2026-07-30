@@ -8,27 +8,33 @@
 .backdrop {
   position: absolute;
   inset: 0;
-  background: color-mix(in srgb, #000 40%, transparent);
+  background: color-mix(in srgb, #0C0E14 48%, transparent);
   border: none;
   padding: 0;
   cursor: pointer;
   animation: fade 0.18s ease;
+  backdrop-filter: blur(3px);
 }
 .panel {
   position: relative;
-  width: 280px;
-  max-width: 86vw;
+  width: 300px;
+  max-width: 88vw;
   height: 100%;
-  background: var(--bg);
+  background: var(--surface);
   display: flex;
   flex-direction: column;
-  animation: slide 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+  animation: slide 0.28s var(--ease-out);
   box-shadow: var(--shadow-popover);
+  border-right: 1px solid var(--border);
 }
 .head {
   display: none;
 }
-.headTitle { font-weight: 600; font-size: 14px; }
+.headTitle {
+  font-weight: 650;
+  font-size: 14px;
+  font-family: var(--display);
+}
 
 @keyframes fade {
   from { opacity: 0; }
@@ -39,7 +45,6 @@
   to { transform: translateX(0); }
 }
 
-/* Drawer only on small screens */
 @media (min-width: 1024px) {
   .root { display: none; }
 }

@@ -27,7 +27,7 @@ export function Sidebar({ collapsed, onNavigate }: Props) {
     >
       <Link href="/" className={styles.brand} onClick={onNavigate}>
         <span className={styles.brandMark} aria-hidden>
-          ◆
+          AI
         </span>
         <span className={styles.brandText}>LearningAI</span>
       </Link>
@@ -61,7 +61,7 @@ export function Sidebar({ collapsed, onNavigate }: Props) {
 
       <div className={styles.footer}>
         {!collapsed && (
-          <span className={styles.version}>v1 · Study OS</span>
+          <span className={styles.version}>Study OS · v2</span>
         )}
       </div>
     </aside>

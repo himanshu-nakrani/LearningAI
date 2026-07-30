@@ -1,73 +1,72 @@
-/* ─── Design tokens ────────────────────────────────────────────────────── */
-/* Two accent layers:
-   --accent        = per-guide article accent (h2 bar, reading progress, prose links)
-   --chrome-accent = fixed teal accent for the app shell (sidebar, topbar, focus rings, primary CTAs)
-   They are intentionally separate so the shell feels consistent while each guide keeps its identity. */
+/* ─── Design tokens — Signal Archive ───────────────────────────────────── */
+/* Editorial research OS: warm paper, ink, vermilion signal accent.
+   --accent        = per-guide article accent (h2 bar, prose links, progress)
+   --chrome-accent = fixed shell accent (sidebar, topbar, CTAs, focus rings) */
 
 :root {
-  /* Surfaces & ink */
-  --bg: #FAFAF9;
-  --bg-subtle: #F5F5F4;
-  --surface: #FFFFFF;
-  --surface-2: #F5F5F4;
-  --surface-raised: #FFFFFF;
-  --border: #E7E5E4;
-  --border-strong: #D6D3D1;
+  /* Surfaces & ink — warm paper */
+  --bg: #F3EFE6;
+  --bg-subtle: #EBE6DB;
+  --surface: #FAF8F3;
+  --surface-2: #F0EBE0;
+  --surface-raised: #FFFdf8;
+  --border: #DDD6C8;
+  --border-strong: #C9BFAD;
 
   /* Ink scale */
-  --fg: #1C1917;
-  --fg-secondary: #44403C;
-  --muted: #57534E;
-  /* --soft darkened from #A8A29E (~2.1:1 on #FAFAF9) to #78716C (~4.6:1) for AA. */
-  --soft: #78716C;
-  --code-bg: #F5F5F4;
-  --code-fg: #1C1917;
+  --fg: #12141A;
+  --fg-secondary: #2A2E38;
+  --muted: #5A5F6B;
+  --soft: #7A7F8C;
+  --code-bg: #EBE6DB;
+  --code-fg: #12141A;
 
-  /* Chrome (shell) accent — teal */
-  --chrome-accent: #0D9488;
-  --chrome-accent-hover: #0F766E;
-  --chrome-accent-soft: #CCFBF1;
-  --chrome-accent-soft-border: #99F6E4;
+  /* Chrome accent — vermilion signal */
+  --chrome-accent: #D63A2A;
+  --chrome-accent-hover: #B82E20;
+  --chrome-accent-soft: #FCE8E5;
+  --chrome-accent-soft-border: #F5C4BD;
   --chrome-accent-fg-on: #FFFFFF;
 
-  /* Soft green for completion / progress indicators (per brief). */
-  --progress: #10B981;
-  --progress-dark: #047857;
+  /* Progress / success */
+  --progress: #1A9B6C;
+  --progress-dark: #0F7A52;
 
-  /* Secondary / tertiary accents */
-  --cobalt: #2563EB;
-  --cobalt-soft: #DBEAFE;
-  --lavender: #A78BFA;
-  --lavender-soft: #EDE9FE;
-  --success: #10B981;
-  --success-soft: #D1FAE5;
-  --warning: #F59E0B;
-  --warning-soft: #FEF3C7;
-  --danger: #DC2626;
-  --danger-soft: #FEE2E2;
+  /* Secondary accents */
+  --cobalt: #2B5EA7;
+  --cobalt-soft: #E4EDF8;
+  --lavender: #6B4FA0;
+  --lavender-soft: #EDE6F7;
+  --success: #1A9B6C;
+  --success-soft: #DDF3E9;
+  --warning: #C47A12;
+  --warning-soft: #FBF0DC;
+  --danger: #D63A2A;
+  --danger-soft: #FCE8E5;
 
   /* Per-guide article accent — overridden per guide by GuideShell */
-  --accent: #0f7b8a;
-  --accent-soft: #e3f1f3;
+  --accent: #D63A2A;
+  --accent-soft: #FCE8E5;
 
-  /* Callout palettes (article) */
-  --tip-bg: #ECFDF5;
-  --tip-bd: #10B981;
-  --warn-bg: #FFFBEB;
-  --warn-bd: #F59E0B;
-  --gap-bg: #FEF2F2;
-  --gap-bd: #DC2626;
+  /* Callout palettes */
+  --tip-bg: #E8F6F0;
+  --tip-bd: #1A9B6C;
+  --warn-bg: #FBF0DC;
+  --warn-bd: #C47A12;
+  --gap-bg: #FCE8E5;
+  --gap-bd: #D63A2A;
 
-  /* Radii — slightly tighter per brief */
+  /* Radii */
   --radius-xs: 4px;
-  --radius-sm: 6px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
 
-  /* Shadow — at most 1px-blur cards, hover slightly elevated */
-  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.04);
-  --shadow-card-hover: 0 2px 4px rgba(0, 0, 0, 0.06), 0 0 0 1px var(--border);
-  --shadow-popover: 0 12px 32px rgba(0, 0, 0, 0.12), 0 0 0 1px var(--border);
+  /* Shadows — soft, warm */
+  --shadow-card: 0 1px 2px rgba(18, 20, 26, 0.04), 0 4px 12px rgba(18, 20, 26, 0.03);
+  --shadow-card-hover: 0 4px 8px rgba(18, 20, 26, 0.06), 0 12px 28px rgba(18, 20, 26, 0.08);
+  --shadow-popover: 0 16px 48px rgba(18, 20, 26, 0.14), 0 0 0 1px var(--border);
 
   /* Z-index scale */
   --z-sticky-top: 50;
@@ -76,77 +75,77 @@
   --z-modal: 80;
   --z-toast: 100;
 
-  /* Typography */
-  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, "Inter", sans-serif;
-  --serif: Charter, "Iowan Old Style", "Source Serif Pro", Georgia, serif;
-  --mono: "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+  /* Typography — set by next/font CSS variables on html */
+  --sans: var(--font-sans), "Segoe UI", system-ui, sans-serif;
+  --display: var(--font-display), var(--font-sans), system-ui, sans-serif;
+  --serif: var(--font-serif), Georgia, "Times New Roman", serif;
+  --mono: var(--font-mono), "SF Mono", Menlo, Consolas, monospace;
 
   /* Layout */
-  --sidebar-width: 248px;
-  --sidebar-collapsed-width: 52px;
-  --topbar-height: 56px;
-  --right-rail-width: 240px;
-  --content-max: 1320px;
-  --prose-max: 740px;
+  --sidebar-width: 260px;
+  --sidebar-collapsed-width: 56px;
+  --topbar-height: 58px;
+  --right-rail-width: 252px;
+  --content-max: 1360px;
+  --prose-max: 720px;
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.3, 0.64, 1);
 }
 
 html.dark {
-  --bg: #0C0A09;
-  --bg-subtle: #1C1917;
-  --surface: #1C1917;
-  --surface-2: #292524;
-  --surface-raised: #292524;
-  --border: #2C2925;
-  --border-strong: #3F3A36;
+  --bg: #0C0E14;
+  --bg-subtle: #14171F;
+  --surface: #161A24;
+  --surface-2: #1C2130;
+  --surface-raised: #1E2432;
+  --border: #2A3040;
+  --border-strong: #3A4256;
 
-  --fg: #FAFAF9;
-  --fg-secondary: #D6D3D1;
-  --muted: #A8A29E;
-  /* --soft lightened from #57534E (~2.4:1 on #0C0A09) to #8A8580 (~5.5:1) for AA. */
-  --soft: #8A8580;
-  --code-bg: #1F1C1A;
-  --code-fg: #E7E5E4;
+  --fg: #F0EDE6;
+  --fg-secondary: #D4D0C6;
+  --muted: #A09B90;
+  --soft: #7A766C;
+  --code-bg: #12151D;
+  --code-fg: #E8E4DA;
 
-  --chrome-accent: #2DD4BF;
-  --chrome-accent-hover: #5EEAD4;
-  --chrome-accent-soft: #134E4A;
-  --chrome-accent-soft-border: #115E59;
-  --chrome-accent-fg-on: #0C0A09;
+  --chrome-accent: #F05A48;
+  --chrome-accent-hover: #FF7A6A;
+  --chrome-accent-soft: #3A1C18;
+  --chrome-accent-soft-border: #5C2A24;
+  --chrome-accent-fg-on: #0C0E14;
 
   --progress: #34D399;
   --progress-dark: #10B981;
 
-  --cobalt: #60A5FA;
-  --cobalt-soft: #1E3A8A;
-  --lavender: #C4B5FD;
-  --lavender-soft: #2E1065;
+  --cobalt: #7BA8E8;
+  --cobalt-soft: #1A2840;
+  --lavender: #B8A0E0;
+  --lavender-soft: #2A2040;
   --success: #34D399;
-  --success-soft: #064E3B;
-  --warning: #FBBF24;
-  --warning-soft: #451A03;
-  --danger: #F87171;
-  --danger-soft: #450A0A;
+  --success-soft: #0A2E22;
+  --warning: #E8B04A;
+  --warning-soft: #3A2A10;
+  --danger: #F05A48;
+  --danger-soft: #3A1C18;
 
-  --accent: #6fb0b9;          /* per-guide dark accent — overridden by data-accent */
-  --accent-soft: #1f1f1f;
+  --accent: #F05A48;
+  --accent-soft: #3A1C18;
 
-  --tip-bg: #042F2E;
-  --tip-bd: #10B981;
-  --warn-bg: #451A03;
-  --warn-bd: #F59E0B;
-  --gap-bg: #450A0A;
-  --gap-bd: #DC2626;
+  --tip-bg: #0A2E22;
+  --tip-bd: #34D399;
+  --warn-bg: #3A2A10;
+  --warn-bd: #E8B04A;
+  --gap-bg: #3A1C18;
+  --gap-bd: #F05A48;
 
-  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow-card-hover: 0 2px 4px rgba(0, 0, 0, 0.4), 0 0 0 1px var(--border);
-  --shadow-popover: 0 16px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px var(--border);
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.35), 0 4px 16px rgba(0, 0, 0, 0.25);
+  --shadow-card-hover: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 0 1px var(--border-strong);
+  --shadow-popover: 0 20px 56px rgba(0, 0, 0, 0.55), 0 0 0 1px var(--border);
 }
 
-/* ─── Per-guide accents via data-accent on the article root ──────────── */
-/* Scoped to .guide-shell-root[data-accent] so only the article picks them up.
-   Light theme gets the per-guide vivid accent; dark theme gets the muted
-   dark-mode variant. The base --accent token (defined above) is the
-   fallback for /glossary which has no data-accent. */
+/* ─── Per-guide accents ────────────────────────────────────────────────── */
 [data-accent="ai-engineering"] { --accent: #0f7b8a; --accent-soft: #e3f1f3; }
 [data-accent="agentic-ai"]     { --accent: #4338ca; --accent-soft: #e7e6fb; }
 [data-accent="llm-inference"]   { --accent: #b8453a; --accent-soft: #fbe8e6; }
@@ -161,7 +160,7 @@ html.dark {
 [data-accent="interview-prep"]  { --accent: #a5374a; --accent-soft: #f7e4e7; }
 [data-accent="glossary"]        { --accent: #6b8e2e; --accent-soft: #eef2e0; }
 
-html.dark [data-accent="ai-engineering"] { --accent: #6fb0b9; --accent-soft: #1f1f1f; }
+html.dark [data-accent="ai-engineering"] { --accent: #6fb0b9; --accent-soft: #1a2a2c; }
 html.dark [data-accent="agentic-ai"]     { --accent: #a5a0f0; --accent-soft: #22214a; }
 html.dark [data-accent="llm-inference"]   { --accent: #e08a82; --accent-soft: #3a2826; }
 html.dark [data-accent="ai-system-design"] { --accent: #b79af5; --accent-soft: #261a3a; }
@@ -194,16 +193,32 @@ body {
   -moz-osx-font-smoothing: grayscale;
   font-feature-settings: "kern", "liga", "calt";
   text-wrap: pretty;
+  position: relative;
 }
+
+/* Subtle paper grain */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9998;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 180px 180px;
+}
+html.dark body::before { opacity: 0.045; }
+
 body, nav, aside, pre, code, .callout {
   transition:
-    background-color 0.2s ease,
-    color 0.2s ease,
-    border-color 0.2s ease;
+    background-color 0.22s ease,
+    color 0.22s ease,
+    border-color 0.22s ease;
 }
 
 ::selection {
-  background: color-mix(in srgb, var(--chrome-accent) 22%, transparent);
+  background: color-mix(in srgb, var(--chrome-accent) 28%, transparent);
   color: var(--fg);
 }
 
@@ -214,7 +229,7 @@ a {
 
 button { font-family: inherit; }
 
-/* ─── prefers-reduced-motion guard ──────────────────────────────────────── */
+/* ─── prefers-reduced-motion ────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
@@ -224,7 +239,7 @@ button { font-family: inherit; }
   }
 }
 
-/* ─── Focus rings — visible, chrome teal, 2px with offset ──────────────── */
+/* ─── Focus rings ───────────────────────────────────────────────────────── */
 *:focus { outline: none; }
 *:focus-visible {
   outline: 2px solid var(--chrome-accent);
@@ -232,69 +247,83 @@ button { font-family: inherit; }
   border-radius: 4px;
 }
 
-/* ─── Prose layout (article body) — preserved from before, only colors tokenized ── */
+/* ─── Prose layout (article body) ───────────────────────────────────────── */
 .prose {
   max-width: var(--prose-max);
   margin: 0 auto;
-  padding: 64px 32px 100px;
+  padding: 56px 32px 100px;
   font-family: var(--serif);
-  font-size: 17px;
-  line-height: 1.72;
+  font-size: 17.5px;
+  line-height: 1.75;
   color: var(--fg);
   min-width: 0;
   overflow-wrap: break-word;
+  font-feature-settings: "kern", "liga", "onum";
 }
 .guide-shell-root {
   min-width: 0;
-  overflow: hidden; /* prevent inner overflow from pushing the page horizontally */
+  overflow: hidden;
 }
 .prose h1, .prose h2, .prose h3, .prose h4 {
-  font-family: var(--sans);
+  font-family: var(--display);
   color: var(--fg);
-  line-height: 1.18;
+  line-height: 1.15;
   margin-top: 1.8em;
-  margin-bottom: 0.6em;
+  margin-bottom: 0.55em;
   text-wrap: balance;
   scroll-margin-top: 88px;
+  font-weight: 650;
 }
 .prose h1 {
-  font-size: clamp(2rem, 4.2vw, 3rem);
+  font-size: clamp(2.1rem, 4.4vw, 3.15rem);
   border-bottom: 1px solid var(--border);
-  padding-bottom: 24px;
-  margin-top: 0.15em;
-  letter-spacing: -0.035em;
-  line-height: 1.02;
+  padding-bottom: 28px;
+  margin-top: 0.1em;
+  letter-spacing: -0.04em;
+  line-height: 1.0;
+  font-weight: 700;
 }
 .prose h2 {
-  font-size: clamp(1.55rem, 3vw, 2.08rem);
-  margin-top: 2.6em;
-  margin-bottom: 0.82em;
-  letter-spacing: -0.02em;
+  font-size: clamp(1.45rem, 2.8vw, 1.95rem);
+  margin-top: 2.5em;
+  margin-bottom: 0.75em;
+  letter-spacing: -0.03em;
   position: relative;
-  padding-top: 0.4em;
+  padding-top: 0.35em;
 }
 .prose h2::before {
   content: "";
   display: block;
-  width: 36px;
+  width: 28px;
   height: 3px;
   background: var(--accent);
   border-radius: 2px;
-  margin-bottom: 0.6em;
+  margin-bottom: 0.65em;
 }
-.prose h3 { font-size: 1.22em; color: var(--fg); letter-spacing: -0.012em; }
-.prose h4 { font-size: 0.86em; color: var(--muted); text-transform: uppercase; letter-spacing: 0.09em; font-weight: 700; }
-.prose p, .prose ul, .prose ol { margin: 1.02em 0; }
+.prose h3 {
+  font-size: 1.2em;
+  color: var(--fg);
+  letter-spacing: -0.02em;
+  font-weight: 650;
+}
+.prose h4 {
+  font-size: 0.78em;
+  font-family: var(--sans);
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 700;
+}
+.prose p, .prose ul, .prose ol { margin: 1.05em 0; }
 .prose ul, .prose ol { padding-left: 1.35em; }
-.prose li { margin: 0.42em 0; padding-left: 0.1em; }
+.prose li { margin: 0.4em 0; padding-left: 0.1em; }
 
-/* link styling — uses per-guide accent inside the article */
 .prose a {
   color: var(--accent);
   text-decoration: underline;
   text-decoration-thickness: 1px;
   text-underline-offset: 3px;
-  text-decoration-color: var(--border);
+  text-decoration-color: color-mix(in srgb, var(--accent) 35%, transparent);
   transition: text-decoration-color 0.15s ease;
 }
 .prose a:hover { text-decoration-color: var(--accent); }
@@ -303,15 +332,14 @@ button { font-family: inherit; }
   text-decoration: none;
 }
 
-/* code */
 .prose code {
   font-family: var(--mono);
   background: var(--code-bg);
   color: var(--code-fg);
-  padding: 0.08em 0.38em;
+  padding: 0.1em 0.4em;
   border: 1px solid var(--border);
-  border-radius: 4px;
-  font-size: 0.86em;
+  border-radius: 5px;
+  font-size: 0.84em;
   word-break: break-word;
 }
 .prose pre {
@@ -323,13 +351,19 @@ button { font-family: inherit; }
   border: 1px solid var(--border);
   box-shadow: none;
   overflow-x: auto;
-  font-size: 0.86em;
+  font-size: 0.84em;
   line-height: 1.55;
-  margin: 1.25em 0;
+  margin: 1.35em 0;
 }
-.prose pre code { background: transparent; border: none; padding: 0; font-size: 1em; white-space: pre; word-break: normal; }
+.prose pre code {
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-size: 1em;
+  white-space: pre;
+  word-break: normal;
+}
 
-/* tables — wrapped via .tablewrap div so they scroll on overflow */
 .prose .tablewrap { overflow-x: auto; max-width: 100%; }
 .prose .tablewrap table { margin: 0; }
 .prose table {
@@ -337,11 +371,12 @@ button { font-family: inherit; }
   border-spacing: 0;
   width: 100%;
   margin: 1.4em 0;
-  font-size: 0.9em;
+  font-size: 0.88em;
   overflow: hidden;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   background: var(--surface);
+  font-family: var(--sans);
 }
 .prose th, .prose td {
   border: none;
@@ -356,20 +391,19 @@ button { font-family: inherit; }
   font-weight: 700;
   border-bottom: 1px solid var(--border-strong);
   font-family: var(--sans);
-  font-size: 0.9em;
+  font-size: 0.88em;
+  letter-spacing: 0.01em;
 }
 
-/* blockquote */
 .prose blockquote {
   border-left: 3px solid var(--accent);
-  margin: 1.4em 0;
-  padding: 0.5em 1.1em;
+  margin: 1.5em 0;
+  padding: 0.55em 1.2em;
   color: var(--muted);
-  background: transparent;
+  background: color-mix(in srgb, var(--accent-soft) 40%, transparent);
   border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
 }
 
-/* hr ornament */
 .prose hr {
   border: none;
   margin: 3.2em 0;
@@ -379,13 +413,13 @@ button { font-family: inherit; }
 }
 .prose hr::after {
   content: "·  ·  ·";
-  color: var(--muted);
+  color: var(--soft);
   letter-spacing: 0.5em;
   font-size: 1em;
   font-family: var(--sans);
 }
 
-.prose .meta { color: var(--muted); font-size: 0.9em; margin-bottom: 2em; }
+.prose .meta { color: var(--muted); font-size: 0.88em; margin-bottom: 2em; font-family: var(--sans); }
 
 .prose .toc {
   background: var(--surface);
@@ -393,58 +427,66 @@ button { font-family: inherit; }
   border-radius: var(--radius-md);
   margin: 2.2em 0 2.6em;
   padding: 22px 24px;
-  box-shadow: none;
+  box-shadow: var(--shadow-card);
+  font-family: var(--sans);
 }
 .prose .toc h2 {
-  font-size: 1rem;
+  font-size: 0.95rem;
   margin: 0 0 0.85em;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-family: var(--sans);
+  font-weight: 700;
+  color: var(--muted);
 }
 .prose .toc h2::before { display: none; }
 .prose .toc ol { margin: 0; padding-left: 1.25em; }
 .prose .toc li { margin: 0.28em 0; }
 
-/* ─── Reading-progress bar (top of viewport) ─────────────────────────── */
+/* ─── Reading-progress bar ──────────────────────────────────────────────── */
 .reading-progress {
   position: fixed;
   top: 0;
   left: 0;
-  height: 2px;
-  background: var(--progress);
+  height: 3px;
+  background: linear-gradient(90deg, var(--chrome-accent), color-mix(in srgb, var(--chrome-accent) 60%, var(--warning)));
   z-index: var(--z-toast);
   width: 0%;
   pointer-events: none;
   transition: width 0.1s ease;
 }
 
-/* ─── Scroll-top floating button (legacy, still used) ─────────────────── */
+/* ─── Scroll-top ────────────────────────────────────────────────────────── */
 .scroll-top {
   position: fixed;
-  bottom: 24px;
-  right: 24px;
+  bottom: 28px;
+  right: 28px;
   background: var(--chrome-accent);
   color: var(--chrome-accent-fg-on);
   border: none;
-  border-radius: var(--radius-sm);
-  width: 44px;
-  height: 44px;
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: 1.3rem;
+  font-size: 1.25rem;
   line-height: 1;
   padding: 0;
-  box-shadow: var(--shadow-card);
+  box-shadow: var(--shadow-card-hover);
   opacity: 0;
   pointer-events: none;
   z-index: var(--z-sticky-top);
-  transition: opacity 0.3s ease, background-color 0.15s ease;
+  transition: opacity 0.3s ease, background-color 0.15s ease, transform 0.2s var(--ease-out);
 }
 .scroll-top.visible { opacity: 1; pointer-events: auto; }
-.scroll-top:hover { background: var(--chrome-accent-hover); }
+.scroll-top:hover {
+  background: var(--chrome-accent-hover);
+  transform: translateY(-2px);
+}
 
-/* ─── Skip link ────────────────────────────────────────────────────────── */
+/* ─── Skip link ─────────────────────────────────────────────────────────── */
 .skip-link {
   position: absolute;
   top: -40px;
@@ -456,26 +498,39 @@ button { font-family: inherit; }
   text-decoration: none;
   border-radius: 0 0 var(--radius-sm) var(--radius-sm);
   font-weight: 600;
+  font-family: var(--sans);
 }
 .skip-link:focus { top: 0; }
 
-/* ─── Mobile prose padding — unchanged ───────────────────────────────── */
+/* ─── Entrance animations ───────────────────────────────────────────────── */
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ─── Mobile prose ──────────────────────────────────────────────────────── */
 @media (max-width: 700px) {
-  .prose { padding: 48px 22px 76px; }
+  .prose { padding: 44px 22px 76px; }
 }
 @media (max-width: 480px) {
   body { font-size: 14px; }
-  .prose { padding: 36px 18px 64px; font-size: 16px; }
-  .prose h1 { font-size: 2.1rem; }
-  .prose h2 { font-size: 1.45em; }
-  .prose h3 { font-size: 1.15em; }
-  .prose pre { padding: 10px 12px; font-size: 0.8em; }
+  .prose { padding: 32px 18px 64px; font-size: 16.5px; }
+  .prose h1 { font-size: 2rem; }
+  .prose h2 { font-size: 1.4em; }
+  .prose h3 { font-size: 1.12em; }
+  .prose pre { padding: 12px 14px; font-size: 0.8em; }
   .prose table { font-size: 0.85em; }
-  .prose th, .prose td { padding: 6px 8px; }
+  .prose th, .prose td { padding: 8px 10px; }
   .prose .toc { padding: 18px; border-radius: var(--radius-md); }
 }
 @media (max-width: 375px) {
   .prose { padding: 20px 14px 50px; }
-  .prose h1 { font-size: 1.6em; }
+  .prose h1 { font-size: 1.65em; }
   .prose h2 { font-size: 1.25em; }
 }

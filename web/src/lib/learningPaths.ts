@@ -50,7 +50,7 @@ export const LEARNING_PATHS: LearningPath[] = [
       "gcp",
       "cloud-ai-comparison",
     ],
-    accent: "cobalt",
+    accent: "lavender",
   },
   {
     id: "interview-prep",

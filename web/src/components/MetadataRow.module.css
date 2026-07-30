@@ -7,7 +7,7 @@
   gap: 0;
 }
 .sm { font-size: 12px; }
-.md { font-size: 13px; }
+.md { font-size: 12.5px; }
 .item { display: inline-flex; align-items: center; gap: 5px; }
-.sep { color: var(--soft); margin: 0 6px; }
+.sep { color: var(--soft); margin: 0 7px; opacity: 0.7; }
 .icon { display: inline-flex; }

@@ -26,7 +26,6 @@ function resolvePath(path: (typeof LEARNING_PATHS)[number]) {
 }
 
 export default function HomePage() {
-  // Resolve once. Will throw at render time if any path has a bad slug.
   const paths = LEARNING_PATHS.map(resolvePath);
 
   const glossaryCard: GuideCardData = {
@@ -45,6 +44,8 @@ export default function HomePage() {
     glossaryCard,
   ];
 
+  const totalMinutes = allCards.reduce((s, c) => s + (c.readMinutes ?? 0), 0);
+
   return (
     <AppShell
       rightRail={
@@ -56,11 +57,33 @@ export default function HomePage() {
       }
     >
       <div className={styles.home}>
-        <h1 className={styles.h1}>LearningAI Study OS</h1>
-        <p className={styles.subhead}>
-          A focused library of long-form study guides for AI engineers, agent builders, and cloud-AI practitioners.
-          Pick a learning path or browse guides by topic.
-        </p>
+        <header className={styles.hero}>
+          <div className={styles.heroBadge}>
+            <span className={styles.heroBadgeDot} aria-hidden />
+            Study OS
+          </div>
+          <h1 className={styles.h1}>
+            Learn AI engineering,{" "}
+            <span className={styles.h1Accent}>end to end</span>
+          </h1>
+          <p className={styles.subhead}>
+            A focused library of long-form study guides for AI engineers, agent builders,
+            and cloud practitioners. Pick a path — or browse by topic.
+          </p>
+          <div className={styles.heroMeta}>
+            <span className={styles.heroMetaItem}>
+              <strong>{allCards.length}</strong> guides
+            </span>
+            <span className={styles.heroMetaSep} aria-hidden />
+            <span className={styles.heroMetaItem}>
+              <strong>{paths.length}</strong> learning paths
+            </span>
+            <span className={styles.heroMetaSep} aria-hidden />
+            <span className={styles.heroMetaItem}>
+              <strong>~{totalMinutes}</strong> min of reading
+            </span>
+          </div>
+        </header>
 
         <section className={styles.section} aria-labelledby="paths-heading">
           <div className={styles.sectionHead}>
@@ -96,7 +119,19 @@ export default function HomePage() {
         </section>
 
         <footer className={styles.footer}>
-          <span>Part of the <a href="https://github.com/himanshu-nakrani/LearningAI" target="_blank" rel="noreferrer" className={styles.footerLink}>LearningAI</a> repository.</span>
+          <span>
+            Part of the{" "}
+            <a
+              href="https://github.com/himanshu-nakrani/LearningAI"
+              target="_blank"
+              rel="noreferrer"
+              className={styles.footerLink}
+            >
+              LearningAI
+            </a>{" "}
+            repository.
+          </span>
+          <span className={styles.footerNote}>Open source · self-paced</span>
         </footer>
       </div>
     </AppShell>
@@ -105,10 +140,15 @@ export default function HomePage() {
 
 function pathIcon(id: string): React.ReactNode {
   switch (id) {
-    case "ai-engineer": return <>◆</>;
-    case "agent-builder": return <>◇</>;
-    case "cloud-ai": return <>▲</>;
-    case "interview-prep": return <>◎</>;
-    default: return <>·</>;
+    case "ai-engineer":
+      return <>◆</>;
+    case "agent-builder":
+      return <>◇</>;
+    case "cloud-ai":
+      return <>▲</>;
+    case "interview-prep":
+      return <>◎</>;
+    default:
+      return <>·</>;
   }
 }

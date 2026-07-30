@@ -3,16 +3,16 @@
   align-items: center;
   gap: 4px;
   font-family: var(--sans);
-  font-weight: 600;
-  letter-spacing: 0.02em;
+  font-weight: 650;
+  letter-spacing: 0.03em;
   line-height: 1;
-  border-radius: var(--radius-xs);
+  border-radius: 999px;
   border: 1px solid transparent;
   white-space: nowrap;
 }
 
-.sm { font-size: 10.5px; padding: 3px 7px; text-transform: uppercase; }
-.md { font-size: 12px; padding: 4px 9px; text-transform: none; }
+.sm { font-size: 10px; padding: 4px 8px; text-transform: uppercase; }
+.md { font-size: 12px; padding: 5px 10px; text-transform: none; }
 
 .neutral {
   background: var(--bg-subtle);
@@ -27,7 +27,7 @@
 .advanced {
   background: var(--lavender-soft);
   color: var(--lavender);
-  border-color: var(--lavender-soft);
+  border-color: color-mix(in srgb, var(--lavender) 18%, transparent);
 }
 .reference {
   background: var(--bg-subtle);
@@ -37,20 +37,20 @@
 .warning {
   background: var(--warning-soft);
   color: var(--warning);
-  border-color: var(--warning-soft);
+  border-color: color-mix(in srgb, var(--warning) 18%, transparent);
 }
 .lavender {
   background: var(--lavender-soft);
   color: var(--lavender);
-  border-color: var(--lavender-soft);
+  border-color: color-mix(in srgb, var(--lavender) 18%, transparent);
 }
 .cobalt {
   background: var(--cobalt-soft);
   color: var(--cobalt);
-  border-color: var(--cobalt-soft);
+  border-color: color-mix(in srgb, var(--cobalt) 18%, transparent);
 }
 .success {
   background: var(--success-soft);
   color: var(--success);
-  border-color: var(--success-soft);
+  border-color: color-mix(in srgb, var(--success) 18%, transparent);
 }

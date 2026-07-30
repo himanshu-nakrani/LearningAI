@@ -1,30 +1,33 @@
 .root {
   padding: 16px 18px;
-  margin: 1.45em 0;
-  border-radius: var(--radius-sm);
+  margin: 1.5em 0;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border);
   border-left-width: 3px;
-  box-shadow: none;
+  box-shadow: var(--shadow-card);
+  font-family: var(--sans);
+  font-size: 0.94em;
 }
 .title {
   display: block;
   margin-bottom: 6px;
-  font-family: var(--sans);
-  font-weight: 760;
-  letter-spacing: -0.01em;
+  font-family: var(--display);
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  font-size: 0.95em;
 }
 .body :global(p):first-child { margin-top: 0; }
 .body :global(p):last-child { margin-bottom: 0; }
 
 .tip {
-  background: var(--surface);
+  background: var(--tip-bg);
   border-left-color: var(--tip-bd);
 }
 .warn {
-  background: var(--surface);
+  background: var(--warn-bg);
   border-left-color: var(--warn-bd);
 }
 .gap {
-  background: var(--surface);
+  background: var(--gap-bg);
   border-left-color: var(--gap-bd);
 }

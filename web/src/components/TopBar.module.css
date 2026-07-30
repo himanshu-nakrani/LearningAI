@@ -2,12 +2,14 @@
   position: sticky;
   top: 0;
   height: var(--topbar-height);
-  background: var(--bg);
+  background: color-mix(in srgb, var(--bg) 82%, transparent);
+  backdrop-filter: blur(14px) saturate(1.2);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2);
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 16px 0 20px;
+  padding: 0 18px 0 22px;
   gap: 12px;
   font-family: var(--sans);
   z-index: var(--z-sticky-top);
@@ -24,14 +26,27 @@
 .brand {
   display: none;
   align-items: center;
-  gap: 8px;
+  gap: 9px;
   font-weight: 700;
   font-size: 15px;
   color: var(--fg);
-  letter-spacing: -0.015em;
+  letter-spacing: -0.02em;
   text-decoration: none;
+  font-family: var(--display);
 }
-.brandMark { color: var(--chrome-accent); font-size: 14px; line-height: 1; }
+.brandMark {
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  background: var(--chrome-accent);
+  color: var(--chrome-accent-fg-on);
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
+}
 
 .crumbs {
   display: flex;
@@ -43,10 +58,20 @@
   overflow: hidden;
 }
 .crumb { display: inline-flex; align-items: center; gap: 6px; }
-.crumbSep { color: var(--soft); }
-.crumbLink { color: var(--muted); text-decoration: none; }
+.crumbSep { color: var(--soft); opacity: 0.6; }
+.crumbLink {
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.12s ease;
+}
 .crumbLink:hover { color: var(--fg); }
-.crumbCurrent { color: var(--fg); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.crumbCurrent {
+  color: var(--fg);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
 .right {
   display: flex;
@@ -59,20 +84,28 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  height: 34px;
-  width: 280px;
+  height: 36px;
+  width: 300px;
   max-width: 100%;
   padding: 0 10px 0 12px;
-  background: var(--surface-2);
+  background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border-radius: 999px;
   color: var(--muted);
   font-size: 13px;
   cursor: pointer;
-  transition: border-color 0.15s ease, background 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    box-shadow 0.15s ease;
   font-family: var(--sans);
+  box-shadow: var(--shadow-card);
 }
-.searchTrigger:hover { border-color: var(--border-strong); background: var(--surface); }
+.searchTrigger:hover {
+  border-color: var(--border-strong);
+  background: var(--surface-raised);
+  box-shadow: var(--shadow-card-hover);
+}
 .searchTrigger svg { color: var(--soft); flex-shrink: 0; }
 .searchLabel {
   flex: 1 1 auto;
@@ -89,7 +122,13 @@
 }
 @media (max-width: 640px) {
   .topbar { padding: 0 12px; }
-  .searchTrigger { width: 36px; padding: 0; justify-content: center; }
+  .searchTrigger {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    justify-content: center;
+    border-radius: 50%;
+  }
   .searchLabel, .searchKbd { display: none; }
   .searchTrigger svg { margin: 0; }
   .crumbs { display: none; }

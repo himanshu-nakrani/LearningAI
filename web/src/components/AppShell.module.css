@@ -34,28 +34,37 @@
   background: var(--bg);
 }
 
+/* Reading-first body: generous padding, narrow optional TOC rail */
 .body {
   flex: 1 1 auto;
   display: grid;
   grid-template-columns: minmax(0, 1fr) var(--right-rail-width);
-  gap: 32px;
+  gap: 40px;
   max-width: var(--content-max);
   width: 100%;
   margin: 0 auto;
-  padding: 32px 32px 72px;
+  padding: 24px 40px 80px;
   align-items: start;
+}
+/* When sidebar is collapsed, give the article more horizontal room */
+.shellCollapsed .body {
+  max-width: 1100px;
+  padding-left: 48px;
+  padding-right: 48px;
 }
 .content { min-width: 0; }
 .rail {
   position: sticky;
-  top: calc(var(--topbar-height) + 28px);
+  top: calc(var(--topbar-height) + 32px);
   align-self: start;
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  max-height: calc(100vh - var(--topbar-height) - 28px);
+  gap: 12px;
+  max-height: calc(100vh - var(--topbar-height) - 40px);
   overflow-y: auto;
   scrollbar-width: thin;
+  /* Quiet: no card chrome on the rail itself */
+  padding-top: 8px;
 }
 
 .collapseToggle {
@@ -90,11 +99,21 @@
 .collapseToggleCollapsed { left: calc(var(--sidebar-collapsed-width) - 14px); }
 
 @media (max-width: 1279px) {
-  .body { grid-template-columns: minmax(0, 1fr); }
+  .body {
+    grid-template-columns: minmax(0, 1fr);
+    max-width: 820px;
+    padding: 20px 28px 72px;
+  }
+  .shellCollapsed .body {
+    max-width: 820px;
+    padding-left: 28px;
+    padding-right: 28px;
+  }
   .rail { display: none; }
   .collapseToggle { display: none; }
 }
 @media (max-width: 1023px) {
-  .body { padding: 20px 16px 56px; }
+  .body { padding: 16px 16px 56px; }
+  .shellCollapsed .body { padding: 16px 16px 56px; }
   .sidebarHost { display: none; }
 }

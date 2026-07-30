@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { GUIDES, GUIDE_BY_SLUG, guidesByNavGroup, type GuideSlug, type GuideMeta } from "@/lib/guides";
+import { GUIDES, GUIDE_BY_SLUG, type GuideSlug } from "@/lib/guides";
 import { AppShell } from "@/components/AppShell";
 import { GuideLayout } from "@/components/GuideLayout";
 import { GuideTOC } from "@/components/GuideTOC";
@@ -36,9 +36,6 @@ export default async function GuidePage({
   const mod = await import(`@/content/guides/${slug}.mdx`);
   const Mdx = mod.default;
 
-  // Sibling guides = same navGroup, excluding the current one.
-  const siblings = guidesByNavGroup(guide.navGroup).filter((g) => g.slug !== guide.slug);
-
   // Related guides = same-group first, then cross-group, prefer "Core" status, capped at 3.
   const others = GUIDES.filter((g) => g.slug !== guide.slug);
   const ranked = [
@@ -65,15 +62,15 @@ export default async function GuidePage({
   return (
     <AppShell
       breadcrumb={breadcrumb}
-      rightRail={
-        <>
-          <GuideTOC />
-          <RelatedGuides guides={related} />
-        </>
-      }
+      defaultCollapsed
+      rightRail={<GuideTOC />}
     >
       <RecordRecentVisit guide={guide} />
-      <GuideLayout guide={guide} siblings={siblings} currentSlug={guide.slug}>
+      <GuideLayout
+        guide={guide}
+        currentSlug={guide.slug}
+        footer={<RelatedGuides guides={related} />}
+      >
         <Mdx />
       </GuideLayout>
     </AppShell>

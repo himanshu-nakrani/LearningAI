@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import { GuideNav } from "./GuideNav";
 import { GuideShell } from "./GuideShell";
 import { ReadingProgress } from "./ReadingProgress";
 import type { GuideMeta } from "@/lib/guides";
@@ -7,32 +6,30 @@ import styles from "./GuideLayout.module.css";
 
 type Props = {
   guide: GuideMeta;
-  siblings: GuideMeta[];
-  currentSlug: string;
-  /** True when the user is at a viewport where the in-guide left nav should be hidden. */
+  /** Kept for API compatibility; sibling nav lives in the main sidebar. */
+  siblings?: GuideMeta[];
+  currentSlug?: string;
+  /** @deprecated Left guide-nav rail removed for a cleaner reading layout. */
   compact?: boolean;
   children: ReactNode;
+  /** Optional footer below the article (e.g. related guides). */
+  footer?: ReactNode;
 };
 
 /**
- * Three-zone guide page layout (lives inside the AppShell's content slot).
- * Left  = GuideNav (sections + sibling guides)
- * Center = article (.prose)
- * Right  = provided by AppShell as rightRail (TOC + Related)
+ * Reading-first guide layout (inside AppShell content).
+ * Single centered article column — no left guide rail.
+ * Right TOC is provided by AppShell as rightRail.
  */
-export function GuideLayout({ guide, siblings, currentSlug, compact, children }: Props) {
+export function GuideLayout({ guide, children, footer }: Props) {
   return (
-    <div className={`${styles.layout} ${compact ? styles.compact : ""}`}>
+    <div className={styles.layout}>
       <ReadingProgress />
-      {!compact && (
-        <aside className={styles.guideNav} aria-label="Guide navigation">
-          <GuideNav guide={guide} siblings={siblings} currentSlug={currentSlug} />
-        </aside>
-      )}
       <div className={styles.article}>
         <GuideShell guide={guide}>
           {children}
         </GuideShell>
+        {footer && <div className={styles.footer}>{footer}</div>}
       </div>
     </div>
   );

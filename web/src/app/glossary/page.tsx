@@ -34,8 +34,8 @@ const breadcrumb = [
 
 export default function GlossaryPage() {
   return (
-    <AppShell breadcrumb={breadcrumb} rightRail={<GuideTOC />}>
-      <GuideLayout guide={glossaryGuide} siblings={[]} currentSlug="glossary" compact>
+    <AppShell breadcrumb={breadcrumb} defaultCollapsed rightRail={<GuideTOC />}>
+      <GuideLayout guide={glossaryGuide} currentSlug="glossary">
         <Mdx />
       </GuideLayout>
     </AppShell>

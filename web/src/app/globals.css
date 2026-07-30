@@ -81,13 +81,13 @@
   --serif: var(--font-serif), Georgia, "Times New Roman", serif;
   --mono: var(--font-mono), "SF Mono", Menlo, Consolas, monospace;
 
-  /* Layout */
-  --sidebar-width: 260px;
+  /* Layout — reading-first measures */
+  --sidebar-width: 248px;
   --sidebar-collapsed-width: 56px;
-  --topbar-height: 58px;
-  --right-rail-width: 252px;
-  --content-max: 1360px;
-  --prose-max: 720px;
+  --topbar-height: 56px;
+  --right-rail-width: 200px;
+  --content-max: 1200px;
+  --prose-max: 680px;
 
   /* Motion */
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
@@ -247,14 +247,14 @@ button { font-family: inherit; }
   border-radius: 4px;
 }
 
-/* ─── Prose layout (article body) ───────────────────────────────────────── */
+/* ─── Prose layout (article body) — calm reading measure ────────────────── */
 .prose {
   max-width: var(--prose-max);
   margin: 0 auto;
-  padding: 56px 32px 100px;
+  padding: 40px 24px 64px;
   font-family: var(--serif);
-  font-size: 17.5px;
-  line-height: 1.75;
+  font-size: 18px;
+  line-height: 1.78;
   color: var(--fg);
   min-width: 0;
   overflow-wrap: break-word;
@@ -263,70 +263,77 @@ button { font-family: inherit; }
 .guide-shell-root {
   min-width: 0;
   overflow: hidden;
+  width: 100%;
 }
 .prose h1, .prose h2, .prose h3, .prose h4 {
   font-family: var(--display);
   color: var(--fg);
-  line-height: 1.15;
-  margin-top: 1.8em;
-  margin-bottom: 0.55em;
+  line-height: 1.2;
+  margin-top: 1.9em;
+  margin-bottom: 0.5em;
   text-wrap: balance;
   scroll-margin-top: 88px;
   font-weight: 650;
 }
 .prose h1 {
-  font-size: clamp(2.1rem, 4.4vw, 3.15rem);
-  border-bottom: 1px solid var(--border);
-  padding-bottom: 28px;
-  margin-top: 0.1em;
-  letter-spacing: -0.04em;
-  line-height: 1.0;
-  font-weight: 700;
+  font-size: clamp(1.85rem, 3.6vw, 2.55rem);
+  border-bottom: none;
+  padding-bottom: 0;
+  margin-top: 0.05em;
+  margin-bottom: 0.55em;
+  letter-spacing: -0.035em;
+  line-height: 1.08;
+  font-weight: 750;
+}
+/* Soft rule under title, less heavy than a full border */
+.prose h1 + p,
+.prose h1 + .meta {
+  margin-top: 0.85em;
 }
 .prose h2 {
-  font-size: clamp(1.45rem, 2.8vw, 1.95rem);
-  margin-top: 2.5em;
-  margin-bottom: 0.75em;
-  letter-spacing: -0.03em;
+  font-size: clamp(1.28rem, 2.2vw, 1.55rem);
+  margin-top: 2.75em;
+  margin-bottom: 0.7em;
+  letter-spacing: -0.025em;
   position: relative;
-  padding-top: 0.35em;
+  padding-top: 0.85em;
+  border-top: 1px solid var(--border);
 }
 .prose h2::before {
-  content: "";
-  display: block;
-  width: 28px;
-  height: 3px;
-  background: var(--accent);
-  border-radius: 2px;
-  margin-bottom: 0.65em;
+  content: none;
 }
 .prose h3 {
-  font-size: 1.2em;
+  font-size: 1.12em;
   color: var(--fg);
-  letter-spacing: -0.02em;
+  letter-spacing: -0.015em;
   font-weight: 650;
+  margin-top: 1.85em;
 }
 .prose h4 {
-  font-size: 0.78em;
+  font-size: 0.76em;
   font-family: var(--sans);
   color: var(--muted);
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   font-weight: 700;
 }
 .prose p, .prose ul, .prose ol { margin: 1.05em 0; }
-.prose ul, .prose ol { padding-left: 1.35em; }
-.prose li { margin: 0.4em 0; padding-left: 0.1em; }
+.prose ul, .prose ol { padding-left: 1.3em; }
+.prose li { margin: 0.38em 0; padding-left: 0.1em; }
 
+/* Links: quieter in body text so they don't shout */
 .prose a {
-  color: var(--accent);
+  color: var(--fg-secondary);
   text-decoration: underline;
   text-decoration-thickness: 1px;
   text-underline-offset: 3px;
-  text-decoration-color: color-mix(in srgb, var(--accent) 35%, transparent);
-  transition: text-decoration-color 0.15s ease;
+  text-decoration-color: color-mix(in srgb, var(--muted) 45%, transparent);
+  transition: color 0.12s ease, text-decoration-color 0.12s ease;
 }
-.prose a:hover { text-decoration-color: var(--accent); }
+.prose a:hover {
+  color: var(--chrome-accent);
+  text-decoration-color: var(--chrome-accent);
+}
 .prose h1 a, .prose h2 a, .prose h3 a, .prose h4 a {
   color: inherit;
   text-decoration: none;
@@ -421,35 +428,58 @@ button { font-family: inherit; }
 
 .prose .meta { color: var(--muted); font-size: 0.88em; margin-bottom: 2em; font-family: var(--sans); }
 
+/* In-article TOC — compact list, no heavy card chrome */
 .prose .toc {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  margin: 2.2em 0 2.6em;
-  padding: 22px 24px;
-  box-shadow: var(--shadow-card);
+  background: transparent;
+  border: none;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
+  margin: 1.6em 0 2.2em;
+  padding: 18px 0;
+  box-shadow: none;
   font-family: var(--sans);
+  font-size: 0.92em;
 }
 .prose .toc h2 {
-  font-size: 0.95rem;
-  margin: 0 0 0.85em;
-  letter-spacing: 0.04em;
+  font-size: 0.72rem;
+  margin: 0 0 0.75em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   font-family: var(--sans);
   font-weight: 700;
-  color: var(--muted);
+  color: var(--soft);
+  border-top: none;
+  padding-top: 0;
 }
 .prose .toc h2::before { display: none; }
-.prose .toc ol { margin: 0; padding-left: 1.25em; }
-.prose .toc li { margin: 0.28em 0; }
+.prose .toc ol { margin: 0; padding-left: 1.2em; }
+.prose .toc li { margin: 0.22em 0; line-height: 1.45; }
+.prose .toc a {
+  color: var(--muted);
+  text-decoration: none;
+  text-underline-offset: 2px;
+}
+.prose .toc a:hover {
+  color: var(--fg);
+  text-decoration: underline;
+  text-decoration-color: var(--border-strong);
+}
 
-/* ─── Reading-progress bar ──────────────────────────────────────────────── */
+/* When the sticky right rail is visible, drop the in-article TOC —
+   it only duplicates the outline and steals vertical space. */
+@media (min-width: 1280px) {
+  .prose .toc { display: none; }
+}
+
+/* ─── Reading-progress bar — thin, low attention ────────────────────────── */
 .reading-progress {
   position: fixed;
   top: 0;
   left: 0;
-  height: 3px;
-  background: linear-gradient(90deg, var(--chrome-accent), color-mix(in srgb, var(--chrome-accent) 60%, var(--warning)));
+  height: 2px;
+  background: var(--chrome-accent);
+  opacity: 0.85;
   z-index: var(--z-toast);
   width: 0%;
   pointer-events: none;
@@ -516,21 +546,21 @@ button { font-family: inherit; }
 
 /* ─── Mobile prose ──────────────────────────────────────────────────────── */
 @media (max-width: 700px) {
-  .prose { padding: 44px 22px 76px; }
+  .prose { padding: 28px 20px 56px; }
 }
 @media (max-width: 480px) {
   body { font-size: 14px; }
-  .prose { padding: 32px 18px 64px; font-size: 16.5px; }
-  .prose h1 { font-size: 2rem; }
-  .prose h2 { font-size: 1.4em; }
-  .prose h3 { font-size: 1.12em; }
+  .prose { padding: 24px 16px 48px; font-size: 17px; line-height: 1.72; }
+  .prose h1 { font-size: 1.75rem; }
+  .prose h2 { font-size: 1.28em; }
+  .prose h3 { font-size: 1.1em; }
   .prose pre { padding: 12px 14px; font-size: 0.8em; }
   .prose table { font-size: 0.85em; }
   .prose th, .prose td { padding: 8px 10px; }
-  .prose .toc { padding: 18px; border-radius: var(--radius-md); }
+  .prose .toc { padding: 14px 0; }
 }
 @media (max-width: 375px) {
-  .prose { padding: 20px 14px 50px; }
-  .prose h1 { font-size: 1.65em; }
-  .prose h2 { font-size: 1.25em; }
+  .prose { padding: 18px 14px 40px; }
+  .prose h1 { font-size: 1.55em; }
+  .prose h2 { font-size: 1.2em; }
 }

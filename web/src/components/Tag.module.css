@@ -1,19 +1,37 @@
+/* Content tags — small and muted so they don't compete with prose */
 .root {
   display: inline-block;
-  font-size: 0.66em;
-  font-weight: 700;
-  padding: 3px 8px;
+  font-size: 0.62em;
+  font-weight: 650;
+  padding: 2px 7px;
   border-radius: 999px;
   margin-left: 6px;
   vertical-align: middle;
   font-family: var(--sans);
   letter-spacing: 0.04em;
-  color: #fff;
-  line-height: 1;
+  line-height: 1.2;
   text-transform: uppercase;
+  border: 1px solid transparent;
 }
-.core { background: var(--chrome-accent); }
-.concept { background: var(--cobalt); }
-.prod { background: #b8453a; }
-.gap { background: #b8453a; }
-.neutral { background: var(--muted); }
+.core {
+  background: var(--chrome-accent-soft);
+  color: var(--chrome-accent);
+  border-color: var(--chrome-accent-soft-border);
+}
+.concept {
+  background: var(--cobalt-soft);
+  color: var(--cobalt);
+}
+.prod {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+.gap {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+.neutral {
+  background: var(--bg-subtle);
+  color: var(--muted);
+  border-color: var(--border);
+}

@@ -89,11 +89,15 @@
   background: var(--bg-subtle);
   color: var(--fg);
 }
+/* Quiet active state — readable without shouting over the article */
 .item.active {
-  background: var(--chrome-accent-soft);
-  color: var(--chrome-accent);
+  background: var(--bg-subtle);
+  color: var(--fg);
   border-left-color: var(--chrome-accent);
   font-weight: 600;
+}
+html.dark .item.active {
+  background: var(--surface-2);
 }
 .icon {
   width: 16px;

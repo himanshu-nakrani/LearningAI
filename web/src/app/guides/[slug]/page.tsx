@@ -36,7 +36,6 @@ export default async function GuidePage({
   const mod = await import(`@/content/guides/${slug}.mdx`);
   const Mdx = mod.default;
 
-  // Related guides = same-group first, then cross-group, prefer "Core" status, capped at 3.
   const others = GUIDES.filter((g) => g.slug !== guide.slug);
   const ranked = [
     ...others.filter((g) => g.navGroup === guide.navGroup),
@@ -60,11 +59,7 @@ export default async function GuidePage({
   ];
 
   return (
-    <AppShell
-      breadcrumb={breadcrumb}
-      defaultCollapsed
-      rightRail={<GuideTOC />}
-    >
+    <AppShell breadcrumb={breadcrumb} rightRail={<GuideTOC />}>
       <RecordRecentVisit guide={guide} />
       <GuideLayout
         guide={guide}

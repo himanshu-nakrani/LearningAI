@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>D · Signal Terminal — LearningAI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0a0e0c;
+      --panel: #0f1512;
+      --panel-2: #141c18;
+      --line: #1e2a24;
+      --fg: #d7e6dc;
+      --muted: #7f9688;
+      --soft: #5a6e62;
+      --cyan: #3dffa8;
+      --cyan-dim: #1a4d38;
+      --amber: #f0c14a;
+      --mono: "IBM Plex Mono", ui-monospace, monospace;
+      --sans: "IBM Plex Sans", system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--fg);
+      min-height: 100vh;
+      font-size: 13.5px;
+    }
+    a { color: inherit; text-decoration: none; }
+    .app {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      min-height: 100vh;
+    }
+    .side {
+      border-right: 1px solid var(--line);
+      background: var(--panel);
+      padding: 16px 12px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      font-family: var(--mono);
+      font-size: 12px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 8px 16px;
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 14px;
+      font-weight: 600;
+      color: var(--cyan);
+      letter-spacing: -0.02em;
+    }
+    .brand .blk {
+      width: 10px; height: 10px;
+      background: var(--cyan);
+      box-shadow: 0 0 10px var(--cyan);
+    }
+    .sec {
+      color: var(--soft);
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 10px 8px 6px;
+    }
+    .side a {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 8px;
+      border-radius: 4px;
+      color: var(--muted);
+    }
+    .side a::before {
+      content: "›";
+      color: var(--soft);
+      width: 10px;
+    }
+    .side a:hover { background: var(--panel-2); color: var(--fg); }
+    .side a.active {
+      background: var(--cyan-dim);
+      color: var(--cyan);
+    }
+    .side a.active::before { content: "▶"; color: var(--cyan); font-size: 8px; }
+    .side .foot {
+      margin-top: auto;
+      padding: 12px 8px;
+      border-top: 1px solid var(--line);
+      color: var(--soft);
+      font-size: 10px;
+    }
+
+    .main { min-width: 0; display: flex; flex-direction: column; }
+    .top {
+      height: 44px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      background: var(--panel);
+      font-family: var(--mono);
+      font-size: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .prompt { color: var(--soft); }
+    .prompt b { color: var(--cyan); font-weight: 500; }
+    .search {
+      border: 1px solid var(--line);
+      background: var(--bg);
+      color: var(--muted);
+      padding: 5px 10px;
+      border-radius: 4px;
+      font-family: var(--mono);
+      font-size: 11px;
+      min-width: 200px;
+    }
+    .content { padding: 24px 28px 72px; max-width: 1080px; }
+
+    .view { display: none; }
+    .view.on { display: block; animation: blink 0.25s ease; }
+    @keyframes blink { from { opacity: 0; } to { opacity: 1; } }
+
+    .term-head {
+      font-family: var(--mono);
+      margin-bottom: 28px;
+    }
+    .term-head .line { color: var(--soft); margin-bottom: 6px; }
+    .term-head .line span { color: var(--cyan); }
+    .term-head h1 {
+      font-size: clamp(1.6rem, 3vw, 2.1rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      margin: 12px 0 8px;
+      color: var(--fg);
+    }
+    .term-head p { color: var(--muted); max-width: 52ch; line-height: 1.55; }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin: 20px 0 32px;
+    }
+    .cell {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      padding: 14px 16px;
+      cursor: pointer;
+      font-family: var(--mono);
+      font-size: 12px;
+      transition: border-color 0.12s;
+    }
+    .cell:hover { border-color: var(--cyan-dim); }
+    .cell .id { color: var(--cyan); margin-bottom: 8px; font-size: 11px; }
+    .cell h3 {
+      font-family: var(--sans);
+      font-size: 15px;
+      font-weight: 650;
+      margin-bottom: 6px;
+      letter-spacing: -0.02em;
+    }
+    .cell p {
+      font-family: var(--sans);
+      color: var(--muted);
+      font-size: 12.5px;
+      line-height: 1.45;
+      margin-bottom: 10px;
+    }
+    .cell .m { color: var(--soft); font-size: 11px; }
+
+    .tbl {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--mono);
+      font-size: 12px;
+    }
+    .tbl th {
+      text-align: left;
+      color: var(--soft);
+      font-weight: 500;
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--line);
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .tbl td {
+      padding: 10px;
+      border-bottom: 1px solid var(--line);
+      color: var(--muted);
+    }
+    .tbl tr { cursor: pointer; }
+    .tbl tr:hover td { background: var(--panel); color: var(--fg); }
+    .tbl .name { color: var(--fg); font-family: var(--sans); font-weight: 600; font-size: 13px; }
+    .tbl .tag {
+      display: inline-block;
+      padding: 1px 6px;
+      border: 1px solid var(--cyan-dim);
+      color: var(--cyan);
+      font-size: 10px;
+      border-radius: 2px;
+    }
+
+    /* reader */
+    .reader {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 200px;
+      gap: 32px;
+      max-width: 900px;
+    }
+    .prose {
+      font-size: 15.5px;
+      line-height: 1.7;
+      color: #c9d8ce;
+      max-width: 62ch;
+    }
+    .prose .back {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--soft);
+      display: inline-block;
+      margin-bottom: 18px;
+    }
+    .prose .back:hover { color: var(--cyan); }
+    .prose h1 {
+      font-size: clamp(1.6rem, 3vw, 2rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      color: var(--fg);
+      margin-bottom: 8px;
+    }
+    .prose .meta {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--soft);
+      margin-bottom: 24px;
+    }
+    .prose .meta span { color: var(--cyan); }
+    .prose h2 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin: 2em 0 0.55em;
+      color: var(--fg);
+      font-family: var(--mono);
+      letter-spacing: -0.02em;
+    }
+    .prose h2::before {
+      content: "## ";
+      color: var(--cyan);
+    }
+    .prose p { margin: 0.85em 0; }
+    .prose code {
+      font-family: var(--mono);
+      font-size: 0.88em;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      padding: 1px 5px;
+      border-radius: 3px;
+      color: var(--cyan);
+    }
+    .toc {
+      position: sticky;
+      top: 60px;
+      font-family: var(--mono);
+      font-size: 11px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      padding: 12px;
+      height: fit-content;
+    }
+    .toc .lab { color: var(--soft); margin-bottom: 8px; font-size: 10px; }
+    .toc a {
+      display: block;
+      color: var(--muted);
+      padding: 4px 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .toc a::before { content: "# "; color: var(--soft); }
+    .toc a.on { color: var(--cyan); }
+    .toc a.on::before { color: var(--cyan); }
+
+    .banner {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: #06140e;
+      border-bottom: 1px solid var(--cyan-dim);
+      color: var(--cyan);
+      font-family: var(--mono);
+      font-size: 11px;
+      padding: 8px 16px;
+      text-align: center;
+    }
+    .banner a { color: var(--fg); text-decoration: underline; margin-left: 8px; }
+    body { padding-top: 32px; }
+    .switcher {
+      position: fixed; bottom: 16px; right: 16px;
+      display: flex; gap: 6px; z-index: 50;
+      font-family: var(--mono);
+    }
+    .switcher button {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      color: var(--cyan);
+      padding: 8px 12px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 11px;
+    }
+    .switcher button:hover { border-color: var(--cyan); }
+    @media (max-width: 900px) {
+      .app { grid-template-columns: 1fr; }
+      .side { display: none; }
+      .grid-2, .reader { grid-template-columns: 1fr; }
+      .toc { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="banner">
+    Direction D · Signal Terminal — mockup only
+    <a href="index.html">← All directions</a>
+  </div>
+  <div class="app">
+    <aside class="side">
+      <div class="brand"><span class="blk"></span> learningai@os</div>
+      <div class="sec">nav</div>
+      <a class="active" href="#" data-go="home">home</a>
+      <a href="#" data-go="read">guides</a>
+      <a href="#">paths</a>
+      <a href="#">glossary</a>
+      <div class="sec">ai</div>
+      <a href="#" data-go="read">ai-engineering</a>
+      <a href="#" data-go="read">llm-inference</a>
+      <a href="#" data-go="read">system-design</a>
+      <div class="sec">cloud</div>
+      <a href="#" data-go="read">aws</a>
+      <a href="#" data-go="read">azure</a>
+      <a href="#" data-go="read">gcp</a>
+      <div class="foot">v2 · signal terminal<br/>theme: phosphor</div>
+    </aside>
+    <div class="main">
+      <header class="top">
+        <div class="prompt">~/learning-ai/<b id="path">home</b></div>
+        <div class="search">/ search  ⌘k</div>
+      </header>
+      <div class="content">
+        <section class="view on" id="home">
+          <div class="term-head">
+            <div class="line">$ <span>study --list --paths</span></div>
+            <h1>LearningAI Study OS</h1>
+            <p>Long-form engineering notes. Structured for people who live in terminals and think in systems.</p>
+          </div>
+
+          <div style="font-family:var(--mono);font-size:11px;color:var(--soft);margin-bottom:8px;">// PATHS</div>
+          <div class="grid-2">
+            <div class="cell" data-go="read">
+              <div class="id">path/01</div>
+              <h3>AI Engineer</h3>
+              <p>Production AI systems end-to-end.</p>
+              <div class="m">5 guides · 325m</div>
+            </div>
+            <div class="cell" data-go="read">
+              <div class="id">path/02</div>
+              <h3>Agent Builder</h3>
+              <p>Tools, MCP, multi-agent loops.</p>
+              <div class="m">4 guides · 265m</div>
+            </div>
+            <div class="cell" data-go="read">
+              <div class="id">path/03</div>
+              <h3>Cloud AI</h3>
+              <p>AWS · Azure · GCP platforms.</p>
+              <div class="m">4 guides · 185m</div>
+            </div>
+            <div class="cell" data-go="read">
+              <div class="id">path/04</div>
+              <h3>Interview Prep</h3>
+              <p>ML + systems interview drills.</p>
+              <div class="m">4 guides · 350m</div>
+            </div>
+          </div>
+
+          <div style="font-family:var(--mono);font-size:11px;color:var(--soft);margin-bottom:8px;">// GUIDES</div>
+          <table class="tbl">
+            <thead>
+              <tr><th>Name</th><th>Group</th><th>Level</th><th>Time</th></tr>
+            </thead>
+            <tbody>
+              <tr data-go="read"><td class="name">AI Engineering</td><td><span class="tag">ai</span></td><td>intermediate</td><td>55m</td></tr>
+              <tr data-go="read"><td class="name">Agentic AI</td><td><span class="tag">agents</span></td><td>advanced</td><td>70m</td></tr>
+              <tr data-go="read"><td class="name">LLM Inference</td><td><span class="tag">ai</span></td><td>advanced</td><td>60m</td></tr>
+              <tr data-go="read"><td class="name">AWS Complete</td><td><span class="tag">cloud</span></td><td>intermediate</td><td>50m</td></tr>
+              <tr data-go="read"><td class="name">System Design</td><td><span class="tag">fund</span></td><td>intermediate</td><td>80m</td></tr>
+              <tr data-go="read"><td class="name">Interview Prep</td><td><span class="tag">int</span></td><td>advanced</td><td>120m</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section class="view" id="read">
+          <div class="reader">
+            <article class="prose">
+              <a class="back" href="#" data-go="home">← cd ../home</a>
+              <h1>Amazon Web Services Guide</h1>
+              <div class="meta"><span>cloud/aws</span> · intermediate · 50m · updated 2026</div>
+              <h2>mental-model</h2>
+              <p>AWS is organized as regions, availability zones, and edge locations. Think in failure domains first — design for zonal isolation, then regional recovery. Control plane and data plane have different reliability contracts.</p>
+              <p>Most production systems span at least two AZs. Multi-region is a deliberate cost trade for true DR. Prefer <code>describe-regions</code> style mental models over marketing names.</p>
+              <h2>iam</h2>
+              <p>Everything is a principal acting on a resource under a policy. Prefer roles over long-lived keys. Scope permissions to the smallest action set that still works. Deny evaluates first.</p>
+              <h2>compute</h2>
+              <p>EC2 is the substrate. EKS/ECS orchestrate containers; Fargate removes nodes. Lambda for event-driven work with hard duration limits.</p>
+            </article>
+            <aside class="toc">
+              <div class="lab">// outline</div>
+              <a class="on" href="#">mental-model</a>
+              <a href="#">iam</a>
+              <a href="#">compute</a>
+              <a href="#">storage</a>
+              <a href="#">ai-ml</a>
+            </aside>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+  <div class="switcher">
+    <button type="button" data-go="home">home</button>
+    <button type="button" data-go="read">article</button>
+  </div>
+  <script>
+    function go(id) {
+      document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === id));
+      document.getElementById('path').textContent = id === 'home' ? 'home' : 'guides/aws';
+      document.querySelectorAll('.side a[data-go]').forEach(a => {
+        a.classList.toggle('active', a.dataset.go === id && (id === 'home' || a.textContent.includes('aws') || a.textContent === 'guides'));
+      });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    document.querySelectorAll('[data-go]').forEach(el => {
+      el.addEventListener('click', e => { e.preventDefault(); go(el.dataset.go); });
+    });
+  </script>
+</body>
+</html>

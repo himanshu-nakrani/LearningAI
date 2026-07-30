@@ -8,7 +8,7 @@
 .backdrop {
   position: absolute;
   inset: 0;
-  background: color-mix(in srgb, #0C0E14 48%, transparent);
+  background: color-mix(in srgb, #1A1814 40%, transparent);
   border: none;
   padding: 0;
   cursor: pointer;
@@ -28,12 +28,17 @@
   border-right: 1px solid var(--border);
 }
 .head {
-  display: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 12px 12px 20px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
 }
 .headTitle {
-  font-weight: 650;
+  font-weight: 700;
   font-size: 14px;
-  font-family: var(--display);
+  letter-spacing: -0.02em;
 }
 
 @keyframes fade {
@@ -43,8 +48,4 @@
 @keyframes slide {
   from { transform: translateX(-100%); }
   to { transform: translateX(0); }
-}
-
-@media (min-width: 1024px) {
-  .root { display: none; }
 }

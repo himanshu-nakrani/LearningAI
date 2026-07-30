@@ -1,7 +1,7 @@
 .overlay {
   position: fixed;
   inset: 0;
-  background: color-mix(in srgb, #0C0E14 50%, transparent);
+  background: color-mix(in srgb, #1A1814 42%, transparent);
   z-index: var(--z-modal);
   display: flex;
   align-items: flex-start;
@@ -80,7 +80,6 @@
   font-size: 11.5px;
   color: var(--muted);
   margin-top: 3px;
-  letter-spacing: 0.01em;
 }
 .text {
   font-size: 12.5px;
@@ -109,7 +108,6 @@
   font-size: 12.5px;
   font-weight: 600;
   cursor: pointer;
-  transition: border-color 0.12s ease, background 0.12s ease;
 }
 .retry:hover {
   border-color: var(--border-strong);

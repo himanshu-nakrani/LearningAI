@@ -4,7 +4,7 @@
   gap: 4px;
   font-family: var(--sans);
   font-weight: 650;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.04em;
   line-height: 1;
   border-radius: 999px;
   border: 1px solid transparent;
@@ -27,7 +27,6 @@
 .advanced {
   background: var(--lavender-soft);
   color: var(--lavender);
-  border-color: color-mix(in srgb, var(--lavender) 18%, transparent);
 }
 .reference {
   background: var(--bg-subtle);
@@ -37,20 +36,16 @@
 .warning {
   background: var(--warning-soft);
   color: var(--warning);
-  border-color: color-mix(in srgb, var(--warning) 18%, transparent);
 }
 .lavender {
   background: var(--lavender-soft);
   color: var(--lavender);
-  border-color: color-mix(in srgb, var(--lavender) 18%, transparent);
 }
 .cobalt {
   background: var(--cobalt-soft);
   color: var(--cobalt);
-  border-color: color-mix(in srgb, var(--cobalt) 18%, transparent);
 }
 .success {
   background: var(--success-soft);
   color: var(--success);
-  border-color: color-mix(in srgb, var(--success) 18%, transparent);
 }

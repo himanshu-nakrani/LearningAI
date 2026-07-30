@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>A · Obsidian Library — LearningAI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0e0d0b;
+      --surface: #161411;
+      --surface-2: #1c1a16;
+      --border: #2a2620;
+      --fg: #f3efe6;
+      --muted: #9c9588;
+      --soft: #6e685c;
+      --gold: #c9a227;
+      --gold-soft: #2a2412;
+      --serif: "Cormorant Garamond", Georgia, serif;
+      --sans: "Outfit", system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--fg);
+      min-height: 100vh;
+      font-size: 14px;
+    }
+    a { color: inherit; text-decoration: none; }
+    .app { display: grid; grid-template-columns: 220px 1fr; min-height: 100vh; }
+    .side {
+      border-right: 1px solid var(--border);
+      background: var(--surface);
+      padding: 24px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      font-size: 15px;
+    }
+    .mark {
+      width: 28px; height: 28px;
+      border-radius: 8px;
+      background: linear-gradient(145deg, #d4af37, #8a7018);
+      color: #0e0d0b;
+      display: grid;
+      place-items: center;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .nav-label {
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--soft);
+      margin-bottom: 8px;
+      padding: 0 8px;
+    }
+    .nav a {
+      display: block;
+      padding: 8px 10px;
+      border-radius: 8px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 450;
+      margin-bottom: 2px;
+    }
+    .nav a:hover { background: var(--surface-2); color: var(--fg); }
+    .nav a.active {
+      background: var(--gold-soft);
+      color: var(--gold);
+    }
+    .main { min-width: 0; }
+    .top {
+      height: 56px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px;
+      position: sticky;
+      top: 0;
+      background: color-mix(in srgb, var(--bg) 85%, transparent);
+      backdrop-filter: blur(12px);
+      z-index: 10;
+    }
+    .crumbs { color: var(--soft); font-size: 13px; }
+    .crumbs b { color: var(--fg); font-weight: 500; }
+    .search {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      color: var(--soft);
+      font-size: 13px;
+      min-width: 220px;
+      background: var(--surface);
+    }
+    .content { padding: 40px 40px 80px; max-width: 1040px; }
+
+    /* views */
+    .view { display: none; }
+    .view.on { display: block; animation: in 0.35s ease; }
+    @keyframes in {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: none; }
+    }
+
+    .hero-kicker {
+      color: var(--gold);
+      font-size: 11px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      font-weight: 600;
+      margin-bottom: 14px;
+    }
+    .hero h1 {
+      font-family: var(--serif);
+      font-size: clamp(2.6rem, 5vw, 3.8rem);
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      line-height: 0.98;
+      max-width: 12ch;
+      margin-bottom: 16px;
+    }
+    .hero p {
+      color: var(--muted);
+      font-size: 15px;
+      max-width: 42ch;
+      line-height: 1.6;
+      margin-bottom: 28px;
+    }
+    .stats {
+      display: flex;
+      gap: 28px;
+      color: var(--soft);
+      font-size: 13px;
+      margin-bottom: 48px;
+    }
+    .stats strong { color: var(--fg); font-weight: 600; }
+
+    .section-h {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 16px;
+    }
+    .section-h h2 {
+      font-family: var(--serif);
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+    .section-h span { color: var(--soft); font-size: 12px; }
+
+    .paths {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 48px;
+    }
+    .path {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      transition: border-color 0.15s;
+    }
+    .path:hover { border-color: #4a4338; }
+    .path .ico {
+      width: 36px; height: 36px;
+      border-radius: 10px;
+      background: var(--gold-soft);
+      color: var(--gold);
+      display: grid;
+      place-items: center;
+      margin-bottom: 14px;
+      font-size: 14px;
+    }
+    .path h3 {
+      font-family: var(--serif);
+      font-size: 1.35rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .path p { color: var(--muted); font-size: 13px; line-height: 1.5; margin-bottom: 14px; }
+    .path .foot { display: flex; justify-content: space-between; color: var(--soft); font-size: 12px; }
+    .path .foot em { color: var(--gold); font-style: normal; font-weight: 500; }
+
+    .guides {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .guide {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 18px;
+      background: transparent;
+    }
+    .guide:hover { background: var(--surface); }
+    .chips { display: flex; gap: 6px; margin-bottom: 10px; }
+    .chip {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      color: var(--soft);
+    }
+    .chip.gold { color: var(--gold); border-color: #4a3d18; background: var(--gold-soft); }
+    .guide h3 { font-size: 15px; font-weight: 600; margin-bottom: 4px; letter-spacing: -0.01em; }
+    .guide p { color: var(--muted); font-size: 12.5px; line-height: 1.45; }
+    .guide .meta { margin-top: 10px; color: var(--soft); font-size: 12px; }
+
+    /* reader */
+    .reader-wrap {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 180px;
+      gap: 48px;
+      max-width: 900px;
+    }
+    .prose {
+      font-family: var(--serif);
+      font-size: 19px;
+      line-height: 1.75;
+      color: #e8e2d4;
+    }
+    .prose h1 {
+      font-size: clamp(2.2rem, 4vw, 3rem);
+      font-weight: 600;
+      line-height: 1.05;
+      margin-bottom: 12px;
+      letter-spacing: -0.02em;
+    }
+    .prose .lede {
+      font-family: var(--sans);
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.55;
+      max-width: 48ch;
+      margin-bottom: 32px;
+    }
+    .prose h2 {
+      font-size: 1.45rem;
+      margin: 2.2em 0 0.6em;
+      font-weight: 600;
+      color: var(--fg);
+    }
+    .prose p { margin: 0.9em 0; }
+    .prose a { color: var(--gold); text-decoration: underline; text-underline-offset: 3px; }
+    .toc {
+      position: sticky;
+      top: 80px;
+      font-family: var(--sans);
+      font-size: 12px;
+      border-left: 1px solid var(--border);
+      padding-left: 14px;
+    }
+    .toc .lab {
+      color: var(--soft);
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .toc a {
+      display: block;
+      color: var(--muted);
+      padding: 5px 0;
+      border-left: 2px solid transparent;
+      margin-left: -15px;
+      padding-left: 13px;
+    }
+    .toc a.on { color: var(--gold); border-left-color: var(--gold); }
+    .back {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--soft);
+      font-size: 12px;
+      margin-bottom: 24px;
+      font-family: var(--sans);
+    }
+    .back:hover { color: var(--gold); }
+    .switcher {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      display: flex;
+      gap: 8px;
+      z-index: 50;
+    }
+    .switcher button {
+      font-family: var(--sans);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--fg);
+      padding: 10px 14px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    .switcher button:hover { border-color: var(--gold); color: var(--gold); }
+    .banner {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      background: #1a160e;
+      border-bottom: 1px solid #3a3218;
+      color: var(--gold);
+      font-size: 12px;
+      padding: 8px 16px;
+      text-align: center;
+      z-index: 100;
+      font-family: var(--sans);
+    }
+    .banner a { color: var(--fg); text-decoration: underline; margin-left: 8px; }
+    body { padding-top: 34px; }
+    @media (max-width: 900px) {
+      .app { grid-template-columns: 1fr; }
+      .side { display: none; }
+      .paths, .guides { grid-template-columns: 1fr; }
+      .reader-wrap { grid-template-columns: 1fr; }
+      .toc { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="banner">
+    Direction A · Obsidian Library — mockup only
+    <a href="index.html">← All directions</a>
+  </div>
+  <div class="app">
+    <aside class="side">
+      <div class="brand"><span class="mark">AI</span> LearningAI</div>
+      <nav class="nav">
+        <div class="nav-label">Overview</div>
+        <a href="#" class="active" data-go="home">Home</a>
+        <div class="nav-label" style="margin-top:18px">Library</div>
+        <a href="#" data-go="read">AI Engineering</a>
+        <a href="#" data-go="read">Agentic AI</a>
+        <a href="#" data-go="read">LLM Inference</a>
+        <a href="#" data-go="read">AWS</a>
+        <a href="#" data-go="read">Python</a>
+        <a href="#" data-go="read">Interview Prep</a>
+      </nav>
+    </aside>
+    <div class="main">
+      <header class="top">
+        <div class="crumbs">Library / <b id="crumb">Home</b></div>
+        <div class="search">⌕ Search guides… <span style="margin-left:auto;opacity:.5">⌘K</span></div>
+      </header>
+      <div class="content">
+        <!-- HOME -->
+        <section class="view on" id="home">
+          <div class="hero">
+            <div class="hero-kicker">Study OS · Obsidian</div>
+            <h1>A library for serious AI builders</h1>
+            <p>Long-form guides for engineers who ship models, agents, and cloud systems — curated like a private collection.</p>
+            <div class="stats">
+              <span><strong>13</strong> guides</span>
+              <span><strong>4</strong> paths</span>
+              <span><strong>~1,100</strong> min</span>
+            </div>
+          </div>
+          <div class="section-h"><h2>Paths</h2><span>4 curated tracks</span></div>
+          <div class="paths">
+            <article class="path" data-go="read" style="cursor:pointer">
+              <div class="ico">◆</div>
+              <h3>AI Engineer</h3>
+              <p>Build, evaluate, and ship production AI systems end-to-end.</p>
+              <div class="foot"><span>5 guides · ~325 min</span><em>Enter →</em></div>
+            </article>
+            <article class="path" data-go="read" style="cursor:pointer">
+              <div class="ico">◇</div>
+              <h3>Agent Builder</h3>
+              <p>Tool-using agents, planning loops, MCP, and multi-agent design.</p>
+              <div class="foot"><span>4 guides · ~265 min</span><em>Enter →</em></div>
+            </article>
+            <article class="path" data-go="read" style="cursor:pointer">
+              <div class="ico">▲</div>
+              <h3>Cloud AI</h3>
+              <p>AWS, Azure, GCP managed AI platforms side by side.</p>
+              <div class="foot"><span>4 guides · ~185 min</span><em>Enter →</em></div>
+            </article>
+            <article class="path" data-go="read" style="cursor:pointer">
+              <div class="ico">◎</div>
+              <h3>Interview Prep</h3>
+              <p>Frameworks and walkthroughs for AI/ML engineering interviews.</p>
+              <div class="foot"><span>4 guides · ~350 min</span><em>Enter →</em></div>
+            </article>
+          </div>
+          <div class="section-h"><h2>Guides</h2><span>Featured</span></div>
+          <div class="guides">
+            <a class="guide" href="#" data-go="read">
+              <div class="chips"><span class="chip gold">Core</span><span class="chip">AI</span></div>
+              <h3>AI Engineering</h3>
+              <p>Data, training, evaluation, and deployment for production systems.</p>
+              <div class="meta">Intermediate · 55 min</div>
+            </a>
+            <a class="guide" href="#" data-go="read">
+              <div class="chips"><span class="chip gold">Core</span><span class="chip">Agents</span></div>
+              <h3>Agentic AI</h3>
+              <p>Planning loops, tools, memory, and multi-agent orchestration.</p>
+              <div class="meta">Advanced · 70 min</div>
+            </a>
+            <a class="guide" href="#" data-go="read">
+              <div class="chips"><span class="chip">Cloud</span></div>
+              <h3>AWS</h3>
+              <p>Infrastructure, IAM, compute, and the Bedrock AI stack.</p>
+              <div class="meta">Intermediate · 50 min</div>
+            </a>
+            <a class="guide" href="#" data-go="read">
+              <div class="chips"><span class="chip">Fundamentals</span></div>
+              <h3>System Design</h3>
+              <p>Scalability, reliability, and architectural trade-offs.</p>
+              <div class="meta">Intermediate · 80 min</div>
+            </a>
+          </div>
+        </section>
+
+        <!-- READ -->
+        <section class="view" id="read">
+          <a class="back" href="#" data-go="home">← Back to library</a>
+          <div class="reader-wrap">
+            <article class="prose">
+              <h1>Amazon Web Services Guide</h1>
+              <p class="lede">Self-contained reference for AWS. Global infrastructure, core services, networking, and the AI/ML stack with Bedrock.</p>
+              <h2>Mental model & global infrastructure</h2>
+              <p>AWS is organized as regions, availability zones, and edge locations. Think in failure domains first — design for zonal isolation, then regional recovery. The control plane and data plane have different reliability contracts; treat them separately when you reason about outages.</p>
+              <p>Regions are geographic clusters of AZs. Most production systems span at least two AZs. Multi-region is a deliberate cost and complexity trade for true disaster recovery.</p>
+              <h2>Identity & access (IAM)</h2>
+              <p>Everything in AWS is a principal acting on a resource under a policy. Users, roles, and federated identities are principals. Policies are JSON documents evaluated as deny-first. Prefer roles over long-lived keys, and scope permissions to the smallest action set that still works.</p>
+              <h2>Compute & containers</h2>
+              <p>EC2 is the substrate. EKS and ECS orchestrate containers; Fargate removes node management. Lambda is for event-driven work with hard duration and package limits. Choose based on control needs, cold-start tolerance, and operational budget.</p>
+            </article>
+            <aside class="toc">
+              <div class="lab">On this page</div>
+              <a class="on" href="#">Mental model</a>
+              <a href="#">Identity & access</a>
+              <a href="#">Compute</a>
+              <a href="#">Storage</a>
+              <a href="#">AI & ML</a>
+            </aside>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+  <div class="switcher">
+    <button type="button" data-go="home">Home</button>
+    <button type="button" data-go="read">Article</button>
+  </div>
+  <script>
+    function go(id) {
+      document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === id));
+      document.getElementById('crumb').textContent = id === 'home' ? 'Home' : 'AWS';
+      document.querySelectorAll('.nav a').forEach(a => {
+        a.classList.toggle('active', (id === 'home' && a.dataset.go === 'home') || (id === 'read' && a.textContent.includes('AWS')));
+      });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    document.querySelectorAll('[data-go]').forEach(el => {
+      el.addEventListener('click', e => { e.preventDefault(); go(el.dataset.go); });
+    });
+  </script>
+</body>
+</html>

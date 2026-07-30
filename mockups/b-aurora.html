@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>B · Aurora Console — LearningAI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #07080f;
+      --surface: rgba(22, 24, 38, 0.72);
+      --surface-solid: #12141f;
+      --border: rgba(255,255,255,0.08);
+      --fg: #f4f5fb;
+      --muted: #9aa0b8;
+      --soft: #6b7190;
+      --indigo: #7c6cf0;
+      --violet: #a78bfa;
+      --cyan: #5eead4;
+      --sans: "Inter", system-ui, sans-serif;
+      --serif: "Source Serif 4", Georgia, serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--fg);
+      min-height: 100vh;
+      font-size: 14px;
+      overflow-x: hidden;
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: -20% -10% auto;
+      height: 70vh;
+      background:
+        radial-gradient(ellipse 50% 40% at 20% 20%, rgba(124, 108, 240, 0.28), transparent),
+        radial-gradient(ellipse 40% 35% at 80% 10%, rgba(94, 234, 212, 0.12), transparent),
+        radial-gradient(ellipse 45% 40% at 60% 40%, rgba(167, 139, 250, 0.15), transparent);
+      pointer-events: none;
+      z-index: 0;
+    }
+    a { color: inherit; text-decoration: none; }
+    .app {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: 64px 1fr;
+      min-height: 100vh;
+    }
+    .rail {
+      border-right: 1px solid var(--border);
+      background: rgba(10, 11, 18, 0.6);
+      backdrop-filter: blur(16px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 18px 0;
+      gap: 10px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+    }
+    .rail .logo {
+      width: 36px; height: 36px;
+      border-radius: 11px;
+      background: linear-gradient(135deg, var(--indigo), var(--cyan));
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      font-size: 11px;
+      color: #0a0b12;
+      margin-bottom: 12px;
+    }
+    .rail button {
+      width: 40px; height: 40px;
+      border-radius: 12px;
+      border: 0;
+      background: transparent;
+      color: var(--soft);
+      cursor: pointer;
+      font-size: 15px;
+    }
+    .rail button.on, .rail button:hover {
+      background: rgba(124, 108, 240, 0.15);
+      color: var(--violet);
+    }
+    .shell { min-width: 0; }
+    .top {
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px;
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(16px);
+      background: rgba(7, 8, 15, 0.5);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .brand-text {
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      font-size: 15px;
+    }
+    .brand-text span { color: var(--soft); font-weight: 500; margin-left: 8px; }
+    .search {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      height: 38px;
+      padding: 0 14px;
+      min-width: 280px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.04);
+      color: var(--soft);
+      font-size: 13px;
+    }
+    .content { padding: 36px 36px 80px; max-width: 1120px; }
+
+    .view { display: none; }
+    .view.on { display: block; animation: fade 0.3s ease; }
+    @keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 24px;
+      margin-bottom: 40px;
+    }
+    .hero-card {
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      background: var(--surface);
+      backdrop-filter: blur(20px);
+      padding: 32px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-card::after {
+      content: "";
+      position: absolute;
+      right: -20%;
+      top: -40%;
+      width: 60%;
+      height: 120%;
+      background: radial-gradient(circle, rgba(124,108,240,0.2), transparent 70%);
+      pointer-events: none;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 999px;
+      background: rgba(124, 108, 240, 0.15);
+      color: var(--violet);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+    .hero h1 {
+      font-size: clamp(1.9rem, 3.5vw, 2.6rem);
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1.05;
+      margin-bottom: 12px;
+      max-width: 14ch;
+    }
+    .hero h1 em {
+      font-style: normal;
+      background: linear-gradient(90deg, var(--violet), var(--cyan));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .hero p { color: var(--muted); font-size: 14px; line-height: 1.55; max-width: 40ch; margin-bottom: 20px; }
+    .cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      border-radius: 11px;
+      background: linear-gradient(135deg, var(--indigo), #5b4fd1);
+      color: white;
+      font-weight: 600;
+      font-size: 13px;
+      border: 0;
+      cursor: pointer;
+      box-shadow: 0 8px 24px rgba(124, 108, 240, 0.35);
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-rows: 1fr 1fr;
+      gap: 14px;
+    }
+    .stat {
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: var(--surface);
+      backdrop-filter: blur(16px);
+      padding: 18px 20px;
+    }
+    .stat b {
+      display: block;
+      font-size: 1.6rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-bottom: 2px;
+    }
+    .stat span { color: var(--soft); font-size: 12px; }
+
+    .h-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 14px;
+    }
+    .h-row h2 { font-size: 15px; font-weight: 700; letter-spacing: -0.02em; }
+    .h-row span { color: var(--soft); font-size: 12px; }
+
+    .paths {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 36px;
+    }
+    .path {
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: rgba(18, 20, 31, 0.8);
+      padding: 16px;
+      cursor: pointer;
+      transition: border-color 0.15s, transform 0.15s;
+    }
+    .path:hover {
+      border-color: rgba(124, 108, 240, 0.45);
+      transform: translateY(-2px);
+    }
+    .path .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--cyan);
+      margin-bottom: 14px;
+      box-shadow: 0 0 12px var(--cyan);
+    }
+    .path:nth-child(2) .dot { background: var(--violet); box-shadow: 0 0 12px var(--violet); }
+    .path:nth-child(3) .dot { background: #60a5fa; box-shadow: 0 0 12px #60a5fa; }
+    .path:nth-child(4) .dot { background: #fbbf24; box-shadow: 0 0 12px #fbbf24; }
+    .path h3 { font-size: 14px; font-weight: 700; margin-bottom: 6px; letter-spacing: -0.02em; }
+    .path p { color: var(--muted); font-size: 12px; line-height: 1.45; margin-bottom: 12px; min-height: 3.2em; }
+    .path .m { color: var(--soft); font-size: 11px; }
+
+    .guides {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    .guide {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      background: rgba(18, 20, 31, 0.55);
+      cursor: pointer;
+    }
+    .guide:hover { border-color: rgba(255,255,255,0.16); }
+    .guide .tag {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--violet);
+      margin-bottom: 8px;
+    }
+    .guide h3 { font-size: 14px; font-weight: 650; margin-bottom: 4px; }
+    .guide p { color: var(--muted); font-size: 12px; line-height: 1.4; }
+    .guide .m { margin-top: 10px; color: var(--soft); font-size: 11px; }
+
+    /* reader */
+    .reader {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 200px;
+      gap: 40px;
+      max-width: 920px;
+    }
+    .prose {
+      font-family: var(--serif);
+      font-size: 17.5px;
+      line-height: 1.75;
+      color: #e4e6f2;
+    }
+    .prose .back {
+      font-family: var(--sans);
+      font-size: 12px;
+      color: var(--soft);
+      display: inline-block;
+      margin-bottom: 20px;
+    }
+    .prose .back:hover { color: var(--violet); }
+    .prose h1 {
+      font-family: var(--sans);
+      font-size: clamp(1.9rem, 3.5vw, 2.5rem);
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1.05;
+      margin-bottom: 10px;
+    }
+    .prose .lede {
+      font-family: var(--sans);
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 28px;
+      max-width: 48ch;
+    }
+    .prose h2 {
+      font-family: var(--sans);
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin: 2em 0 0.6em;
+      color: var(--fg);
+    }
+    .prose p { margin: 0.9em 0; }
+    .toc {
+      position: sticky;
+      top: 84px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--surface);
+      backdrop-filter: blur(16px);
+      padding: 14px 14px 12px;
+      font-size: 12px;
+      height: fit-content;
+    }
+    .toc .lab {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--soft);
+      margin-bottom: 10px;
+    }
+    .toc a {
+      display: block;
+      padding: 7px 10px;
+      border-radius: 8px;
+      color: var(--muted);
+      margin-bottom: 2px;
+    }
+    .toc a.on {
+      background: rgba(124, 108, 240, 0.15);
+      color: var(--violet);
+    }
+
+    .banner {
+      position: fixed; top: 0; left: 0; right: 0;
+      z-index: 100;
+      background: #12101f;
+      border-bottom: 1px solid rgba(124,108,240,0.35);
+      color: var(--violet);
+      font-size: 12px;
+      padding: 8px 16px;
+      text-align: center;
+    }
+    .banner a { color: var(--fg); text-decoration: underline; margin-left: 8px; }
+    body { padding-top: 34px; }
+    .switcher {
+      position: fixed; bottom: 20px; right: 20px;
+      display: flex; gap: 8px; z-index: 50;
+    }
+    .switcher button {
+      font-family: var(--sans);
+      background: var(--surface-solid);
+      border: 1px solid var(--border);
+      color: var(--fg);
+      padding: 10px 14px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    @media (max-width: 960px) {
+      .hero, .paths, .guides, .reader { grid-template-columns: 1fr; }
+      .paths { grid-template-columns: 1fr 1fr; }
+      .toc { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="banner">
+    Direction B · Aurora Console — mockup only
+    <a href="index.html">← All directions</a>
+  </div>
+  <div class="app">
+    <aside class="rail">
+      <div class="logo">AI</div>
+      <button class="on" type="button" data-go="home" title="Home">⌂</button>
+      <button type="button" data-go="read" title="Guides">☰</button>
+      <button type="button" title="Search">⌕</button>
+      <button type="button" title="Theme" style="margin-top:auto">☾</button>
+    </aside>
+    <div class="shell">
+      <header class="top">
+        <div class="brand-text">LearningAI <span>/ Study OS</span></div>
+        <div class="search">⌕ Search everything… <span style="margin-left:auto;opacity:.45">⌘K</span></div>
+      </header>
+      <div class="content">
+        <section class="view on" id="home">
+          <div class="hero">
+            <div class="hero-card">
+              <div class="pill">● Live curriculum</div>
+              <h1>Your AI engineering <em>command center</em></h1>
+              <p>Paths, long-form guides, and interview drills — organized for deep work, not doom-scrolling.</p>
+              <button class="cta" type="button" data-go="read">Start AI Engineer path →</button>
+            </div>
+            <div class="stat-grid">
+              <div class="stat"><b>13</b><span>Study guides</span></div>
+              <div class="stat"><b>4</b><span>Learning paths</span></div>
+            </div>
+          </div>
+
+          <div class="h-row"><h2>Learning paths</h2><span>Pick a track</span></div>
+          <div class="paths">
+            <div class="path" data-go="read"><div class="dot"></div><h3>AI Engineer</h3><p>Production systems from data to serving.</p><div class="m">5 guides · 325 min</div></div>
+            <div class="path" data-go="read"><div class="dot"></div><h3>Agent Builder</h3><p>Tools, MCP, memory, multi-agent.</p><div class="m">4 guides · 265 min</div></div>
+            <div class="path" data-go="read"><div class="dot"></div><h3>Cloud AI</h3><p>AWS · Azure · GCP comparison.</p><div class="m">4 guides · 185 min</div></div>
+            <div class="path" data-go="read"><div class="dot"></div><h3>Interview Prep</h3><p>System design + ML interviews.</p><div class="m">4 guides · 350 min</div></div>
+          </div>
+
+          <div class="h-row"><h2>Popular guides</h2><span>Jump in</span></div>
+          <div class="guides">
+            <div class="guide" data-go="read"><div class="tag">AI · Core</div><h3>AI Engineering</h3><p>End-to-end production AI systems.</p><div class="m">55 min</div></div>
+            <div class="guide" data-go="read"><div class="tag">Agents · Core</div><h3>Agentic AI</h3><p>Planning, tools, orchestration.</p><div class="m">70 min</div></div>
+            <div class="guide" data-go="read"><div class="tag">Cloud</div><h3>AWS Complete</h3><p>Infra + Bedrock AI stack.</p><div class="m">50 min</div></div>
+          </div>
+        </section>
+
+        <section class="view" id="read">
+          <div class="reader">
+            <article class="prose">
+              <a class="back" href="#" data-go="home">← Workspace home</a>
+              <h1>Amazon Web Services Guide</h1>
+              <p class="lede">Self-contained reference for AWS — infrastructure, IAM, compute, and the Bedrock AI/ML stack.</p>
+              <h2>Mental model & global infrastructure</h2>
+              <p>AWS is organized as regions, availability zones, and edge locations. Think in failure domains first — design for zonal isolation, then regional recovery. The control plane and data plane have different reliability contracts.</p>
+              <p>Most production systems span at least two AZs. Multi-region is a deliberate cost and complexity trade for true disaster recovery.</p>
+              <h2>Identity & access (IAM)</h2>
+              <p>Everything in AWS is a principal acting on a resource under a policy. Prefer roles over long-lived keys, and scope permissions to the smallest action set that still works.</p>
+              <h2>Compute & containers</h2>
+              <p>EC2 is the substrate. EKS and ECS orchestrate containers; Fargate removes node management. Lambda fits event-driven work with hard duration limits.</p>
+            </article>
+            <aside class="toc">
+              <div class="lab">Outline</div>
+              <a class="on" href="#">Infrastructure</a>
+              <a href="#">IAM</a>
+              <a href="#">Compute</a>
+              <a href="#">Storage</a>
+              <a href="#">AI & ML</a>
+            </aside>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+  <div class="switcher">
+    <button type="button" data-go="home">Home</button>
+    <button type="button" data-go="read">Article</button>
+  </div>
+  <script>
+    function go(id) {
+      document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === id));
+      document.querySelectorAll('.rail button[data-go]').forEach(b => b.classList.toggle('on', b.dataset.go === id));
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    document.querySelectorAll('[data-go]').forEach(el => {
+      el.addEventListener('click', e => { e.preventDefault(); go(el.dataset.go); });
+    });
+  </script>
+</body>
+</html>

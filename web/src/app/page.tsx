@@ -1,15 +1,10 @@
+import Link from "next/link";
 import { AppShell } from "@/components/AppShell";
-import { PathCard } from "@/components/PathCard";
-import { GuideCard, fromGuide, type GuideCardData } from "@/components/GuideCard";
-import { ContinueLearning } from "@/components/ContinueLearning";
-import { RecommendedNext } from "@/components/RecommendedNext";
-import { PopularTopics } from "@/components/PopularTopics";
+import { fromGuide, type GuideCardData } from "@/components/GuideCard";
 import { GUIDES, GLOSSARY_META } from "@/lib/guides";
 import { LEARNING_PATHS } from "@/lib/learningPaths";
 import styles from "./page.module.css";
 
-/** Throws if a path references a guide slug that doesn't exist. Runs at module
- *  load so drift between the two data files is caught immediately. */
 function resolvePath(path: (typeof LEARNING_PATHS)[number]) {
   const guides = path.guideSlugs.map((slug) => {
     const g = GUIDES.find((x) => x.slug === slug);
@@ -44,76 +39,80 @@ export default function HomePage() {
     glossaryCard,
   ];
 
-  const totalMinutes = allCards.reduce((s, c) => s + (c.readMinutes ?? 0), 0);
+  const featured = allCards[0];
+  const rest = allCards.slice(1);
 
   return (
-    <AppShell
-      rightRail={
-        <>
-          <ContinueLearning />
-          <RecommendedNext />
-          <PopularTopics />
-        </>
-      }
-    >
+    <AppShell wide>
       <div className={styles.home}>
-        <header className={styles.hero}>
-          <div className={styles.heroBadge}>
-            <span className={styles.heroBadgeDot} aria-hidden />
-            Study OS
+        <header className={styles.masthead}>
+          <div className={styles.mastLeft}>
+            <div className={styles.kicker}>Study folio · Vol. 02</div>
+            <h1 className={styles.h1}>Learn AI like a craft</h1>
           </div>
-          <h1 className={styles.h1}>
-            Learn AI engineering,{" "}
-            <span className={styles.h1Accent}>end to end</span>
-          </h1>
-          <p className={styles.subhead}>
-            A focused library of long-form study guides for AI engineers, agent builders,
-            and cloud practitioners. Pick a path — or browse by topic.
-          </p>
-          <div className={styles.heroMeta}>
-            <span className={styles.heroMetaItem}>
-              <strong>{allCards.length}</strong> guides
-            </span>
-            <span className={styles.heroMetaSep} aria-hidden />
-            <span className={styles.heroMetaItem}>
-              <strong>{paths.length}</strong> learning paths
-            </span>
-            <span className={styles.heroMetaSep} aria-hidden />
-            <span className={styles.heroMetaItem}>
-              <strong>~{totalMinutes}</strong> min of reading
-            </span>
+          <div className={styles.mastRight}>
+            <strong className={styles.statNum}>{allCards.length} guides</strong>
+            <p className={styles.statCopy}>
+              Long-form notes for engineers who prefer depth over dashboards.
+              Paths for builders, agents, cloud, and interviews.
+            </p>
           </div>
         </header>
 
         <section className={styles.section} aria-labelledby="paths-heading">
           <div className={styles.sectionHead}>
             <h2 id="paths-heading" className={styles.h2}>Learning paths</h2>
-            <span className={styles.sectionMeta}>{paths.length} curated tracks</span>
+            <span className={styles.sectionMeta}>{paths.length} tracks</span>
           </div>
-          <div className={styles.pathGrid}>
-            {paths.map((p) => (
-              <PathCard
+          <div className={styles.pathStrip}>
+            {paths.map((p, i) => (
+              <Link
                 key={p.id}
-                title={p.title}
-                description={p.description}
                 href={`/guides/${p.guides[0].slug}`}
-                guideCount={p.guides.length}
-                totalReadMinutes={p.totalReadMinutes}
-                accent={p.accent}
-                icon={pathIcon(p.id)}
-              />
+                className={styles.pathCell}
+              >
+                <span className={styles.pathNum}>{String(i + 1).padStart(2, "0")}</span>
+                <h3 className={styles.pathTitle}>{p.title}</h3>
+                <p className={styles.pathDesc}>{p.description}</p>
+                <span className={styles.pathMeta}>
+                  {p.guides.length} guides · {p.totalReadMinutes} min
+                </span>
+              </Link>
             ))}
           </div>
         </section>
 
         <section className={styles.section} aria-labelledby="guides-heading">
           <div className={styles.sectionHead}>
-            <h2 id="guides-heading" className={styles.h2}>All guides</h2>
+            <h2 id="guides-heading" className={styles.h2}>From the library</h2>
             <span className={styles.sectionMeta}>{allCards.length} guides</span>
           </div>
-          <div className={styles.guideGrid}>
-            {allCards.map((c) => (
-              <GuideCard key={c.href} data={c} />
+          <div className={styles.library}>
+            {featured && (
+              <Link href={featured.href} className={`${styles.card} ${styles.featured}`}>
+                <span className={styles.cat}>
+                  Lead · {featured.category}
+                  {featured.status ? ` · ${featured.status}` : ""}
+                </span>
+                <h3 className={styles.cardTitle}>{featured.title}</h3>
+                <p className={styles.cardDesc}>{featured.description}</p>
+                <span className={styles.cardMeta}>
+                  {featured.difficulty} · {featured.readMinutes ?? 30} min read
+                </span>
+              </Link>
+            )}
+            {rest.map((c) => (
+              <Link key={c.href} href={c.href} className={styles.card}>
+                <span className={styles.cat}>
+                  {c.category}
+                  {c.status ? ` · ${c.status}` : ""}
+                </span>
+                <h3 className={styles.cardTitle}>{c.title}</h3>
+                <p className={styles.cardDesc}>{c.description}</p>
+                <span className={styles.cardMeta}>
+                  {c.difficulty ?? "Intermediate"} · {c.readMinutes ?? 30} min
+                </span>
+              </Link>
             ))}
           </div>
         </section>
@@ -136,19 +135,4 @@ export default function HomePage() {
       </div>
     </AppShell>
   );
-}
-
-function pathIcon(id: string): React.ReactNode {
-  switch (id) {
-    case "ai-engineer":
-      return <>◆</>;
-    case "agent-builder":
-      return <>◇</>;
-    case "cloud-ai":
-      return <>▲</>;
-    case "interview-prep":
-      return <>◎</>;
-    default:
-      return <>·</>;
-  }
 }

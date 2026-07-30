@@ -10,7 +10,6 @@ export const metadata = {
     "Brief definitions of the key concepts and acronyms used across the Learning AI guides.",
 };
 
-// Use a green accent for the glossary, distinct from the guide colors.
 const glossaryGuide: GuideMeta = {
   slug: "glossary" as GuideMeta["slug"],
   title: "Glossary",
@@ -34,7 +33,7 @@ const breadcrumb = [
 
 export default function GlossaryPage() {
   return (
-    <AppShell breadcrumb={breadcrumb} defaultCollapsed rightRail={<GuideTOC />}>
+    <AppShell breadcrumb={breadcrumb} rightRail={<GuideTOC />}>
       <GuideLayout guide={glossaryGuide} currentSlug="glossary">
         <Mdx />
       </GuideLayout>

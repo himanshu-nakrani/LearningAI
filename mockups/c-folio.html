@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>C · Paper Folio — LearningAI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #f6f1e7;
+      --surface: #fffcf7;
+      --ink: #1a1814;
+      --muted: #5c574e;
+      --soft: #8a8478;
+      --line: #e4dccb;
+      --coral: #e04b35;
+      --coral-soft: #fde8e3;
+      --navy: #1e3a5f;
+      --serif: "Fraunces", Georgia, serif;
+      --sans: "Manrope", system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--ink);
+      min-height: 100vh;
+      font-size: 14px;
+      background-image:
+        radial-gradient(circle at 12% 8%, rgba(224, 75, 53, 0.06), transparent 40%),
+        radial-gradient(circle at 90% 0%, rgba(30, 58, 95, 0.05), transparent 35%);
+    }
+    a { color: inherit; text-decoration: none; }
+    .frame { max-width: 1180px; margin: 0 auto; padding: 0 28px 80px; }
+
+    .top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 22px 0;
+      border-bottom: 1px solid var(--line);
+      position: sticky;
+      top: 34px;
+      background: color-mix(in srgb, var(--bg) 90%, transparent);
+      backdrop-filter: blur(10px);
+      z-index: 10;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      font-size: 16px;
+    }
+    .mark {
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      background: var(--coral);
+      color: white;
+      display: grid;
+      place-items: center;
+      font-size: 11px;
+      font-weight: 800;
+    }
+    .nav {
+      display: flex;
+      gap: 22px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 500;
+    }
+    .nav a:hover, .nav a.on { color: var(--ink); }
+    .search {
+      border: 1px solid var(--line);
+      background: var(--surface);
+      border-radius: 999px;
+      padding: 8px 14px;
+      color: var(--soft);
+      font-size: 13px;
+      min-width: 180px;
+    }
+
+    .view { display: none; }
+    .view.on { display: block; animation: up 0.35s ease; }
+    @keyframes up { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+    .masthead {
+      padding: 48px 0 36px;
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 40px;
+      align-items: end;
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 36px;
+    }
+    .kicker {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--coral);
+      margin-bottom: 14px;
+    }
+    .masthead h1 {
+      font-family: var(--serif);
+      font-size: clamp(2.8rem, 6vw, 4.2rem);
+      font-weight: 600;
+      letter-spacing: -0.03em;
+      line-height: 0.96;
+      max-width: 11ch;
+    }
+    .masthead .right {
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.6;
+      padding-bottom: 8px;
+    }
+    .masthead .right strong {
+      display: block;
+      font-family: var(--serif);
+      font-size: 2rem;
+      color: var(--ink);
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      margin-bottom: 4px;
+    }
+
+    .paths {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 48px;
+      background: var(--surface);
+    }
+    .path {
+      padding: 22px 18px;
+      border-right: 1px solid var(--line);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .path:last-child { border-right: 0; }
+    .path:hover { background: #faf6ee; }
+    .path .n {
+      font-family: var(--serif);
+      font-size: 2rem;
+      color: var(--coral);
+      font-weight: 600;
+      line-height: 1;
+      margin-bottom: 12px;
+    }
+    .path h3 {
+      font-family: var(--serif);
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .path p { color: var(--muted); font-size: 12.5px; line-height: 1.45; margin-bottom: 14px; min-height: 3.5em; }
+    .path .m { font-size: 11px; color: var(--soft); font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+
+    .sec {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 18px;
+    }
+    .sec h2 {
+      font-family: var(--serif);
+      font-size: 1.75rem;
+      font-weight: 600;
+    }
+    .sec span { color: var(--soft); font-size: 12px; }
+
+    .guides {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr 1fr;
+      gap: 16px;
+    }
+    .guide {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: 22px;
+      cursor: pointer;
+      transition: box-shadow 0.15s, transform 0.15s;
+    }
+    .guide:hover {
+      box-shadow: 0 12px 32px rgba(26, 24, 20, 0.08);
+      transform: translateY(-2px);
+    }
+    .guide.featured {
+      grid-row: span 2;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      min-height: 280px;
+      background:
+        linear-gradient(180deg, transparent 20%, rgba(26,24,20,0.85)),
+        linear-gradient(135deg, #1e3a5f, #2d4a6f);
+      color: #f6f1e7;
+      border: 0;
+    }
+    .guide.featured p { color: rgba(246,241,231,0.75); }
+    .guide.featured .m { color: rgba(246,241,231,0.55); }
+    .guide .cat {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--coral);
+      margin-bottom: 10px;
+    }
+    .guide.featured .cat { color: #f0a090; }
+    .guide h3 {
+      font-family: var(--serif);
+      font-size: 1.35rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+      letter-spacing: -0.02em;
+    }
+    .guide.featured h3 { font-size: 1.85rem; }
+    .guide p { color: var(--muted); font-size: 13px; line-height: 1.5; }
+    .guide .m { margin-top: 14px; font-size: 12px; color: var(--soft); }
+
+    /* reader — distraction free */
+    .reader-shell {
+      max-width: 680px;
+      margin: 0 auto;
+      padding-top: 20px;
+    }
+    .prose {
+      font-family: var(--serif);
+      font-size: 19.5px;
+      line-height: 1.8;
+      color: var(--ink);
+    }
+    .prose .back {
+      font-family: var(--sans);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--soft);
+      display: inline-block;
+      margin-bottom: 28px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .prose .back:hover { color: var(--coral); }
+    .prose h1 {
+      font-size: clamp(2.2rem, 5vw, 3.1rem);
+      font-weight: 600;
+      letter-spacing: -0.03em;
+      line-height: 1.05;
+      margin-bottom: 14px;
+    }
+    .prose .lede {
+      font-family: var(--sans);
+      font-size: 15px;
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: 12px;
+      max-width: 46ch;
+    }
+    .prose .rule {
+      width: 48px;
+      height: 3px;
+      background: var(--coral);
+      margin: 28px 0 32px;
+      border: 0;
+    }
+    .prose h2 {
+      font-size: 1.4rem;
+      font-weight: 600;
+      margin: 2.2em 0 0.55em;
+      letter-spacing: -0.02em;
+    }
+    .prose p { margin: 0.95em 0; }
+    .prose a { color: var(--coral); text-decoration: underline; text-underline-offset: 3px; }
+
+    .banner {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: var(--ink);
+      color: #f6f1e7;
+      font-size: 12px;
+      padding: 8px 16px;
+      text-align: center;
+    }
+    .banner a { color: #f0a090; text-decoration: underline; margin-left: 8px; }
+    body { padding-top: 34px; }
+    .switcher {
+      position: fixed; bottom: 20px; right: 20px;
+      display: flex; gap: 8px; z-index: 50;
+    }
+    .switcher button {
+      font-family: var(--sans);
+      background: var(--ink);
+      border: 0;
+      color: #f6f1e7;
+      padding: 10px 16px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    @media (max-width: 900px) {
+      .masthead, .paths, .guides { grid-template-columns: 1fr; }
+      .path { border-right: 0; border-bottom: 1px solid var(--line); }
+      .guide.featured { grid-row: auto; min-height: 200px; }
+      .nav { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="banner">
+    Direction C · Paper Folio — mockup only
+    <a href="index.html">← All directions</a>
+  </div>
+  <div class="frame">
+    <header class="top">
+      <div class="brand"><span class="mark">AI</span> LearningAI</div>
+      <nav class="nav">
+        <a class="on" href="#" data-go="home">Home</a>
+        <a href="#" data-go="read">Guides</a>
+        <a href="#">Paths</a>
+        <a href="#">Glossary</a>
+      </nav>
+      <div class="search">Search guides…</div>
+    </header>
+
+    <section class="view on" id="home">
+      <div class="masthead">
+        <div>
+          <div class="kicker">Study folio · Vol. 02</div>
+          <h1>Learn AI like a craft</h1>
+        </div>
+        <div class="right">
+          <strong>13 guides</strong>
+          Long-form notes for engineers who prefer depth over dashboards. Paths for builders, agents, cloud, and interviews.
+        </div>
+      </div>
+
+      <div class="sec"><h2>Learning paths</h2><span>Four tracks</span></div>
+      <div class="paths">
+        <div class="path" data-go="read">
+          <div class="n">01</div>
+          <h3>AI Engineer</h3>
+          <p>Ship production AI — data, training, eval, serving.</p>
+          <div class="m">5 guides · 325 min</div>
+        </div>
+        <div class="path" data-go="read">
+          <div class="n">02</div>
+          <h3>Agent Builder</h3>
+          <p>Tools, planning loops, MCP, multi-agent systems.</p>
+          <div class="m">4 guides · 265 min</div>
+        </div>
+        <div class="path" data-go="read">
+          <div class="n">03</div>
+          <h3>Cloud AI</h3>
+          <p>AWS, Azure, GCP managed platforms compared.</p>
+          <div class="m">4 guides · 185 min</div>
+        </div>
+        <div class="path" data-go="read">
+          <div class="n">04</div>
+          <h3>Interview Prep</h3>
+          <p>ML system design and engineering interviews.</p>
+          <div class="m">4 guides · 350 min</div>
+        </div>
+      </div>
+
+      <div class="sec"><h2>From the library</h2><span>Featured reading</span></div>
+      <div class="guides">
+        <div class="guide featured" data-go="read">
+          <div class="cat">Lead story · Cloud</div>
+          <h3>Amazon Web Services — Complete Guide</h3>
+          <p>Infrastructure, IAM, compute, and the Bedrock AI stack in one self-contained reference.</p>
+          <div class="m">Intermediate · 50 min read</div>
+        </div>
+        <div class="guide" data-go="read">
+          <div class="cat">AI · Core</div>
+          <h3>AI Engineering</h3>
+          <p>End-to-end production systems.</p>
+          <div class="m">55 min</div>
+        </div>
+        <div class="guide" data-go="read">
+          <div class="cat">Agents · Core</div>
+          <h3>Agentic AI</h3>
+          <p>Tools, memory, multi-agent design.</p>
+          <div class="m">70 min</div>
+        </div>
+        <div class="guide" data-go="read">
+          <div class="cat">Fundamentals</div>
+          <h3>System Design</h3>
+          <p>Scale, reliability, trade-offs.</p>
+          <div class="m">80 min</div>
+        </div>
+        <div class="guide" data-go="read">
+          <div class="cat">Interview</div>
+          <h3>Interview Prep</h3>
+          <p>Frameworks that stick under pressure.</p>
+          <div class="m">120 min</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="view" id="read">
+      <div class="reader-shell">
+        <article class="prose">
+          <a class="back" href="#" data-go="home">← Folio home</a>
+          <h1>Amazon Web Services Guide</h1>
+          <p class="lede">Self-contained reference for AWS. Global infrastructure, core services, networking, and the AI/ML stack with Bedrock.</p>
+          <hr class="rule" />
+          <h2>Mental model & global infrastructure</h2>
+          <p>AWS is organized as regions, availability zones, and edge locations. Think in failure domains first — design for zonal isolation, then regional recovery. The control plane and data plane have different reliability contracts; treat them separately when you reason about outages.</p>
+          <p>Regions are geographic clusters of AZs. Most production systems span at least two AZs. Multi-region is a deliberate cost and complexity trade for true disaster recovery.</p>
+          <h2>Identity & access (IAM)</h2>
+          <p>Everything in AWS is a principal acting on a resource under a policy. Users, roles, and federated identities are principals. Prefer roles over long-lived keys, and scope permissions to the smallest action set that still works.</p>
+          <h2>Compute & containers</h2>
+          <p>EC2 is the substrate. EKS and ECS orchestrate containers; Fargate removes node management. Lambda is for event-driven work with hard duration and package limits.</p>
+        </article>
+      </div>
+    </section>
+  </div>
+  <div class="switcher">
+    <button type="button" data-go="home">Home</button>
+    <button type="button" data-go="read">Article</button>
+  </div>
+  <script>
+    function go(id) {
+      document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === id));
+      document.querySelectorAll('.nav a').forEach(a => a.classList.toggle('on', a.dataset.go === id));
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    document.querySelectorAll('[data-go]').forEach(el => {
+      el.addEventListener('click', e => { e.preventDefault(); go(el.dataset.go); });
+    });
+  </script>
+</body>
+</html>

@@ -64,10 +64,13 @@ Self-attention computes weighted sums of values based on Q-K similarity—a perm
 
 Variants: (1) **Sinusoidal** (original Transformer)—deterministic sin/cos functions of position; extrapolates to longer sequences in theory. (2) **Learned absolute**—a trainable embedding per position; simple but limited to trained length. (3) **Relative position encoding**—encodes pairwise distances directly in attention scores (T5, Transformer-XL). (4) **RoPE** (LLaMA, GPT-NeoX)—rotates Q and K vectors by an angle proportional to position, so dot products naturally encode relative position. (5) **ALiBi**—adds a linear bias to attention scores; great for length extrapolation. RoPE has become the modern default.
 
-### What are embeddings?
-An embedding is a **dense, continuous vector representation** of a discrete object (word, sentence, image, user, product). Trained models place semantically similar items near each other in vector space, so geometry encodes meaning. The classic example: in word2vec, `vec("king") - vec("man") + vec("woman") ≈ vec("queen")`.
+### What are embeddings (token vs sentence)?
+An embedding is a **dense, continuous vector representation** of a discrete object (token, sentence, image, user). Trained models map symbolic items into a continuous geometric space where distance approximates semantic or syntactic similarity.
 
-In LLMs there are two embedding types: (1) **Token embeddings** inside the model—the input lookup table converting token IDs to vectors that flow through the network; (2) **Sentence/document embeddings**—the output of dedicated encoder models (BGE, E5, OpenAI text-embedding-3) that compress entire passages into one vector for retrieval, clustering, classification, or recommendation. Embeddings are the bridge between symbolic data and neural computation, and the foundation of vector search and RAG.
+In Transformer LLMs, distinguish three layers:
+1. **Token embeddings ($W_e \in \mathbb{R}^{V \times d}$)**: the static lookup table mapping vocabulary token IDs to vectors entering the first layer, combined with positional encodings.
+2. **Contextual hidden states**: token representations produced after flowing through self-attention and FFN layers, dynamically conditioned on surrounding context.
+3. **Sentence/document embeddings**: output of dedicated bi-encoder models (BGE, E5, Voyage, OpenAI text-embedding-3) that pool contextual token states (via mean pooling or `[CLS]`) into a single vector for retrieval and semantic search *(covered in §6 Vector Databases)*.
 
 ### Explain Q, K, V in attention.
 Attention is best understood as **soft, content-based retrieval**. For each token, three learned linear projections produce:
@@ -693,16 +696,13 @@ Embedding models are neural networks (typically Transformer encoders) that map t
 
 Popular text models: **OpenAI text-embedding-3-small/large** (1536/3072 dim, multilingual, supports Matryoshka truncation); **Cohere Embed v3** (multilingual, optimized for retrieval); **Voyage AI** (domain-specialized variants for code, finance, legal); **open-source: BGE, E5, GTE, Nomic, jina-embeddings** (free, fine-tunable). For code: **CodeBERT, Voyage-code**. Multimodal: **CLIP, SigLIP, ImageBind**. Choose based on MTEB benchmark, domain fit, language coverage, dimension/cost trade-off, and license.
 
-### How to choose an embedding model?
-Evaluate on:
-- **Quality**: check the **MTEB leaderboard** for general English; domain-specific benchmarks (BEIR for retrieval, MIRACL for multilingual) when available. Better yet, build your own eval set from real queries and ground-truth docs.
-- **Domain match**: legal, medical, code, multilingual—specialized models (Voyage, Cohere) often beat general models on domain.
-- **Dimensionality**: higher = better quality, more storage/compute. Matryoshka-trained models (OpenAI text-embedding-3, Nomic) let you truncate flexibly post-hoc.
-- **Context length**: must accommodate your chunk size; long-input embeddings (Voyage-3-large, OpenAI-3) handle 8K+ tokens.
-- **Cost**: API vs self-hosted; per-token pricing for APIs.
-- **Latency / throughput**: critical for high-QPS ingestion or real-time embedding.
-- **License**: open-weight models (BGE, E5, Nomic) can be fine-tuned and run on-prem.
-- **Stability across updates**: embeddings from different model versions aren't comparable; choose a stable model for long-lived indexes.
+### How to choose an embedding model for RAG?
+For RAG retrieval pipelines, evaluate beyond generic benchmark leaderboards:
+- **Asymmetric retrieval tuning**: ensure the model is trained for short query-to-long passage retrieval (e.g. models requiring instruction prefixes like `query: ` and `passage: ` in BGE/E5 to separate semantic roles).
+- **Context length vs chunk size**: embedding context must exceed your chunk size (e.g. 8K tokens for Voyage-3 / text-embedding-3 vs older 512-token BERT encoders that silently truncate content).
+- **Dimensionality & Matryoshka (MRL)**: models supporting Matryoshka Representation Learning allow truncating vectors (e.g., 1536 → 512 dimensions) to cut vector DB memory by 3× with minimal loss in Recall@k.
+- **Ingestion throughput vs query latency**: bulk indexing benefits from self-hosted local models (BGE-M3, Nomic) on high-throughput GPU batches, while low-maintenance setups benefit from managed APIs.
+- **Domain vocabulary match**: verify retrieval on domain terminology (code, legal, medical)—general embeddings often collapse on specialized jargon. *(For a complete multi-criteria framework across traditional vector DBs, see §6 Vector Databases).*
 
 ### Agentic RAG?
 Agentic RAG replaces static retrieve-then-generate with an **LLM agent that decides when and how to retrieve**. The agent can: issue multiple queries, refine queries based on initial results, choose between retrieval sources (vector DB, SQL, web), reason iteratively across results, and stop when it has enough information.
@@ -975,14 +975,14 @@ A simple LLM call is one-shot: prompt → response. An **agent** is an LLM embed
 Differences in engineering: simple LLM calls are stateless and bounded; agents have **state** (memory, scratchpad), **non-determinism in control flow** (different inputs take different action paths), and interact with the **external world** (real systems with real consequences). This makes them more powerful but also more complex—debugging, evaluation, safety, cost, and latency all become significantly harder. A "chatbot with RAG" is borderline; once it can take parameterized actions in the world, it's an agent.
 
 ### AI Agent Memory?
-Memory is what you **put in context** plus what you **persist outside** the window. Five types (same list as "Types of agent memory" below—don't memorize two versions):
-- **Working / short-term**: current task in the prompt. Dies with the session or when you compact.
-- **Long-term**: preferences, facts, history in a vector DB / KV / SQL; retrieve a slice each turn.
-- **Episodic**: specific past episodes ("last Tuesday's outage").
-- **Semantic**: domain facts, usually RAG rather than weights.
-- **Procedural**: how-to—prompts, code, adapters.
+Memory is what you **put in context** plus what you **persist outside** the window. Five foundational types:
+- **Working / short-term**: current task, active scratchpad, and recent messages in the prompt. Resets with the session or when compacted.
+- **Long-term**: persistent user preferences, entity facts, and interaction history stored in external DBs (vector, KV, or relational); retrieved conditionally per turn.
+- **Episodic**: memories of specific past trajectories or events ("how we resolved last week's deploy incident").
+- **Semantic**: general world or domain facts, offloaded to RAG rather than baked into weights.
+- **Procedural**: executable workflows, operational rubrics, tool definitions, and system prompts.
 
-**Do first:** extract facts after a turn → dedupe → write with timestamps; retrieve only what's relevant; give users a view/delete UI (GDPR). Frameworks: LangGraph, Letta/MemGPT, Mem0. More memory without retrieval quality is just a longer lost-in-the-middle prompt.
+**Production pattern:** extract facts asynchronously after a turn → dedupe → write with timestamps; retrieve only top-k relevant memories per turn; provide a user data management UI (GDPR Article 17 right to erasure). Frameworks: LangGraph, Letta (MemGPT), Mem0. Storing memory without precise retrieval just increases prompt cost and worsens "lost in the middle" degradation.
 
 ### Harness Engineering in AI?
 The "harness" is everything around the LLM that makes it usable in production: tool registry, scheduling, memory, retries, guardrails, observability, prompt management, evaluation, error handling, sandboxing. The model is necessary but not sufficient—the harness determines whether the system is reliable, debuggable, and safe.
@@ -1040,8 +1040,12 @@ Subagents are child agents spawned by a parent agent to handle a focused subtask
 
 Benefits: (1) **Context isolation**—subagent's exploration doesn't pollute parent's working memory; (2) **Parallelism**—multiple subagents run concurrently; (3) **Specialization**—each subagent has tools/prompts optimized for its role; (4) **Cost control**—use a smaller model for routine subagent work; (5) **Better long-horizon performance**—decompose 100-step tasks into manageable 10-step subagents. Used in Claude Code, Cursor-style coding agents, AutoGen, CrewAI, and modern multi-agent research systems.
 
-### Types of agent memory?
-Same five types as **AI Agent Memory** above (working, long-term, episodic, semantic, procedural). Production mix: working context + retrieved long-term + RAG semantic + procedural prompts/tools. If they probe "how do you compact?": summarize old turns, pointer-store big tool outputs, retrieve memories by query—not dump the whole store into the prompt.
+### How to manage and compact agent memory in production?
+Production agent workflows cannot dump all past turns and tool outputs into the prompt without blowing up costs and degrading attention. Core compaction patterns:
+- **Sliding-window buffer + rolling summarization**: retain the latest $N$ messages verbatim; summarize older turns into a consolidated system message using an asynchronous background LLM call.
+- **Pointer offloading for large tool outputs**: write voluminous tool observations (e.g. 500-line diffs, SQL results, full DOM snapshots) to an external object store/database, returning only a summary and a reference pointer/URI to the agent's context. Provide a `fetch_details(pointer_id)` tool if deep inspection is needed.
+- **Query-driven episodic retrieval**: store user interactions and task outcomes in a vector database; at session start, embed the new task and retrieve only top-3 relevant historical episodes rather than the entire chat log.
+- **State checkpointing & TTLs**: serialize agent state graphs (e.g., via LangGraph checkpointers or Temporal sagas) to durable storage, and attach time-to-live policies to expire transient working state.
 
 ### Agent failure handling and recovery?
 Agents fail constantly—LLM mistakes, tool errors, transient network failures, edge cases. Robust agents recover gracefully:
@@ -1305,14 +1309,14 @@ When to use: (1) **Format/style consistency** (always JSON, brand voice, specifi
 **Practical**: PEFT (LoRA/QLoRA) is the default for most applications. Full fine-tuning reserved for very large datasets, deep behavior changes, or when serving constraints demand merged weights.
 
 ### What is LoRA?
-LoRA (Hu et al., 2021) freezes the base model's weights and injects **trainable low-rank matrices** into linear layers. For a frozen weight matrix W (d×k), LoRA adds an update ΔW = BA, where B is (d×r) and A is (r×k), with rank r much smaller than min(d,k) (typically r=8–64). At inference, the effective weight is W + αBA, where α is a scaling factor.
+LoRA (Hu et al., 2021) freezes the base model's weights and injects **trainable low-rank matrices** into linear layers. For a frozen weight matrix W (d×k), LoRA adds an update ΔW = (α/r)BA, where B is (d×r) initialized to zero, A is (r×k) initialized with Gaussian noise, and rank r is much smaller than min(d,k) (typically r=8–64). At inference, the effective weight is W + (α/r)BA, where α is a constant scaling factor (often set to 16 or 2×r) that stabilizes the update magnitude as rank varies.
 
 Why it works: research showed that fine-tuning updates have low *intrinsic rank*—the meaningful changes lie in a low-dimensional subspace. LoRA trains <1% of parameters yet matches full fine-tuning on many tasks. Adapters are a few MB, allowing many task-specific adapters per base model. At inference, weights can be merged into the base (zero overhead) or kept separate (swappable). Almost universally used in open-source fine-tuning today.
 
 ### What is QLoRA?
-QLoRA (Dettmers et al., 2023) combines **4-bit quantization** of the base model with LoRA. The base model is loaded in NF4 (4-bit NormalFloat, a quantization scheme tuned for normally-distributed weights); during training, weights are dequantized just-in-time for the forward pass, and LoRA adapters in higher precision (BF16) are trained.
+QLoRA (Dettmers et al., 2023) combines **4-bit quantization** of the base model with LoRA via three key systems innovations: (1) **NF4 (NormalFloat 4)**—an information-theoretically optimal quantile quantization data type for normally-distributed weights; (2) **Double Quantization (DQ)**—quantizes the quantization constants themselves, saving ~0.37 bits/param; and (3) **Paged Optimizers**—leverages CUDA Unified Memory to page memory between GPU and CPU to prevent OOMs during memory spikes.
 
-Result: you can fine-tune **65B models on a single 48GB GPU** or **7B models on consumer hardware (RTX 3090/4090)**—a 4× reduction in memory vs. standard LoRA. With negligible quality loss vs full-precision LoRA. Made fine-tuning of large open models accessible to small teams and individuals. Standard now via Hugging Face PEFT + bitsandbytes.
+Result: you can fine-tune **65B models on a single 48GB GPU** or **7B models on consumer hardware (RTX 3090/4090)**—a 4× reduction in memory vs. standard LoRA with negligible quality loss vs full-precision LoRA. Made fine-tuning of large open models accessible to small teams and individuals. Standard now via Hugging Face PEFT + bitsandbytes.
 
 ### Prefix tuning / prompt tuning vs LoRA?
 All three are PEFT methods, freezing the base model:
@@ -2329,13 +2333,12 @@ Saves significant cost (often 5-10×) and latency at scale. Frameworks: **RouteL
 - **Self-host** if volume justifies (10x cost difference at scale).
 
 ### Hitting rate limits during peak?
-- **Multi-key rotation**: spread requests across multiple API keys.
-- **Multi-provider**: failover to backup provider.
-- **Token bucket + queue**: smooth out bursts.
-- **Exponential backoff with jitter** on 429.
-- **Pre-compute** common results during off-peak; serve from cache during peak.
-- **Negotiate higher limits** with provider for known peaks.
-- **Provisioned throughput** plans (OpenAI Scale Tier, Anthropic) guarantee capacity.
+- **Multi-region / multi-account distribution**: major providers enforce rate limits (RPM/TPM) at the organization or project tier—rotating API keys within the same project shares the same quota bucket. Route across distinct accounts or multiple cloud regions (e.g., Azure OpenAI East US + West US 3, or AWS Bedrock across regions).
+- **Client-side token bucket with queuing**: buffer and smooth traffic bursts before requests hit provider gateways.
+- **Multi-provider failover**: route spillover traffic dynamically to a secondary provider (e.g., Anthropic fallback for OpenAI).
+- **Exponential backoff with full jitter** on HTTP 429 status codes.
+- **Pre-compute and cache**: answer repeated traffic from semantic/exact cache to eliminate live calls during spikes.
+- **Negotiate higher quotas or provisioned throughput**: purchase reserved capacity (OpenAI Scale Tier / PTU, Anthropic Dedicated Capacity) for guaranteed latency and throughput.
 
 ### Single provider dependency—switch without downtime?
 - **Abstraction layer** (LiteLLM, custom gateway) so the application doesn't know which provider.
@@ -3099,13 +3102,22 @@ A model's predictions affect future data (predictive policing concentrates patro
 - **A/B holdouts** that don't use the model—gives a clean comparison.
 - **Avoid using model decisions as labels** for future training (label leakage).
 
-### Watermarking AI-generated images?
-Embedding invisible signals in images to identify AI generation:
-- **Perceptual watermarking**: imperceptible pixel changes encode a signal (SynthID by Google DeepMind, Stable Signature by Meta).
-- **Cryptographic watermarking**: signed metadata or hashes (C2PA—Content Provenance and Authenticity).
-- **Statistical / model watermarking**: subtle patterns inherent to a model's outputs.
+### Watermarking AI-generated content (text & images)?
+Embedding statistical or cryptographic signals to verify AI provenance:
 
-Limitations: watermarks can be removed by image editing, cropping, re-encoding; adversarial attacks on watermarks exist. Defense in depth: combine watermarking + provenance metadata (C2PA) + content moderation classifiers + UI labeling. Industry effort underway; useful but not foolproof.
+1. **Text Watermarking (Kirchenbauer et al., ICML 2023)**:
+   - **Mechanism**: The vocabulary is pseudo-randomly partitioned into a "green list" and "red list" seeded by the hash of the preceding token(s). A constant bias ($\delta$) is added to green-list logits during decoding, biasing the model toward green tokens without degrading fluency.
+   - **Detection**: A statistical hypothesis test ($z$-score) evaluates whether the proportion of green tokens significantly exceeds random chance ($|G|/|V|$). Does not require model weights or API access.
+   - **SynthID Text (DeepMind)**: Modifies generation logits via tournament-style sampling, preserving perplexity while enabling robust watermark detection.
+
+2. **Image & Media Watermarking**:
+   - **Perceptual / Latent watermarking**: Imperceptible pixel or latent-space modifications (Google SynthID, Meta Stable Signature). Survives light cropping, resizing, and JPEG compression.
+   - **Cryptographic Provenance (C2PA)**: Signed cryptographic metadata containing author, camera/model, and edits; tampered metadata invalidates the signature.
+
+**Limitations & Defense in Depth**:
+- Text watermarks degrade under heavy paraphrasing, translation, or sentence mixing.
+- Image watermarks can be degraded by aggressive re-encoding, heavy cropping, or adversarial perturbation.
+- **Best Practice**: Combine statistical watermarking (SynthID/Kirchenbauer) + cryptographic provenance (C2PA) + content moderation classifiers + clear UI disclosure.
 
 ### AI denies service with no appeal?
 - **Human review path** for any denial.
@@ -3539,7 +3551,7 @@ On-device LLMs (phones, laptops, embedded):
 - **Smart hybrid**: SLM on-device for fast/common; cloud for complex.
 
 ### Quantization (INT8, INT4, FP16, BF16) effect on quality?
-- **FP32**: full precision; training default; not used for production inference.
+- **FP32**: Full 32-bit float (1 sign, 8 exponent, 23 mantissa). Historical baseline. Modern pre-training uses **mixed precision** (BF16/FP16 forward/backward with FP32 master weights & optimizer states), not pure FP32; almost never used for production inference due to 2× VRAM and bandwidth costs.
 - **BF16** (Brain Float 16): 16-bit with FP32-like dynamic range. Near-zero quality loss. Default for modern inference. Half memory of FP32.
 - **FP16**: 16-bit with smaller exponent than BF16. Similar to BF16 but more numerical stability issues.
 - **FP8** (E4M3, E5M2): 8-bit float on H100+. Quality close to BF16 with 2× speedup.
@@ -3848,11 +3860,12 @@ Answer: {answer}
 First reason step by step, then give a score."""
 
 def judge(context, question, answer, n_samples=3):
+    prompt = JUDGE_PROMPT.format(context=context, question=question, answer=answer)
     scores = []
     for _ in range(n_samples):
-        resp = llm.complete(JUDGE_PROMPT.format(...), response_format=JudgeScore)
+        resp = llm.complete(prompt, response_format=JudgeScore)
         scores.append(resp.score)
-    return sum(scores) / len(scores)
+    return sum(scores) / len(scores) if scores else 0.0
 ```
 
 ### Streaming LLM API
@@ -3937,7 +3950,7 @@ def detect_hallucination(answer: str, context: str) -> float:
     prompt = (f"For each sentence in the answer, decide if it's supported "
               f"by the context (yes/no).\n\nContext: {context}\n\nAnswer: {answer}")
     judgments = llm.complete(prompt, response_format=JudgmentList)
-    return sum(1 for j in judgments if j.supported) / len(judgments)
+    return (sum(1 for j in judgments if j.supported) / len(judgments)) if judgments else 0.0
 
 def answer_with_guard(question, context, retries_left=1):
     answer = llm.complete(rag_prompt(question, context))
@@ -4026,21 +4039,28 @@ def parse_pdf(path: str) -> list[dict]:
 For interviews / understanding fundamentals. Production uses NumPy or vector DB native ops.
 
 ```python
+import math
+
+def norm(v):
+    """Euclidean norm (L2 length) of a vector."""
+    return math.sqrt(sum(x * x for x in v))
+
 def cosine(a, b):
     """Cosine similarity: 1=identical direction, 0=orthogonal, -1=opposite."""
-    return sum(x*y for x, y in zip(a, b)) / (norm(a) * norm(b))
+    denom = norm(a) * norm(b)
+    return sum(x * y for x, y in zip(a, b)) / denom if denom else 0.0
 
 def dot_product(a, b):
     """Higher = more similar; equivalent to cosine for normalized vectors."""
-    return sum(x*y for x, y in zip(a, b))
+    return sum(x * y for x, y in zip(a, b))
 
 def euclidean(a, b):
     """L2 distance: smaller = more similar."""
-    return math.sqrt(sum((x-y)**2 for x, y in zip(a, b)))
+    return math.sqrt(sum((x - y) ** 2 for x, y in zip(a, b)))
 
 def manhattan(a, b):
     """L1 distance."""
-    return sum(abs(x-y) for x, y in zip(a, b))
+    return sum(abs(x - y) for x, y in zip(a, b))
 ```
 
 ### Token counting / context management
@@ -4123,20 +4143,27 @@ def cached_complete(model, prompt, params, ttl=3600):
 Embed the query; retrieve cached answers for similar queries above a similarity threshold. Tune threshold carefully (0.95+ to avoid false hits).
 
 ```python
-def semantic_cache_get(query: str, threshold=0.95):
+import time
+import uuid
+
+def semantic_cache_get(query: str, threshold: float = 0.95, max_age_seconds: int = 3600):
     q_vec = embed(query)
     hits = cache_vector_db.search(q_vec, k=1)
     if hits and hits[0].score >= threshold:
-        return hits[0].metadata["response"]
+        cached_at = hits[0].metadata.get("timestamp", 0)
+        if (time.time() - cached_at) <= max_age_seconds:
+            return hits[0].metadata["response"]
     return None
 
-def semantic_cache_complete(query, ttl=3600):
-    if cached := semantic_cache_get(query):
+def semantic_cache_complete(query: str, ttl: int = 3600):
+    if cached := semantic_cache_get(query, max_age_seconds=ttl):
         return cached
     resp = llm.complete(query)
-    cache_vector_db.upsert(embed(query),
-                           metadata={"query": query, "response": resp,
-                                     "timestamp": time.time()})
+    cache_vector_db.upsert(
+        id=str(uuid.uuid4()),
+        vector=embed(query),
+        metadata={"query": query, "response": resp, "timestamp": time.time()}
+    )
     return resp
 ```
 

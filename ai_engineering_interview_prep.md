@@ -2,17 +2,21 @@
 
 A concise reference covering core AI Engineering interview questions across LLMs, RAG, Agents, Fine-Tuning, Vector DBs, System Design, LLMOps, Evaluation, Safety, Multimodal, Infrastructure, Coding, and Behavioral topics.
 
+**As of September 2026.** Model names and API details change fast—treat examples as illustrations of the pattern (closed API vs open-weight, dense vs MoE, base vs reasoning), not a leaderboard. Prefer current docs for pricing, context windows, and structured-output APIs.
+
+**How to use this in an interview:** give a 20–30 second definition, one trade-off, what you'd do first, and how you'd measure it. Lists below are the probe layer, not the spoken answer.
+
 ---
 
 ## 1. LLM Fundamentals
 
 ### What are foundation models, and how have they changed AI engineering?
-Foundation models are large neural networks pre-trained on broad, internet-scale data using self-supervised objectives (next-token prediction, masked modeling, contrastive learning). The term was coined by Stanford (2021) to describe models like GPT, BERT, CLIP, and DALL-E that serve as a *foundation* for countless downstream tasks. Their key property is **emergent capability**: scale + general pretraining produces skills (reasoning, translation, code) that weren't explicitly trained.
+Foundation models are large neural networks pre-trained on broad, internet-scale data using self-supervised objectives (next-token prediction, masked modeling, contrastive learning). The term was coined by Stanford (2021) to describe models like GPT, BERT, CLIP, and DALL-E that serve as a *foundation* for countless downstream tasks. At sufficient scale they exhibit **new downstream skills** (reasoning, translation, code) that were not explicitly trained. Some of these look "emergent" (sharp jumps on a plot); Schaeffer et al. (2023) argued many such jumps are artifacts of nonlinear metrics, so don't treat emergence as a settled law—treat it as "scale often unlocks abilities that small models lack."
 
 They've transformed AI engineering in three ways: (1) **Adapt, don't train**—instead of training a model from scratch for each task, engineers prompt, retrieve over, or fine-tune an existing foundation model; (2) **Skill shift**—the work is now prompt design, RAG, evaluation, orchestration, and infra rather than data labeling and model architecture; (3) **New cost structure**—inference (per-token API costs, GPU serving) dominates over training. The discipline now resembles distributed systems engineering more than classical ML.
 
 ### What is a Large Language Model (LLM), and how does it work?
-An LLM is a deep neural network—almost always a Transformer decoder—trained on massive text corpora (trillions of tokens) to predict the next token given previous tokens. Training uses cross-entropy loss; the model learns statistical patterns of language, world knowledge, reasoning shortcuts, and stylistic conventions purely from this objective.
+An LLM is a deep neural network—almost always a Transformer decoder—trained on massive text corpora to predict the next token given previous tokens. Modern models train on **trillions** of tokens; GPT-3 was **300B tokens**. Don't conflate the two. Training uses cross-entropy loss; the model learns statistical patterns of language, world knowledge, reasoning shortcuts, and stylistic conventions purely from this objective.
 
 At inference, generation is **autoregressive**: feed in a prompt → model outputs logits over the vocabulary → sample one token → append → repeat. Each step is one forward pass through dozens of Transformer layers. Sampling strategy (temperature, top-p) controls randomness. The model has no "memory" beyond what fits in its context window; everything it appears to "know" is encoded in weights from pretraining or supplied in the prompt.
 
@@ -34,7 +38,7 @@ A Transformer processes all input tokens simultaneously. Each layer transforms t
 - **Token embeddings:** lookup table mapping each vocab ID to a vector (the model's input representation).
 - **Positional encoding:** adds order information since attention is permutation-invariant (sinusoidal, learned, RoPE, or ALiBi).
 - **Multi-head self-attention:** multiple parallel attention heads, each with its own Q, K, V projections, capturing different types of relationships.
-- **Feed-forward network (FFN):** a 2-layer MLP applied independently per token; typically expands dimension 4× before projecting back. Holds most of the model's parameters.
+- **Feed-forward network (FFN):** a 2-layer MLP applied independently per token. Original Transformer / GPT-2/3 expand **4×** (e.g. 768 → 3072 → 768). Llama-style **SwiGLU** uses an intermediate size of about **8/3 ≈ 2.67×** hidden (plus a gate). Holds most of the model's parameters.
 - **Residual (skip) connections:** add the input of each sublayer to its output, enabling deep networks to train.
 - **Layer normalization** (or RMSNorm in modern LLMs): stabilizes activations.
 - **Output projection:** final linear layer mapping hidden states to vocabulary logits (often tied to the input embedding matrix).
@@ -52,7 +56,8 @@ The result: common words become single tokens, rare words split into meaningful 
 
 ### Explain WordPiece and SentencePiece.
 - **WordPiece** (Google, used by BERT): Similar to BPE but the merge criterion is different—instead of picking the most *frequent* pair, it picks the pair that maximizes the **likelihood** of the training corpus under a unigram language model. Practically very similar to BPE; subword pieces in BERT are marked with "##" (e.g., "playing" → "play", "##ing").
-- **SentencePiece** (Google, used by T5, LLaMA, mT5): A *framework* rather than a single algorithm. It treats input as a raw Unicode byte stream including whitespace (often replaced with a special "▁" marker), so it doesn't require language-specific pre-tokenization (great for Chinese, Japanese, Thai with no spaces). Supports BPE and Unigram algorithms underneath. Reversible: detokenization is lossless.
+- **SentencePiece** (Google, used by T5, Llama 1/2, mT5, Mistral 7B): A *framework* rather than a single algorithm. It treats input as a raw Unicode byte stream including whitespace (often replaced with a special "▁" marker), so it doesn't require language-specific pre-tokenization (great for Chinese, Japanese, Thai with no spaces). Supports BPE and Unigram algorithms underneath. Reversible: detokenization is lossless.
+- **Llama 3+** switched to a **tiktoken-style byte-level BPE** (vocab 128,256), not SentencePiece. GPT-4/4o use `cl100k_base` / `o200k_base` BPE. If asked "what tokenizer does Llama use?", answer by generation.
 
 ### What is positional encoding, and why is it needed in Transformers?
 Self-attention computes weighted sums of values based on Q-K similarity—a permutation-equivariant operation. Without positional information, "the cat ate the fish" and "the fish ate the cat" would produce identical representations. Positional encoding injects order.
@@ -98,12 +103,12 @@ Instead of one attention computation with full hidden dimension d, multi-head at
 Why? A single attention head can only attend to one pattern at a time (one weighted distribution). Different heads learn to specialize: some capture syntactic relations (subject-verb), some coreference, some local context, some positional patterns. Multiple heads = multiple attention "channels" computed in parallel. The total compute is similar to single-head full-dim attention but yields a much richer representation. Variants like GQA (Grouped-Query Attention) share K, V across head groups to save inference memory without losing much quality.
 
 ### What are Feed-Forward Networks in LLMs?
-After attention mixes information across positions, the FFN transforms each token's representation **independently** (no cross-token interaction). It's a simple 2-layer MLP: `FFN(x) = activation(xW₁ + b₁)W₂ + b₂`. Standard width expansion is 4× (e.g., 768 → 3072 → 768).
+After attention mixes information across positions, the FFN transforms each token's representation **independently** (no cross-token interaction). It's a simple 2-layer MLP: `FFN(x) = activation(xW₁ + b₁)W₂ + b₂`. Original Transformer / GPT-2/3 use **4×** width (e.g., 768 → 3072 → 768). Llama-family models use **SwiGLU** with an intermediate size of ~**8/3 × hidden** plus a gate—so "FFN is 4×" is the textbook default, not the 2024+ default.
 
 Why it matters: (1) **It's where most parameters live**—often 2/3+ of total params—so it stores most of the model's knowledge. (2) The **non-linearity** (ReLU, GELU, SwiGLU in modern models) provides representational power that attention alone lacks. (3) Recent research suggests FFNs act like **key-value memories**, with the first matrix querying patterns and the second retrieving stored facts. Modern LLMs (LLaMA, Mistral) use SwiGLU activations and gating, slightly outperforming plain MLP.
 
 ### What is the context window in LLMs?
-The context window is the maximum number of tokens (input prompt + generated output) the model can process in a single forward pass. GPT-3 had 2K; GPT-4 has 128K; Claude has 200K; Gemini 1.5 Pro has up to 2M. It matters because anything outside is **completely invisible**—the model has no way to recall or retrieve it.
+The context window is the maximum number of tokens (input prompt + generated output) the model can process in a single forward pass. GPT-3 had 2K; **original GPT-4 was 8K/32K**; GPT-4 Turbo / GPT-4o are 128K; Claude 3/4-class models are typically 200K (some SKUs higher); Gemini 1.5 Pro went to 2M and later Gemini models kept million-token-class windows. It matters because anything outside is **completely invisible**—the model has no way to recall or retrieve it. Pin the exact model ID in production; marketing "GPT-4" is not a window size.
 
 Practical implications: (1) **Cost and latency** scale with context (attention is O(n²) for standard implementations); (2) **Quality degrades with length**—the "lost in the middle" effect means middle content gets ignored even within the nominal window; (3) **Engineering choices**: long-context models reduce the need for RAG/chunking, but RAG remains cheaper and more controllable. Architectural tricks (Flash Attention, sparse attention, sliding windows, RoPE extrapolation) push context limits, but effective context is often smaller than advertised.
 
@@ -133,7 +138,7 @@ Why they're essential: (1) **Gradient flow**—in deep networks, gradients vanis
 ### Open-source vs closed-source LLMs—when to choose?
 - **Open-source/open-weight (LLaMA, Mistral, Qwen, DeepSeek, Gemma):** weights are downloadable—you can host on-prem, fine-tune freely, modify, and quantize. No per-token API cost; data never leaves your infra. Strong for: regulated industries (finance, healthcare, defense), high-volume workloads where API costs add up, custom domain adaptation via fine-tuning, on-device deployment, full reproducibility, and avoiding vendor lock-in. Trade-offs: you own GPU infra, scaling, security patching, and the quality gap (closing fast but still present for hardest tasks).
 
-- **Closed-source (GPT-4/5, Claude, Gemini):** API access only; SOTA quality, frontier capabilities, fast updates, no infra to manage, immediate access to multimodal/agentic features. Trade-offs: per-token cost, data sent to provider (with enterprise privacy modes), rate limits, less customization, vendor lock-in risk, terms-of-service constraints (e.g., can't use outputs to train competitors).
+- **Closed-source (GPT-4o / GPT-5 family, Claude 4.x, Gemini 2.x/3.x):** API access only; SOTA quality, frontier capabilities, fast updates, no infra to manage, immediate access to multimodal/agentic features. Trade-offs: per-token cost, data sent to provider (with enterprise privacy modes), rate limits, less customization, vendor lock-in risk, terms-of-service constraints (e.g., can't use outputs to train competitors).
 
 **Practical pattern:** prototype on closed-source for speed, then migrate hot-path workloads (high-volume, latency-sensitive, privacy-sensitive) to self-hosted open models, often via fine-tuning a smaller model to match.
 
@@ -147,7 +152,9 @@ Why they're essential: (1) **Gradient flow**—in deep networks, gradients vanis
 ### What is KV cache, and how does it speed up inference?
 During autoregressive generation, the model produces one token per forward pass. At step t, attention requires the K and V vectors for **all previous tokens** (so the new token can attend to them). Without caching, every step would recompute K and V for the entire growing context—wasted work, since past tokens' K/V never change.
 
-The **KV cache** stores K and V for every layer, head, and past token. At each new step, you compute K, V only for the *new* token, append to the cache, and run attention using the full cache. This turns the per-step cost from O(n²) (recompute everything) to O(n) (attention over n cached tokens). It's the single biggest speedup for inference, but the cache itself can become enormous (gigabytes for long contexts), driving innovations like GQA, paged attention, and KV cache quantization.
+The **KV cache** stores K and V for every layer, **KV head**, and past token. At each new step, you compute K, V only for the *new* token, append to the cache, and run attention using the full cache. This turns the per-step cost from O(n²) (recompute everything) to O(n) (attention over n cached tokens). It's the single biggest speedup for inference, but the cache itself can become enormous (gigabytes for long contexts), driving innovations like GQA, MLA (compressed latent KV), paged attention, and KV cache quantization.
+
+Size ≈ `2 × layers × kv_heads × head_dim × seq_len × batch × bytes`. Use **kv_heads**, not query heads—GQA (Llama 3 70B: 8 KV heads vs 64 Q heads) is an 8× cache cut vs MHA. A 70B GQA model at 32K, batch 1, FP16 is on the order of **~10GB**, not 40GB; 40GB+ shows up with MHA, long context × large batch, or no GQA.
 
 ### What is model distillation?
 Distillation (Hinton 2015) trains a small "student" model to imitate a larger "teacher." Instead of training the student only on hard labels (correct next token), it's trained to match the teacher's full output distribution (soft logits)—which carries far richer signal about the teacher's "reasoning." Variants distill on hidden states, attention maps, or chain-of-thought traces.
@@ -155,9 +162,9 @@ Distillation (Hinton 2015) trains a small "student" model to imitate a larger "t
 For LLMs, distillation is a practical compression tool: take a strong but slow teacher (GPT-4, Claude), generate high-quality outputs for your use case, then fine-tune a much smaller model (Llama-8B, Phi) on those outputs. Result: 10–100× cheaper/faster inference at near-teacher quality on the targeted distribution. Watch out for legal restrictions (many closed-model TOS prohibit using outputs to train competing models) and for capability gaps on tasks the teacher does well (small students struggle with hard reasoning).
 
 ### What is Mixture of Experts (MoE)?
-MoE replaces the dense FFN in some Transformer layers with **N expert FFNs** plus a **router** (a small network that picks which experts each token should use). Typically only top-k experts (k=1 or 2) activate per token. So a Mixtral-8x7B model has ~47B total parameters but only ~13B active per token—getting the capacity of a big model with the inference cost of a small one.
+MoE replaces the dense FFN in some Transformer layers with **N expert FFNs** plus a **router** (a small network that picks which experts each token should use). Typically only top-k experts (k=1 or 2) activate per token. So a Mixtral-8x7B model has **46.7B total** parameters but only **12.9B active** per token (shared attention + top-2 of 8 experts)—getting the capacity of a big model with the inference cost of a small one.
 
-Benefits: massive parameter count → more knowledge, more skills. Drawbacks: harder to train (load-balancing experts so they don't collapse to a few), harder to serve (need all experts in memory even if only some run), and fine-tuning is trickier. Used by Mixtral, DeepSeek-V3, GPT-4 (rumored), Gemini 1.5, and most frontier models today.
+Benefits: massive parameter count → more knowledge, more skills. Drawbacks: harder to train (load-balancing experts so they don't collapse to a few), harder to serve (need all experts in memory even if only some run; expert-parallel across GPUs), and fine-tuning is trickier. Confirmed MoE: Mixtral, DeepSeek-V3, Gemini 1.5+. GPT-4 as MoE is still **unconfirmed rumor**—don't state it as fact.
 
 ### Dense vs sparse models?
 - **Dense:** every parameter contributes to every forward pass. Examples: LLaMA, Mistral 7B, Qwen-dense models. Simple, predictable, easy to serve. Compute scales with full parameter count.
@@ -178,7 +185,7 @@ Minimizing cross-entropy pushes the model to put more probability mass on the co
 ### Grouped-Query Attention (GQA) vs Multi-Head Attention (MHA)?
 In standard **MHA**, each of the h attention heads has its own Q, K, V projections—so the KV cache holds h sets of K, V per token. For a 70B model with long context, this cache becomes enormous (often more memory than the weights themselves), bottlenecking inference.
 
-**GQA** (Ainslie et al., 2023) groups multiple Q heads to share a single K, V pair. For example, with h=32 Q heads and 8 KV groups, every 4 Q heads share one K, V. KV cache shrinks 4×. **MQA (Multi-Query Attention)** is the extreme: all Q heads share one K, V (8× smaller cache than h=8). GQA is the sweet spot: near-MHA quality with significant memory savings. Used in LLaMA 2/3, Mistral, Falcon, GPT-4 (likely). Practical impact: longer contexts and larger batches fit on the same GPU.
+**GQA** (Ainslie et al., 2023) groups multiple Q heads to share a single K, V pair. For example, with h=32 Q heads and 8 KV groups, every 4 Q heads share one K, V. KV cache shrinks 4×. **MQA (Multi-Query Attention)** is the extreme: all Q heads share one K, V (8× smaller cache than h=8). GQA is the sweet spot: near-MHA quality with significant memory savings. Llama 2 **70B** used GQA (7B/13B were still MHA); Llama 3+ uses GQA across sizes. Also Mistral, Mixtral, many Qwen/DeepSeek variants. Practical impact: longer contexts and larger batches fit on the same GPU. DeepSeek-V2/V3 go further with **MLA (Multi-head Latent Attention)**—compress KV into a low-rank latent so the cache is even smaller than GQA.
 
 ### How does RoPE work, and why is it preferred?
 Rotary Position Embedding (Su et al., 2021) encodes position not by adding a vector to embeddings (like sinusoidal/learned) but by **rotating** pairs of Q and K vector components by an angle proportional to position. For dimension pair (i, i+1), apply a 2D rotation matrix with angle θ = position · ω_i.
@@ -196,9 +203,9 @@ RMSNorm (Zhang & Sennrich, 2019) is LayerNorm without the mean-centering and bia
 Why use it? **Fewer operations** (no mean computation, no subtraction)—~10-20% faster than LayerNorm in practice. Empirically, it performs as well or better than LayerNorm on Transformer training, with the conjecture that re-centering wasn't doing much useful work. Adopted by LLaMA, Mistral, T5 (variant), and most modern LLMs. The small speedup compounds over hundreds of layers and billions of tokens.
 
 ### LLM ignores instructions—how to enforce structured output?
-LLMs trained on free-form text don't naturally produce strict formats. The most reliable approach is **provider-native structured output**: OpenAI's response_format with JSON schema, Anthropic's tool_use as a typed output channel, or Google's response_schema. These use **constrained decoding** under the hood—at each token, the model can only emit tokens valid under the schema, mathematically guaranteeing valid JSON.
+LLMs trained on free-form text don't naturally produce strict formats. The most reliable approach is **provider-native structured output**: OpenAI `response_format` / json_schema, Anthropic **native JSON schema structured outputs** (plus strict tool use), or Google `response_schema`. These use **constrained decoding** under the hood—at each token, the model can only emit tokens valid under the schema, mathematically guaranteeing valid JSON.
 
-Layered defenses: (1) Define a strict **Pydantic / JSON Schema** with descriptions; (2) Open-source: use **Outlines, Instructor, JSONFormer, or LMFE** for grammar-constrained generation; (3) Add **2–3 few-shot examples** of correct format—huge effect; (4) Use **lower temperature** (0–0.2); (5) Wrap in a **validate-and-retry loop**: on JSON parse failure or schema validation error, send the error message back to the LLM and ask for a fix. The retry loop typically resolves remaining failures within 1–2 attempts.
+Layered defenses: (1) Define a strict **Pydantic / JSON Schema** with descriptions; (2) Open-source: use **Outlines, Instructor, outlines/jsonformer, or lm-format-enforcer** for grammar-constrained generation; (3) Add **2–3 few-shot examples** of correct format—huge effect; (4) Use **lower temperature** (0–0.2); (5) Wrap in a **validate-and-retry loop**: on JSON parse failure or schema validation error, send the error message back to the LLM and ask for a fix. The retry loop typically resolves remaining failures within 1–2 attempts.
 
 ### LLM hits context limit on long docs—how to handle?
 Multiple strategies, often combined:
@@ -206,7 +213,7 @@ Multiple strategies, often combined:
 - **Map-reduce summarization**: process each chunk independently (map step), then combine summaries (reduce step). Good for whole-document tasks like summarization or extraction.
 - **Hierarchical summarization**: summarize chunks, then summarize summaries, building a tree. Preserves more detail than flat map-reduce.
 - **Sliding window with overlap**: process consecutive overlapping windows; useful for sequential analysis where context handoff matters.
-- **Long-context models** (Claude 200K, Gemini 1.5/2.0 up to 2M): brute-force option when you can afford the latency and cost; watch out for "lost in the middle" degradation.
+- **Long-context models** (Claude 200K-class, Gemini million-token-class): brute-force option when you can afford the latency and cost; watch out for "lost in the middle" degradation and **prefix-cache design** (stable prefix first, variable query last).
 - **Context compression** (LLMLingua, prompt compression): drops low-information tokens to fit more relevant content in context.
 
 Practical advice: start with chunk+RAG. Use long-context models only when you genuinely need cross-document reasoning that retrieval can't decompose.
@@ -262,7 +269,7 @@ Fixes:
 - **For closed-source models** (where you can't change the tokenizer), reframe prompts to avoid problematic terms or use abbreviations the tokenizer handles better.
 
 ### KV cache too large—how to manage memory?
-KV cache size = 2 × layers × heads × head_dim × seq_len × batch × bytes_per_value. For a 70B model at 32K context, this easily exceeds 40GB. Mitigations:
+KV cache size = `2 × layers × kv_heads × head_dim × seq_len × batch × bytes_per_value`. For Llama-70B-class **GQA** (8 KV heads) at 32K, batch 1, FP16 this is ~10GB; it exceeds 40GB with large batch, MHA, or 128K+ context. Mitigations:
 - **GQA / MQA**: share K, V across query heads to shrink cache 4–8× (LLaMA 3, Mistral).
 - **Paged Attention** (vLLM): manages KV in fixed-size pages like virtual memory—eliminates fragmentation and allows higher batch sizes.
 - **KV cache quantization** (INT8, INT4, FP8): cuts memory 2–4× with minimal quality loss.
@@ -338,7 +345,7 @@ Default LLM behavior is to confabulate. To enable abstention:
 - **Question-generation roundtrip**: from the candidate answer, generate the question it would answer; if it differs from the original, abstain.
 
 ### Summarization hallucinates facts—how to fix?
-Generative summaries can introduce facts not in the source ("intrinsic hallucination") or contradict it ("extrinsic"). Fixes:
+Generative summaries hallucinate in two ways (Maynez et al., 2020—**do not swap these**): **intrinsic** = contradicts information that *is* in the source; **extrinsic** = adds information that cannot be verified from the source (may even be world-true). Fixes:
 - **Extractive baseline** or **hybrid** (extractive + abstractive): pull verbatim sentences first, then polish.
 - **Faithfulness scoring**: use NLI or QAG (question-answer generation: derive questions from the summary, answer them from the source; if answers disagree, the summary is unfaithful) and regenerate failures.
 - **Lower temperature** (0–0.2) and disable nucleus sampling tricks that allow unlikely tokens.
@@ -359,15 +366,15 @@ Greedy and low-temperature sampling often loop ("The cat is happy. The cat is ha
 ### Can Transformers understand images?
 Yes. **Vision Transformers (ViT, Dosovitskiy 2020)** split an image into fixed-size patches (e.g., 16×16 pixels), flatten each patch into a vector, project to the embedding dimension, add positional encodings, and feed the sequence into a standard Transformer encoder. The model treats patches like tokens. With enough data (JFT-300M scale), ViTs match or beat CNNs on image classification.
 
-The architecture generalized: **CLIP** trains image and text encoders jointly with contrastive loss for cross-modal alignment; **LLaVA / GPT-4V / Gemini / Claude** project visual features into the LLM's token space so a single LLM consumes images and text together; **diffusion models** use Transformers in their UNet backbones. Vision is no longer architecturally separate from language; it's another modality in the same Transformer family.
+The architecture generalized: **CLIP** trains image and text encoders jointly with contrastive loss for cross-modal alignment; **LLaVA / GPT-4o-class / Gemini / Claude** project visual features into the LLM's token space so a single LLM consumes images and text together; **diffusion models** use Transformers in their UNet (or DiT) backbones. Vision is no longer architecturally separate from language; it's another modality in the same Transformer family.
 
 ### Small Language Models (SLMs)?
-SLMs are compact LLMs in the 1B–8B parameter range (Phi-3, Gemma 2, Llama 3.1 8B, Qwen 2.5), engineered for efficiency rather than frontier capability. They achieve strong performance via better data curation (Phi's synthetic high-quality data), distillation from larger models, and aggressive optimization—often matching 70B models from a generation ago.
+SLMs are compact LLMs in the ~1B–8B parameter range (Phi-3/4, Gemma 2/3, Llama 3.1/4 8B-class, Qwen 2.5/3), engineered for efficiency rather than frontier capability. They achieve strong performance via better data curation (Phi's synthetic high-quality data), distillation from larger models, and aggressive optimization—often matching 70B models from a generation ago.
 
 Use cases: on-device (mobile, edge, browser via WebGPU), high-volume backend (cost per request matters), latency-critical paths (real-time agents), privacy-sensitive workloads (no API call leaves device), and as **fast components** in compound systems (routers, classifiers, draft models for speculative decoding). Typically paired with RAG (knowledge) and fine-tuning (skill) to compensate for limited capacity.
 
 ### Large Reasoning Models (LRMs)?
-LRMs (OpenAI o1/o3, DeepSeek-R1, Gemini Thinking, Claude with extended thinking) are LLMs trained—usually via reinforcement learning on verifiable rewards (math correctness, code passing tests)—to produce extensive internal **chain-of-thought reasoning** before final answers. They "think" for thousands of tokens, exploring strategies, self-correcting, and verifying.
+LRMs / reasoning models (OpenAI o1/o3 and later GPT-5 reasoning SKUs, DeepSeek-R1, Gemini Thinking, Claude extended thinking) are LLMs trained—usually via reinforcement learning on verifiable rewards (math correctness, code passing tests)—to produce extensive internal **chain-of-thought reasoning** before final answers. They "think" for thousands of tokens, exploring strategies, self-correcting, and verifying. **Test-time compute** (more thinking tokens → better hard-task accuracy, with a cost/latency curve) is now a first-class product lever: route easy queries to a fast model, spend reasoning tokens only when the task needs them.
 
 Strengths: dramatic gains on math (AIME, FrontierMath), competitive programming (Codeforces), scientific reasoning, and complex planning—matching or exceeding domain experts on benchmarks. Trade-offs: 10–100× slower and costlier than standard LLMs, often opaque thinking traces, and overkill for simple tasks. Engineering pattern: **route hard reasoning queries to LRMs**, everything else to fast models.
 
@@ -398,9 +405,11 @@ GRPO (DeepSeek, 2024) is a PPO variant that **eliminates the value model** by co
 Benefits: half the memory footprint of PPO (no value network), simpler implementation, scales well. Used in DeepSeek-R1's reasoning RL training—a key reason that pipeline was tractable. Particularly effective for tasks with **verifiable rewards** (math correctness, code passing tests) where reward signals are clean.
 
 ### Recursive Language Models (RLMs)?
-RLMs are an emerging architecture where a language model can recursively call itself (or smaller copies) to decompose complex tasks. A parent model plans and delegates subtasks; child instances handle sub-problems and return results; the parent integrates.
+"RLM" is used two ways—don't mix them:
+1. **Recursive decomposition**: a model (or smaller copy) calls itself on subtasks, then the parent integrates. This is a **harness pattern**, not a new architecture: it's ToT / subagents / compound systems with a recursive control loop. Useful for long documents (chunk → solve → merge) and hierarchical plans.
+2. **Trained recursive / latent-loop models** (research): extra inner recurrences per token, distinct from "the agent calls itself."
 
-Conceptually similar to multi-agent or "subagent" systems but more structured—the recursion is part of the model's reasoning process, not external orchestration. Useful for long-context reasoning (process chunks, integrate), hierarchical tasks (planning + execution), and breaking the single-forward-pass capacity limit. Still an active research area; the term overlaps with "tree-of-thought," "compound AI systems," and subagent patterns.
+In an interview, say you'd implement (1) as an explicit graph (LangGraph/Temporal) with step caps and budgets, not as a mystery new architecture. Production value is context isolation + parallelism, same as subagents.
 
 ### Continual Learning in LLMs?
 Continual learning addresses how to update an already-trained LLM with new knowledge without forgetting old ("catastrophic forgetting"). Naive fine-tuning on new data destroys prior capabilities.
@@ -426,7 +435,11 @@ It's critical because LLMs are **highly sensitive to phrasing**—a single word 
 ### What is Chain-of-Thought (CoT) prompting?
 CoT (Wei et al., 2022) prompts the model to produce **explicit intermediate reasoning** before its final answer—either by demonstration ("Q: ... Let me think step by step: ... Answer: ...") or by the magic instruction "Let's think step by step." Generating reasoning gives the model more compute and a scratchpad to break problems down, dramatically improving accuracy on math, logic, multi-hop QA, and complex instructions.
 
-**When to use**: tasks requiring intermediate calculation or multi-step inference. **When to skip**: simple lookups, classification, format conversion (CoT adds latency and tokens without help). Modern frontier models often do implicit CoT; explicit CoT helps weaker/smaller models more. For production, consider **hidden CoT** patterns where reasoning isn't shown to users.
+**When to use**: tasks requiring intermediate calculation or multi-step inference. **When to skip**: simple lookups, classification, format conversion (CoT adds latency and tokens without help).
+
+**Scale caveat:** Wei et al. (2022) found CoT *hurt* models below ~**100B**—fluent but illogical traces. Instruction-tuned 7B–8B models in 2024–2026 often *do* benefit, but a weak base can still talk itself off a cliff. If CoT doesn't help, the model may be too weak, the task may not need reasoning, or you should switch to a trained reasoning model (o-series, R1, Gemini/Claude thinking) instead of prompting CoT onto a chat model.
+
+Modern frontier models often do implicit CoT; for production, consider **hidden CoT** / reasoning traces that aren't shown to users. For hard tasks, **test-time compute** (sample longer traces or a reasoning SKU) beats clever wording.
 
 ### Self-consistency prompting?
 Self-consistency (Wang et al., 2022) addresses CoT's variance. Instead of generating one reasoning path, sample N paths with temperature > 0, extract final answers, and **majority-vote**. The intuition: there are many wrong reasoning paths but they disagree, while correct paths converge.
@@ -450,11 +463,11 @@ Used for: defining persona ("You are a customer support agent for Acme Corp"), s
 
 ### How do you structure prompts for JSON/XML output?
 Layered approach:
-- **Use provider structured-output APIs** first: OpenAI's `response_format` with JSON schema, Anthropic's tool_use, Google's response_schema. These enforce validity at the decoding level.
+- **Use provider structured-output APIs** first: OpenAI `response_format` / json_schema, Anthropic **native structured outputs** (`output_config.format` / JSON schema, GA 2026; plus `strict` tool use), Google `response_schema`. These constrain decoding. Don't say Anthropic "only has tool_use" anymore.
 - **Provide an exact schema** in the prompt (Pydantic model, JSON schema, TypeScript interface, or explicit example).
 - **Include 1–3 few-shot examples** of correct output—models follow patterns more than instructions.
 - **Use clear delimiters** (XML tags like `<output>...</output>` or markdown code blocks).
-- **Constrained decoding libraries** (Outlines, Instructor, JSONFormer, LMFE) force valid output token-by-token.
+- **Constrained decoding libraries** (Outlines, Instructor, jsonformer, lm-format-enforcer) force valid output token-by-token.
 - **Validate with Pydantic** and **retry on failure**, passing the validation error back to the LLM.
 - **Lower temperature** (0–0.3) for structural consistency.
 - For XML, request explicit closing tags; for JSON, ask for "valid JSON, no markdown fences, no commentary."
@@ -495,7 +508,7 @@ Soft prompts can outperform hand-crafted prompts on narrow tasks; engineered pro
 ### What is a prompt template?
 A prompt template is a parameterized prompt with placeholders that get filled with runtime data. Example: `"Summarize this document in {n_sentences} sentences:\n\n{document}"`. Templates separate the **stable instruction structure** from **dynamic inputs**, enabling reuse, testing, and versioning.
 
-Best practices: store templates in code or a prompt registry (LangSmith, PromptLayer, Pezzo), use a templating engine for conditionals/loops (Jinja2, LangChain PromptTemplate), version with semver, run evaluation on every template change in CI, and tag which version of which template produced each output for debugging. Treat prompts like code: reviewed, tested, versioned.
+Best practices: store templates in code or a prompt registry (LangSmith, PromptLayer, Helicone, BAML), use a templating engine for conditionals/loops (Jinja2, LangChain PromptTemplate), version with semver, run evaluation on every template change in CI, and tag which version of which template produced each output for debugging. Treat prompts like code: reviewed, tested, versioned.
 
 ### Multi-turn conversation handling?
 A conversation is sent to the LLM as a sequence of role-tagged messages: `[{role:"system", ...}, {role:"user", ...}, {role:"assistant", ...}, ...]`. The model has no memory between API calls; you must resend relevant history each turn.
@@ -556,18 +569,18 @@ Anticipate that users (or upstream sources) will send hostile inputs:
 - **Audit logging** for forensic analysis.
 
 ### "Lost in the middle" problem?
-Liu et al. (2023) showed LLMs have **U-shaped attention**: information at the **beginning and end** of a long context is recalled well; information in the **middle** is often missed, even within the nominal context window. The model technically "sees" everything but doesn't effectively use middle content.
+Liu et al. (2023) showed LLMs have **U-shaped attention**: information at the **beginning and end** of a long context is recalled well; information in the **middle** is often missed, even within the nominal context window. The model technically "sees" everything but doesn't effectively use middle content. RAG stuffing many chunks hits the same effect.
 
-Mitigations: (1) **Re-rank retrieved chunks** to place most relevant at start (or both ends); (2) **Shorten context**—use only what's necessary, even if you have a big window; (3) **Hierarchical summarization** of long inputs; (4) **Restate the question at the end** of long context; (5) **Use models known for better long-context behavior** (Gemini, Claude); (6) **Split into multiple smaller queries** if you can decompose the task. Test your own application with "needle-in-a-haystack" probes to characterize your effective context.
+Mitigations: (1) **Re-rank** so the most relevant chunk is first (or split start+end); (2) **Shorten context**—big windows are not free quality; (3) **Hierarchical summarization**; (4) **Restate the question at the end**; (5) Models with stronger long-context evals (Gemini, Claude-class); (6) Decompose into smaller queries. Measure *your* effective context with needle-in-a-haystack. For cost: put a **stable prefix** (system, tools, corpus) first and the **query last** so provider prefix caches hit.
 
 ### What are output parsers?
 Output parsers are code components that convert free-form LLM string outputs into structured data your application can use (JSON, Pydantic objects, lists, enums). They're essential for production—LLMs don't reliably produce parseable output without help.
 
-A good parser: validates against a schema, handles common LLM quirks (markdown code fences around JSON, trailing commas, "Sure, here's the JSON:" preamble), and integrates with a **retry loop** that sends parse errors back to the LLM. Frameworks: Pydantic + Instructor (most popular), LangChain output parsers, Marvin, Outlines. Combine with provider-native structured output APIs for maximum reliability.
+A good parser: validates against a schema, handles common LLM quirks (markdown code fences around JSON, trailing commas, "Sure, here's the JSON:" preamble), and integrates with a **retry loop** that sends parse errors back to the LLM. Frameworks: Pydantic + Instructor, Outlines, LangChain output parsers. Combine with provider-native structured output APIs for maximum reliability. Prefer constrained decoding over parse-and-pray.
 
 ### Multi-language prompting?
 - **Prompt in the target language** when possible: most modern multilingual models perform best when the entire prompt (system + user + examples) is in the target language. Translating only the user message into English first can lose nuance.
-- **Use multilingual models**: Gemini, GPT-4, Claude, Qwen, Aya, mT5 perform well across many languages. Smaller specialized models often beat general multilingual ones for specific language pairs.
+- **Use multilingual models**: Gemini, GPT-4o/5-class, Claude, Qwen, Aya, mT5. Smaller specialized models often beat general multilingual ones for specific language pairs.
 - **Language-specific few-shots** in the target language.
 - **Translation pivots**: for low-resource languages or weak coverage, translate to English, prompt, translate back—often more reliable than direct prompting.
 - **Watch tokenization**: many tokenizers are English-biased; non-Latin scripts use many more tokens, increasing cost and reducing effective context.
@@ -610,11 +623,11 @@ Agents are more vulnerable than chat LLMs because they consume tool outputs that
 
 ### CoT not improving accuracy—what to fix?
 - **Better reasoning examples**: provide high-quality demonstrations of the reasoning style you want, not just "think step by step."
-- **Larger model**: CoT mainly helps strong models (≥7B); small models often produce wrong reasoning that drags them off-track.
+- **Larger / reasoning model**: original CoT paper needed ~100B; modern instruct 7B+ can help, but weak models still produce wrong traces. Prefer a reasoning SKU for hard tasks.
 - **Self-consistency**: vote across multiple CoT paths.
 - **Make the final answer clearly delimited** ("Answer: 42") for reliable extraction.
 - **Verify your task actually needs reasoning**: CoT doesn't help when the task is direct recall/format conversion.
-- **Switch to an LRM**: o1, o3, DeepSeek-R1, Gemini Thinking, Claude with extended thinking are specifically trained for hard reasoning and outperform CoT-prompted base models.
+- **Switch to a reasoning model**: o-series / GPT-5 reasoning SKUs, DeepSeek-R1, Gemini Thinking, Claude extended thinking outperform CoT-prompted chat models on hard tasks. Spend test-time compute only when the router says the query is hard.
 - **Decompose the problem**: prompt chaining can outperform CoT when the task has clean substeps.
 
 ### English works, other languages fail—how to add multilingual support?
@@ -704,7 +717,7 @@ Example: querying "K-9 visa" — dense might confuse "K-9" (dog) vs "K-9 visa" (
 ### What is re-ranking?
 Initial retrieval (vector search + BM25) returns hundreds of candidates fast but with limited precision—a bi-encoder embedding can't compare query and document at fine granularity. A **re-ranker** is a **cross-encoder**: it takes (query, candidate) pairs together and scores their relevance, attending across both texts simultaneously. Much more accurate but ~100× slower, so you only apply it to the top 50–200 candidates from initial retrieval.
 
-Common rerankers: **Cohere Rerank, Voyage Rerank, BGE-Reranker, Jina Reranker**. Effect: typically 5–20 point gains on retrieval precision metrics, dramatically improving downstream answer quality. The standard production pattern is: retrieve top 100 hybrid → re-rank to top 5–10 → feed to LLM.
+Common rerankers: **Cohere Rerank, Voyage Rerank, BGE-Reranker, Jina Reranker**. Cross-encoders are often ~1–2 orders of magnitude slower than bi-encoder retrieval (the "~100×" figure is an order-of-magnitude, not a law). NDCG/precision gains of several points are common on BEIR-style sets; measure on **your** queries. Standard pattern: retrieve top ~50–100 hybrid → re-rank to top 5–10 → LLM.
 
 ### Multi-document / multi-hop questions?
 A multi-hop question requires combining facts from multiple sources ("What's the founder's hometown of the company that acquired X?"). Standard one-shot retrieval often fails.
@@ -718,13 +731,7 @@ Strategies:
 - **Increase top-k + better retrieval** as a baseline.
 
 ### "Lost in the middle" in RAG?
-RAG aggravates lost-in-the-middle when many retrieved chunks are stuffed into context: the LLM may use the first and last chunks but ignore the middle, even if the answer is there. Fixes:
-- **Re-rank to place the most relevant chunk first** (or split between start and end).
-- **Reduce top-k** with stronger re-ranking; fewer high-quality chunks beat many noisy ones.
-- **Summarize the middle chunks** before injection.
-- **Test with needle-in-a-haystack**: measure your effective context.
-- **Use better models** (Claude, Gemini handle long contexts better).
-- **Hierarchical RAG**: summarize → retrieve relevant summary → drill down to source chunks.
+Same U-shaped attention as in long prompts (Liu et al., 2023)—see Prompt Engineering. RAG makes it worse by stuffing many chunks. **Do first:** re-rank so the best chunk is first (or first+last), cut top-k, then hierarchical RAG if you still need breadth. Don't "fix" this by buying a bigger context window.
 
 ### Evaluating RAG—faithfulness, relevance, context precision/recall?
 Standard RAG metrics, separating **retrieval quality** from **generation quality**:
@@ -751,7 +758,7 @@ Use when: corpus is bounded, questions require synthesis across documents, or re
 Embedding-based RAG works on prose; structured data needs different handling:
 - **Tables → markdown / text**: serialize each table (or row) as text and embed. Works for small tables but loses column semantics.
 - **Row-level chunks** with column metadata as filters.
-- **Text-to-SQL**: for true structured queries, generate SQL from the user's question and execute against the DB; far more accurate than embedding-based for numeric/aggregate questions. Frameworks: LangChain SQLDatabaseChain, LlamaIndex, Vanna AI.
+- **Text-to-SQL**: for true structured queries, generate SQL from the user's question and execute against the DB; far more accurate than embedding-based for numeric/aggregate questions. Use a **read-only DB role**, validated SQL (allowlist of tables, `EXPLAIN`/parser gate), and timeouts. Frameworks: LlamaIndex, Vanna, custom tool + SQLGlot—not the deprecated LangChain `SQLDatabaseChain`.
 - **Hybrid routing**: a classifier routes the query—structured queries to Text-to-SQL, unstructured to vector RAG, hybrid questions get both.
 - **Specialized table-aware models**: TAPAS, TaPEx encode tables natively.
 - **Schema-aware prompts**: provide table schemas and example queries to the LLM.
@@ -812,6 +819,8 @@ Critical for: (1) **Multi-tenancy**—never leak across tenants; (2) **Access co
 
 **Often combined**: fine-tune for behavior/format, use RAG for knowledge. Don't fine-tune to teach facts—it's expensive, brittle to updates, and the model still hallucinates.
 
+**Say this first:** "Can prompting solve it? If no, can RAG? If no, fine-tune." Then mention hybrid. Same decision as in Fine-Tuning.
+
 ### Query transformation (HyDE, decomposition, step-back)?
 LLM queries often don't make great retrieval queries. Transform first:
 - **HyDE (Hypothetical Document Embeddings)** (Gao et al., 2022): ask the LLM to generate a hypothetical answer to the query, embed *that*, and retrieve. The hypothetical answer is closer in embedding space to real relevant documents than the question is. Helps for short/sparse queries.
@@ -831,7 +840,7 @@ Critical for trust and debuggability. Implementation:
 - **Audit trails**: log {query, retrieved chunk IDs, generated answer} for compliance and debugging.
 
 ### Scale RAG to millions of documents?
-- **Managed or sharded vector DB**: Pinecone, Weaviate, Qdrant, Milvus, Vespa scale horizontally; pgvector struggles past ~10M without tuning.
+- **Managed or sharded vector DB**: Pinecone, Weaviate, Qdrant, Milvus, Vespa scale horizontally. pgvector is fine into the low millions on good hardware with HNSW; past ~10M it needs careful indexing, partitioning, and often a purpose-built engine—not a hard cliff.
 - **ANN indexes**: HNSW (latency-optimized), IVF-PQ (memory-optimized), DiskANN (disk-backed for huge indexes).
 - **Vector quantization**: INT8 or binary embeddings reduce memory 4–32× with small quality loss.
 - **Hierarchical retrieval**: filter by metadata (tenant, doc type) before ANN; or two-stage—retrieve from doc-level summaries first, then chunks within the doc.
@@ -904,7 +913,7 @@ Generic embeddings often miss the semantics of domain terms (medical abbreviatio
 
 ### Extending RAG to images and tables?
 - **Multimodal embeddings**: CLIP, SigLIP, Voyage-Multimodal-3 embed images and text into a shared space—query with text, retrieve images (or vice versa).
-- **Vision-LLM summarization**: use GPT-4V / Claude / Gemini to caption images and embed the caption; preserves searchability with text-only embedding models.
+- **Vision-LLM summarization**: use GPT-4o-class / Claude / Gemini to caption images and embed the caption; preserves searchability with text-only embedding models.
 - **Tables**: serialize to markdown for embedding; or extract structure and route table queries to SQL/pandas tools.
 - **Document pages as images** (ColPali approach): use vision encoders that handle full page layouts, avoiding fragile OCR.
 - **Multi-vector storage**: store both the visual embedding and a textual description, retrieve and combine.
@@ -949,7 +958,7 @@ Real corpora contain conflicting info (outdated docs, regional variations, dispu
 ### PDF parsing with tables and layouts?
 PDFs are notoriously hard: text isn't reading-order, tables are visual, columns and footnotes interleave.
 - **Layout-aware parsers**: Unstructured.io, LlamaParse, Docling, Azure Document Intelligence, AWS Textract—reconstruct reading order and tables much better than basic PyPDF.
-- **Vision-LLMs** for hard layouts: pass page images to GPT-4V / Claude / Gemini and ask for markdown reconstruction. Slow but very accurate.
+- **Vision-LLMs** for hard layouts: pass page images to GPT-4o-class / Claude / Gemini and ask for markdown reconstruction. Slow but very accurate.
 - **ColPali**: embed page images directly; no parsing needed; retrieval works on visual layout.
 - **Tables**: extract as markdown or HTML and embed separately; or convert to structured format and route to SQL.
 - **OCR fallback** for scanned PDFs (Tesseract, AWS, Google Vision).
@@ -966,14 +975,14 @@ A simple LLM call is one-shot: prompt → response. An **agent** is an LLM embed
 Differences in engineering: simple LLM calls are stateless and bounded; agents have **state** (memory, scratchpad), **non-determinism in control flow** (different inputs take different action paths), and interact with the **external world** (real systems with real consequences). This makes them more powerful but also more complex—debugging, evaluation, safety, cost, and latency all become significantly harder. A "chatbot with RAG" is borderline; once it can take parameterized actions in the world, it's an agent.
 
 ### AI Agent Memory?
-Memory enables an agent to maintain context, learn, and personalize over time. Categories:
-- **Short-term / working memory**: the current conversation/task context held in the LLM's prompt window. Cleared per session.
-- **Long-term memory**: persisted across sessions—user preferences, history, learned facts—stored in a vector DB, KV store, or relational DB.
-- **Episodic memory**: specific past episodes/interactions, often used for personalization ("last time you asked about X, we did Y").
-- **Semantic memory**: general factual knowledge—often externalized as a KB / RAG.
-- **Procedural memory**: learned skills or workflows—how to do recurring tasks; can be code, prompts, or trained adapters.
+Memory is what you **put in context** plus what you **persist outside** the window. Five types (same list as "Types of agent memory" below—don't memorize two versions):
+- **Working / short-term**: current task in the prompt. Dies with the session or when you compact.
+- **Long-term**: preferences, facts, history in a vector DB / KV / SQL; retrieve a slice each turn.
+- **Episodic**: specific past episodes ("last Tuesday's outage").
+- **Semantic**: domain facts, usually RAG rather than weights.
+- **Procedural**: how-to—prompts, code, adapters.
 
-Implementation patterns: extract facts after each interaction → write to long-term store; retrieve relevant memories at start of each turn; periodically consolidate. Frameworks: LangGraph memory, MemGPT, Letta, Mem0. Trade-off: more memory = better continuity but more retrieval complexity and privacy concerns.
+**Do first:** extract facts after a turn → dedupe → write with timestamps; retrieve only what's relevant; give users a view/delete UI (GDPR). Frameworks: LangGraph, Letta/MemGPT, Mem0. More memory without retrieval quality is just a longer lost-in-the-middle prompt.
 
 ### Harness Engineering in AI?
 The "harness" is everything around the LLM that makes it usable in production: tool registry, scheduling, memory, retries, guardrails, observability, prompt management, evaluation, error handling, sandboxing. The model is necessary but not sufficient—the harness determines whether the system is reliable, debuggable, and safe.
@@ -1017,23 +1026,22 @@ Tool design is a primary lever for agent quality. Principles:
 When to use multi-agent: (1) **Specialization helps**—different roles need very different prompts/tools; (2) **Context isolation**—one agent's noisy work shouldn't pollute another's context; (3) **Parallelism**—agents work on independent subtasks; (4) **Different model tiers**—use expensive model only where needed. Trade-offs: more complex orchestration, harder evaluation, higher latency due to inter-agent communication, more places for things to go wrong. Often a single agent with subagents (controlled context) is a sweet spot.
 
 ### What is MCP (Model Context Protocol)?
-MCP (Anthropic, late 2024) is an open standard for connecting LLM applications to external **tools, data sources, and prompts**. Before MCP, every integration was bespoke—each agent framework reimplemented connectors for Slack, GitHub, databases, etc. MCP defines a common protocol so any MCP-compliant **server** (exposing tools/resources/prompts) can be used by any MCP-compliant **client** (Claude Desktop, IDEs, custom agents).
+MCP (Anthropic, Nov 2024; now a default integration layer) is an open standard for connecting LLM applications to external **tools, data sources, and prompts**. Before MCP, every integration was bespoke. MCP defines a common protocol so any MCP-compliant **server** (tools/resources/prompts) can be used by any MCP-compliant **client** (Claude Desktop, IDEs, custom agents).
 
-Components: **resources** (read-only data the LLM can access), **tools** (actions the LLM can invoke), **prompts** (reusable prompt templates). Built on JSON-RPC over stdio or HTTP. Rapidly adopted ecosystem (hundreds of community servers within months of release). Analogous to "Language Server Protocol for LLM tools." Reduces vendor lock-in and accelerates building agentic systems.
+Components: **resources** (read-only data), **tools** (actions), **prompts** (templates). JSON-RPC over stdio or HTTP. Analogous to "LSP for LLM tools." **A2A** (Agent-to-Agent, Google-led) is the companion standard for agent-to-agent messaging—MCP is how an agent talks to *tools*; A2A is how agents talk to *each other*. Still treat both as evolving specs: pin versions, sandbox servers, don't give a random MCP server prod credentials.
+
+### Computer-use / GUI agents?
+Same ReAct loop, but the observation is a **screenshot (or accessibility tree)** and the actions are click/type/scroll. Harder than API tools: huge action space, visual grounding errors, timing, CAPTCHAs, irreversible UI.
+
+**Say first:** sandbox the browser/desktop (no SSO to prod), require confirmation for purchases/deletes/sends, log every action with a screenshot, cap steps. Eval on WebArena / OSWorld-style tasks plus your own flows. Latency will be seconds per step; don't promise "instant." MCP/computer-use APIs are the integration layer, not a safety story.
 
 ### What are AI SubAgents?
 Subagents are child agents spawned by a parent agent to handle a focused subtask with their own isolated context, tools, and prompt. The parent delegates ("research X", "review this code"), the subagent completes its task and returns a result, and the parent continues.
 
-Benefits: (1) **Context isolation**—subagent's exploration doesn't pollute parent's working memory; (2) **Parallelism**—multiple subagents run concurrently; (3) **Specialization**—each subagent has tools/prompts optimized for its role; (4) **Cost control**—use a smaller model for routine subagent work; (5) **Better long-horizon performance**—decompose 100-step tasks into manageable 10-step subagents. Used in Claude Code, AutoGen, CrewAI, and modern multi-agent research systems.
+Benefits: (1) **Context isolation**—subagent's exploration doesn't pollute parent's working memory; (2) **Parallelism**—multiple subagents run concurrently; (3) **Specialization**—each subagent has tools/prompts optimized for its role; (4) **Cost control**—use a smaller model for routine subagent work; (5) **Better long-horizon performance**—decompose 100-step tasks into manageable 10-step subagents. Used in Claude Code, Cursor-style coding agents, AutoGen, CrewAI, and modern multi-agent research systems.
 
 ### Types of agent memory?
-- **Short-term (working)**: in-context conversation/scratchpad for the current task. Lost when context is cleared.
-- **Long-term**: persistent across sessions—user preferences, facts learned, past interactions. Stored externally (vector DB, KV, SQL) and retrieved as needed.
-- **Episodic**: memories of specific past events ("last Tuesday's troubleshooting session"). Useful for personalization and learning from past failures.
-- **Semantic**: general knowledge about the domain/world. Often externalized to a RAG knowledge base.
-- **Procedural**: how-to-do things—learned skills, reusable workflows, tool-use patterns. Can be stored as prompts, code, or trained adapters.
-
-Production agents typically combine all of these: short-term context + retrieved long-term memory + RAG over semantic knowledge + procedural patterns baked into prompts or tools.
+Same five types as **AI Agent Memory** above (working, long-term, episodic, semantic, procedural). Production mix: working context + retrieved long-term + RAG semantic + procedural prompts/tools. If they probe "how do you compact?": summarize old turns, pointer-store big tool outputs, retrieve memories by query—not dump the whole store into the prompt.
 
 ### Agent failure handling and recovery?
 Agents fail constantly—LLM mistakes, tool errors, transient network failures, edge cases. Robust agents recover gracefully:
@@ -1062,29 +1070,20 @@ All production agents need multiple stopping conditions—relying solely on the 
 ### Context Engineering?
 Context engineering is the discipline of curating what enters the LLM's context window: system prompt, retrieved knowledge, memory, tool schemas, message history, examples, intermediate results. As models extend context to millions of tokens, the bottleneck shifts from *whether* something fits to *what should be in there* and *in what order*.
 
-Key concerns: (1) **Lost-in-the-middle**—even huge contexts have attention biases; place critical info at start/end; (2) **Token economics**—every irrelevant token costs money and dilutes signal; (3) **Tool description budget**—too many tools confuses the model; route or RAG over tools; (4) **History compression**—summarize old turns; (5) **Retrieved doc selection**—better re-ranking beats more chunks; (6) **Memory retrieval**—pull only relevant memories, not everything. Often called "the new prompt engineering" for agent-era systems.
+Key concerns: (1) **Lost-in-the-middle**—even huge contexts have attention biases; place critical info at start/end; (2) **Token economics**—every irrelevant token costs money and dilutes signal; (3) **Tool description budget**—too many tools confuses the model; route or RAG over tools; (4) **Context compaction**—summarize old turns, replace huge tool payloads with pointers, keep a running state object; million-token windows do not replace this (cost + quality); (5) **Retrieved doc selection**—better re-ranking beats more chunks; (6) **Memory retrieval**—pull only relevant memories; (7) **Prefix stability**—static content first so prompt caches hit. Often called "the new prompt engineering" for agent-era systems.
 
 ### How do AI agents communicate?
 - **Shared scratchpad / blackboard**: a common writable space all agents read and write—simple but contention-prone.
 - **Message passing**: structured messages (often JSON envelopes with sender, recipient, payload) routed by an orchestrator or via pub/sub.
 - **Tool-call interface**: one agent exposes itself as a tool; other agents invoke it via standard function-calling. Clean and composable.
-- **MCP for tool sharing**; **A2A (Agent-to-Agent protocols)** for direct agent communication standards (still emerging).
+- **MCP** for tool/data sharing; **A2A** for agent-to-agent messages (see MCP question).
 - **Orchestrator-mediated**: a controller (LangGraph, Temporal) directs which agent runs next and what state they see—most production setups.
 - **Hierarchical**: parent agents delegate to subagents; results bubble up.
 
 Best practices: structured/typed messages over free-form text; explicit termination signals; idempotent message handling; persistent message logs for debugging.
 
 ### Evaluating AI agents?
-Agent evaluation is harder than LLM evaluation—trajectories are open-ended, success can come from many paths, and failures may emerge across many small mistakes.
-- **End-task success rate** on benchmarks: SWE-bench (code), WebArena (web tasks), GAIA (general assistant), τ-bench (tool use).
-- **Step-wise correctness**: was each tool call appropriate? Right args? Did the model recover from errors?
-- **Trajectory efficiency**: number of steps, tokens used, dollars spent vs. minimum needed.
-- **Robustness**: performance under input perturbations, noisy tool outputs, partial failures.
-- **Safety**: did the agent attempt unsafe actions? Did guardrails fire?
-- **Calibration**: when the agent claimed success, was it actually right?
-- **Custom domain evals**: golden datasets of real tasks with expected outcomes.
-- **LLM-as-judge on full trajectories** for qualitative assessment; **human eval** for high-stakes domains.
-- **Production telemetry**: success/failure rates, user feedback, cost per task.
+Harder than single-call LLM eval: many paths to success, failures accumulate. Canonical list lives in **§9 Evaluation** (SWE-bench Verified, WebArena, GAIA, τ-bench, trajectory efficiency, safety, calibration). **Say first:** measure *task success on your golden tasks*, then inspect trajectories for waste and unsafe actions—not just the final string. Don't ship on public-benchmark deltas alone.
 
 ### Security risks of agentic systems?
 Agents are uniquely dangerous because they take real actions:
@@ -1154,7 +1153,7 @@ Effective for complex tasks (code, writing, math) where errors are detectable po
 **Hybrid approaches** (CodeAct, Voyager) are increasingly common: the "action" is code, and "tools" are functions imported into that code. More expressive than discrete tool calls, lets the agent compose. Trade-off: sandbox safety becomes critical—an LLM-generated script must run in a tightly contained environment with no production access, no unrestricted network, and strict resource limits.
 
 ### Multi-modal inputs/outputs in agents?
-Use multimodal LLMs (GPT-4o, Claude, Gemini) that natively accept images, audio, sometimes video alongside text. For input: pass images directly; transcribe audio with Whisper if model doesn't support audio. For output: text natively; images via DALL-E/Stable Diffusion tools; audio via TTS tools (ElevenLabs, OpenAI TTS); video via specialized models.
+Use multimodal LLMs (GPT-4o / GPT-5-class, Claude 4.x, Gemini) that natively accept images, audio, sometimes video alongside text. For input: pass images directly; transcribe audio with Whisper if model doesn't support audio. For output: text natively; images via DALL-E/Stable Diffusion tools; audio via TTS tools (ElevenLabs, OpenAI TTS); video via specialized models.
 
 Architectural patterns: **single multimodal LLM** as the agent brain; **specialized models as tools** (ASR, TTS, image gen, OCR); **router** that picks the right modality model per task. Considerations: vision tokens are expensive; cache image embeddings; preprocess (resize, OCR) before sending; latency for audio pipelines.
 
@@ -1260,7 +1259,7 @@ This must not happen. Defenses:
 - **Audit + alerts** on any destructive action.
 
 ### Many tools, agent picks wrong one?
-As tool count grows past ~20, LLM tool selection degrades.
+As tool count grows past ~20–30, selection quality often degrades (model-dependent; measure it).
 - **Improve descriptions**: explicit "when to use this tool" and "when NOT to use" clauses.
 - **Reduce tool set per task**: route by task type, only expose relevant tools.
 - **Tool retrieval**: embed tool descriptions, retrieve top-k relevant tools per query (RAG over tools).
@@ -1323,6 +1322,8 @@ All three are PEFT methods, freezing the base model:
 
 **Practical winner is LoRA** for most use cases; prompt tuning sees occasional use for very narrow, low-data tasks or as a serving optimization (just prepend embeddings, no weight changes).
 
+Related adapters (if they probe): **DoRA** (weight-decomposed LoRA, often better quality at similar rank), **rsLoRA** (rank-stabilized scaling), **LoRA+** (different LRs for A vs B). Mention them as LoRA variants, not replacements for the LoRA explanation.
+
 ### Adapter-based fine-tuning?
 Adapter-based methods (Houlsby et al., 2019) insert small trainable **bottleneck MLP modules** between Transformer layers (down-project to small dim, non-linearity, up-project back). Base model frozen; only adapters train. Predecessor of LoRA.
 
@@ -1369,7 +1370,7 @@ The question is "where should this capability live?"
 - **RAG**: for knowledge that's large, changing, private, or needs citations. Doesn't change model behavior.
 - **Fine-tuning**: for skills, style, format consistency, latency/cost optimization via smaller models, behavior beyond what prompting can achieve.
 
-Often combined: **fine-tune for behavior + RAG for knowledge**. Don't try to teach facts via fine-tuning—it's expensive, brittle to updates, and the model still hallucinates. The decision flowchart: can prompting solve it? → if no, can RAG? → if no, fine-tune.
+Often combined: **fine-tune for behavior + RAG for knowledge**. Don't try to teach facts via fine-tuning—it's expensive, brittle to updates, and the model still hallucinates. Decision: prompting → RAG → fine-tune (same as RAG vs fine-tuning above). Pilot on real traffic before you commit.
 
 ### Evaluating fine-tuned models?
 - **Task-specific metrics**: accuracy, F1, BLEU/ROUGE for translation/summary, code execution pass rate, structured output validity.
@@ -1436,7 +1437,7 @@ Watch for **interference** (one task degrades another); always evaluate after me
 SFT establishes capability and basic format; alignment refines for human preferences in the long tail of subjective qualities. Most production chat models go through SFT then alignment. SFT alone often suffices for narrow tasks (code completion, structured extraction); alignment matters for open-ended conversation, safety, and nuanced quality.
 
 ### RLAIF vs RLHF?
-RLAIF (Bai et al., 2022 – Constitutional AI) replaces human preference labelers with an **LLM judge**. The LLM is given guidelines ("a constitution") and labels which response in a pair better follows them. The rest of the pipeline (reward model, PPO) is the same.
+RLAIF replaces human preference labelers with an **LLM judge**. **Constitutional AI** (Bai et al., 2022) coined "RL from AI Feedback" and uses a written constitution plus AI critiques. **Lee et al. (2023)** (Google) compared RLAIF vs RLHF more generally (judge LLM, not necessarily a constitution). Don't treat the two papers as the same method.
 
 Benefits: dramatically cheaper and faster than human labeling; consistent (no inter-annotator disagreement); scales to millions of pairs. Limitations: quality bounded by the judge model; can amplify judge biases; harder to encode nuanced human values. Often **hybrid**: humans label a seed set, LLM scales it up. Anthropic's Constitutional AI uses RLAIF heavily; many open-source models use distillation + RLAIF (Zephyr, etc.).
 
@@ -1446,11 +1447,14 @@ Many closed-model providers explicitly prohibit using their outputs to train com
 - **Anthropic TOS**: similar restrictions.
 - **Google Gemini TOS**: prohibits using outputs to train models that compete with Google's AI.
 
-Open-weight models have permissive licenses for distillation:
-- **LLaMA 2/3** (Meta): permits commercial use including derived works (with attribution).
-- **Mistral, Qwen, DeepSeek, Gemma**: similarly permissive.
+Open-weight licenses are **not** all Apache-like—this is a common interview trap:
+- **Llama 2/3/4 Community License** (Meta): commercial use **below 700M monthly active users**; above that you must ask Meta (they may refuse). Acceptable Use Policy is contractual. You **may not** use Llama outputs to improve other LLMs. Attribution ("Built with Llama") required. OSI does not treat this as open source.
+- **Mistral 7B / Mixtral**: Apache 2.0 (actually permissive). Mistral Large-class APIs are not.
+- **DeepSeek V3**: MIT for the weights (check the card).
+- **Qwen**: mix of Apache and Tongyi Qianwen licenses by size—read the card.
+- **Gemma**: Google Gemma Terms of Use, **not** a permissive OSS license.
 
-**Practical implications**: check the specific TOS for your teacher; if using closed-model outputs, restrict to in-house tooling or non-competing use cases; consider open-weight teachers for distillation pipelines. Also be aware of **copyright** issues with training data carried through distillation.
+**Practical implications**: read the *specific* teacher TOS/license; closed-model outputs often cannot train competing models; Llama distillation into a non-Llama student can violate the "no improving other LLMs" clause. Copyright in the teacher's training data can still flow through.
 
 ### Fine-tuned LLM is factually wrong—fix?
 - **Audit training data for errors**: incorrect or inconsistent labels propagate into the model.
@@ -1670,7 +1674,7 @@ Domain-specific fine-tuning produces large gains for narrow tasks.
 - **Aggressive ANN parameters** (smaller `M` in HNSW) trade recall for memory.
 
 ### Vector DB can't scale to millions?
-A self-hosted single-node Postgres + pgvector hits limits around 1–10M vectors depending on hardware. Solutions:
+A self-hosted single-node Postgres + pgvector often becomes ops-heavy around **1–10M** vectors (hardware, HNSW params, and filter cardinality matter more than a magic number). Solutions:
 - **Switch to a purpose-built vector DB** designed for scale: Pinecone, Qdrant, Milvus, Weaviate, Vespa.
 - **Tune ANN parameters**: HNSW `M`, `ef_construction`, `ef_search`; IVF `nlist`, `nprobe`.
 - **Pre-filter by metadata** to reduce active vectors per query.
@@ -1718,26 +1722,36 @@ Short queries ("k9 visa") have weak semantic signal—dense embeddings struggle.
 
 ## 7. AI System Design
 
-> Short architectural blueprints for each design question. Adapt to specifics in interview.
+> Interview shape: requirements → traffic/capacity → API + data → happy path → what fails first → what you'd cut. Numbers below are order-of-magnitude so you have something to defend, not gospel.
 
 ### AI Coding Agent
-**Core components**: a strong code-aware LLM (Claude Sonnet, GPT-4.x), a **repo indexer** (file tree + AST + symbol graph + embeddings of files/functions), **tools** (read/write/edit files, run shell, run tests, grep, git), a **sandboxed execution environment** (Docker, gVisor, E2B), a **planner-executor** loop with reflection, and a strict **harness** with iteration caps.
+**Requirements (ask first):** latency target (interactive vs overnight), languages/repos, write vs read-only, whether tests are the oracle, blast radius (can it push to main?).
 
-**Flow**: user task → planner produces todo list → executor edits files (diff-based to localize changes) → run tests/linters for feedback → reflect and fix → request human approval before destructive or far-reaching actions. **Critical design choices**: diff/patch-based editing (vs full-file rewrites) for review-ability; test execution as the primary reliability signal; checkpoint state for resume; cap max iterations and tokens; observability (every tool call logged); guardrails on git operations (no force-push, no main commits without approval).
+**Core components**: a strong code-aware LLM (Claude Sonnet-class, GPT-4o/5-class), a **repo indexer** (file tree + AST + symbol graph + embeddings of files/functions), **tools** (read/write/edit, shell, tests, grep, git), a **sandbox** (Docker, gVisor, E2B), a **planner-executor** loop, a harness with iteration/token caps.
+
+**Flow**: task → plan/todo → diff-based edits → tests/linters as feedback → reflect → human approval before destructive git. Tests are the reliability signal; diffs beat full-file rewrites.
+
+**Capacity sketch** (say it out loud): 200 concurrent sessions, ~15 LLM calls/task, ~8k in / 2k out per call → ~3M tokens/hour. Route cheap model for grep/summarize, strong model for edit/reason. Prefix-cache the repo map + tool schemas. GPU/API: start API, self-host the hot 8B draft if volume justifies.
+
+**SLOs**: TTFT <2s, task success on an internal SWE-bench-like set, $ cap per task, zero unapproved pushes to default branch. **Cut first under load:** skip extra reflection loops, shrink repo context, don't run the full test suite on every hop.
 
 ### AI-powered customer support chatbot
-**Architecture**: front-end channel adapters (web chat, email, SMS, voice) → router → conversation orchestrator with **session state** → core agent (LLM + tools) → response post-processor → CRM logger.
+**Architecture**: channel adapters (web, email, SMS, voice) → router → session orchestrator → agent (LLM + tools) → post-processor → CRM.
 
-**Capabilities tier**: (1) **RAG over KB** for FAQ/policy answers with citations; (2) **CRM/order lookup tools** with PII handling; (3) **Action tools** (refund up to threshold, account changes, ticket creation) with per-action policy guardrails; (4) **Escalation** to human agent with full transcript on low confidence, negative sentiment, repeated failure, or sensitive topics (legal, medical, churn).
+**Capability tiers**: (1) RAG over KB with citations; (2) CRM/order lookup with PII redaction; (3) action tools (refund up to $X, account changes) with policy gates; (4) escalate to human with full transcript on low confidence, negative sentiment, loops, or legal/medical/churn.
 
-**Critical**: persistent customer memory (preferences, history) loaded per session; per-tenant prompt/branding; safety filters (don't promise what we can't deliver); SLAs (latency, deflection rate, CSAT); continuous evaluation with sample reviews; feedback loop from human-handled cases improves prompts/tools.
+**Capacity sketch**: 50 QPS chat, p95 <3s TTFT, 2k in / 400 out tokens → ~100k TPM. Prefix-cache system prompt + tool schemas. Semantic cache only for FAQ-identical questions (high threshold). One region + failover provider.
+
+**SLOs**: deflection rate, CSAT, hallucination/faithfulness on a golden set, refund-tool error rate = 0 unauthorized. **Never** let the LLM be the ACL. **Cut first:** disable actions, keep FAQ RAG; then smaller model.
 
 ### Enterprise document Q&A
-**Indexing pipeline**: source connectors (SharePoint, Confluence, S3, Drive, Slack) → layout-aware parsers (Unstructured, LlamaParse) → chunker → embedder → vector DB with **ACL metadata** (user/group permissions per chunk) + metadata (date, source, doc type, version). Incremental updates via CDC/webhooks.
+**Indexing**: connectors (SharePoint, Confluence, S3, Drive, Slack) → layout-aware parsers → chunker → embedder → vector DB with **ACL metadata on every chunk** + date/source/type/version. Incremental CDC/webhooks.
 
-**Query path**: auth → query understanding (decontextualization with chat history, expansion) → **hybrid retrieval** (BM25 + dense) **filtered by user permissions** → re-ranker → grounded LLM with strict citation requirements → answer with linked sources.
+**Query**: auth → decontextualize query → **hybrid retrieval filtered by the user ACL** → re-ranker → grounded LLM with citations → linked sources.
 
-**Operational**: per-user audit log of queries and accessed docs; conflict detection; freshness indicators; admin UI for tuning sources/prompts; eval pipeline (faithfulness, answer relevance); per-tenant isolation; data residency for regulated industries.
+**Capacity sketch**: 10M chunks, 20 QPS, p95 retrieve <100ms, generate <4s. HNSW or managed DB; pre-filter tenant/ACL before ANN. Re-embed is the most disruptive change—dual-index + atomic alias flip.
+
+**SLOs**: faithfulness, citation validity, zero cross-tenant retrieval (treat as a sev-1), freshness lag <1h for policy docs. **Cut first:** drop re-ranker, then drop top-k.
 
 ### Code generation and review
 **Generator side**: developer types a prompt or selects code → context builder (active file + RAG over repo + related tests) → LLM generates code/diff → static analyzer + type-check + lint runs as feedback → LLM iterates → final diff shown.
@@ -1748,10 +1762,10 @@ Short queries ("k9 visa") have weak semantic signal—dense embeddings struggle.
 
 ### Content moderation
 **Tiered pipeline** (cheap → expensive):
-1. **Pre-filter**: regex/blocklists for obvious cases—instant decisions on ~80% of traffic at near-zero cost.
-2. **Classifiers**: lightweight ML models per category (toxicity, sexual, violence, self-harm, hate)—handles next ~15%.
-3. **LLM judgment** (Llama Guard, GPT-4) on borderline cases with policy taxonomy in the prompt—~5%.
-4. **Human review** for high-severity, novel patterns, or appeals.
+1. **Pre-filter**: regex/blocklists for obvious cases—cheap and instant; often the bulk of volume, but the 80/15/5 split is a teaching sketch, not a measured SLA.
+2. **Classifiers**: lightweight ML models per category (toxicity, sexual, violence, self-harm, hate).
+3. **LLM judgment** (Llama Guard, GPT-4o-class) on borderline cases with the policy taxonomy in the prompt.
+4. **Human review** for high-severity, novel patterns, or appeals. Tune the funnel on *your* traffic; measure FP/FN per category.
 
 **Considerations**: multimodal (text + image + audio + video each need own pipeline + cross-modal checks); multilingual + culturally aware (a sign harmless in one region is hostile in another); appeals/transparency mechanism; auditable decisions with policy version; constant red-teaming for novel evasion; feedback loop to retrain classifiers; SLA on time-to-action.
 
@@ -1900,19 +1914,13 @@ Design for provider outages and rate-limit spikes:
 **Important**: real-time inventory awareness (don't recommend OOS), A/B testing infrastructure, autocomplete, did-you-mean, faceted refinement, multi-language, image-based search (snap a product to find similar), session-based personalization. Conversion-driven, not just relevance.
 
 ### AI gateway/proxy for LLM access
-A central proxy mediating all LLM API calls in an organization:
-- **Multi-provider routing** (route requests by model name or policy).
-- **Authentication & authorization** per team/user.
-- **Rate limiting & quotas**.
-- **Cost tracking** per team/feature/user/model.
-- **Caching** (exact + semantic + prefix).
-- **Observability** (every request logged with tokens, latency, cost).
-- **Guardrails** (input/output filters, PII redaction).
-- **Failover** between providers.
-- **Audit & compliance** logging.
-- **Prompt registry** integration.
+A central proxy for every LLM call once more than one team is calling providers.
 
-Open-source: **LiteLLM, Portkey, Helicone, Langfuse**. Buy vs build depends on scale and integration needs; most orgs benefit from a gateway as soon as multiple teams use LLMs.
+**Must-haves**: authZ per team, rate limits/quotas, multi-provider routing + failover, cost attribution, exact + prefix cache, tracing (tokens, latency, model+prompt version), input/output guardrails, PII redaction, audit log.
+
+**Capacity sketch**: start as a stateless LiteLLM/Portkey-style proxy behind your API gateway. At 1k QPS, the bottleneck is usually the *provider*, not the proxy—queue, shed free-tier, fall back to a smaller model. Pin model IDs; never send `gpt-4o` "latest".
+
+**SLOs**: proxy p99 overhead <20ms, cache hit rate (measured), 0 secret-in-logs, failover drill quarterly. Open-source: **LiteLLM, Portkey, Helicone**. Langfuse is observability, not a full gateway. Buy vs build: buy until you need custom routing policy.
 
 ### RAG with conflicting sources?
 - **Source authority hierarchy** via metadata (official > FAQ > user-generated).
@@ -2108,14 +2116,14 @@ Cost components:
 - **Observability** (Langfuse, etc.).
 - **Storage** for caches, traces, RAG sources.
 
-**Model expected usage**: pilot data × growth × seasonal variance × headroom. Add **caching effect** (semantic cache typically hits 30–60% on stable workloads). Account for retries and abandonments. Project both per-request and total monthly burn. Pricing varies model-to-model by ~100×—routing well is the biggest cost lever.
+**Model expected usage**: pilot data × growth × seasonal variance × headroom. Add **caching effect** (exact + prefix cache on stable prefixes; semantic cache hit rate is highly workload-dependent—measure it, don't assume 30–60%). Account for retries and abandonments. Project both per-request and total monthly burn. Pricing varies model-to-model by ~100×—routing well is the biggest cost lever.
 
 ### Optimize LLM inference costs?
-- **Semantic + exact caching**: 30–60% of typical workload responds from cache.
+- **Semantic + exact + prefix caching**: often the biggest win on repetitive workloads; measure hit rate instead of assuming 30–60%.
 - **Prompt prefix caching**: providers discount cached input tokens (Anthropic: 90% off; OpenAI: 50%).
 - **Model routing**: small model for easy, large for hard; can cut cost 5–10×.
 - **Prompt compression**: shorten prompts (LLMLingua-style; remove redundant instructions).
-- **Self-host at high volume**: break-even depends on workload but typically 1B+ tokens/month favors self-hosting.
+- **Self-host at high volume**: break-even is a spreadsheet (API $/1M vs GPU $/hr × utilization × tokens/sec), not a universal "1B tokens/month."
 - **Distill / fine-tune a smaller model** to match a bigger one for your specific use case.
 - **Batch inference**: cheaper rates from providers' batch APIs (often 50% off, 24h SLA).
 - **Limit output length**: instructed and `max_tokens`.
@@ -2147,7 +2155,7 @@ Adds AI-specific gates and artifacts:
 
 ### Prompt versioning and management?
 Treat prompts like code:
-- **Store in git** (alongside app code) or in a **prompt registry** (LangSmith, PromptLayer, Pezzo, Helicone, BAML).
+- **Store in git** (alongside app code) or in a **prompt registry** (LangSmith, PromptLayer, Helicone, BAML).
 - **Semver tagging**: 1.0.0 → 1.0.1 (small) → 1.1.0 (new feature) → 2.0.0 (breaking).
 - **Map versions to deployments**: each environment pins a specific prompt version.
 - **Evaluate on PRs**: golden set runs; block merges on regression.
@@ -2244,7 +2252,7 @@ Critical UX win for chat: user sees progress immediately, even if total generati
 - **Cost**: $/request, $/user, $/feature.
 - **Error rate**: failed requests, parse failures, tool errors.
 - **Safety**: harmful content rate, blocked requests, jailbreak attempts.
-- **Cache hit rate**: lower = higher cost.
+- **Cache hit rate**: lower = higher cost. Exact + prefix cache rates are measurable; "semantic cache 30–60%" is **workload-dependent**—many products see far less. Quote your own hit rate, not a blog number.
 - **Retrieval quality** for RAG.
 
 Define both **engineering SLOs** (latency, uptime) and **product SLOs** (quality, satisfaction).
@@ -2265,9 +2273,9 @@ Choose **on-device** for: consumer apps with sensitive data, offline scenarios, 
 - **Circuit breakers**: stop hammering a failing provider; periodic health check to reopen.
 
 ### Reliable structured output in production?
-- **Provider structured-output APIs** (OpenAI response_format with JSON schema, Anthropic tool_use, Google response_schema)—use constrained decoding internally; near-100% schema compliance.
+- **Provider structured-output APIs** (OpenAI json_schema, Anthropic native structured outputs + strict tools, Google response_schema)—constrained decoding; near-100% schema compliance.
 - **Pydantic + Instructor**: define schema, get typed Python objects, auto-retry on validation failure.
-- **Constrained decoding libraries** (Outlines, LMFE, JSONFormer)—force valid output at the token level.
+- **Constrained decoding libraries** (Outlines, lm-format-enforcer, jsonformer)—force valid output at the token level.
 - **Few-shot examples** of correct format in the prompt.
 - **Lower temperature** (0–0.3).
 - **Retry loop**: on parse error, send the error back to LLM for correction.
@@ -2310,7 +2318,7 @@ Saves significant cost (often 5-10×) and latency at scale. Frameworks: **RouteL
 - **Reduce per-request load**: shorter prompts, fewer chunks, smaller `max_tokens`.
 
 ### LLM cost too high—reduce without quality loss?
-- **Aggressive caching**: semantic + exact + prefix (often biggest single win).
+- **Aggressive caching**: exact + prefix first (reliable); semantic cache only with a high similarity threshold and eval against false hits.
 - **Model routing**: route by complexity.
 - **Prompt compression**: shorten system prompts; reduce few-shot examples.
 - **Fine-tune a smaller model** to handle most requests; route hard ones to big.
@@ -2415,7 +2423,7 @@ Saves significant cost (often 5-10×) and latency at scale. Frameworks: **RouteL
 
 ### AI Agent Evaluation
 Agents are harder to evaluate than LLMs because trajectories are open-ended, success can come via many paths, and failures emerge through accumulated small mistakes. Key dimensions:
-- **End-task success rate** on benchmarks (SWE-bench for code, WebArena for browsing, GAIA for general, τ-bench for tool use) or custom domain task sets.
+- **End-task success rate** on benchmarks (**SWE-bench Verified** for code—not raw SWE-bench, which is noisy; WebArena / OSWorld for browsing; GAIA for general; τ-bench for tool use; LiveCodeBench for contamination-resistant code) or, better, custom domain task sets.
 - **Trajectory quality**: efficiency (steps, tokens, dollars vs. minimum needed), tool selection correctness, parameter accuracy, recovery from errors.
 - **Step-wise correctness**: was each tool call appropriate? Right args? Right reasoning?
 - **Robustness**: performance under input perturbations, noisy tool outputs, partial failures.
@@ -2550,7 +2558,7 @@ Standard model-comparison benchmarks:
 - **MMLU (Massive Multitask Language Understanding)**: 57 subjects, multiple-choice questions from elementary to professional level. Measures broad knowledge.
 - **HumanEval**: 164 Python programming problems; pass@1 on hidden test cases. Standard for code generation.
 - **GSM8K**: grade-school math word problems; tests step-by-step reasoning.
-- **Others**: ARC, HellaSwag, TruthfulQA, MATH, AGIEval, BBH, AIME, FrontierMath, SWE-bench (code agent).
+- **Others**: ARC, HellaSwag, TruthfulQA, MATH, AGIEval, BBH, AIME, FrontierMath, **SWE-bench Verified**, LiveCodeBench (less contaminated than HumanEval). Public leaderboards are contaminated and gamed—always pair with a private golden set.
 
 **Use cases**: model selection, tracking general capability over time, leaderboards. **Limitations**: contamination (test data may be in training), distribution mismatch with your real workload, gaming via benchmark-specific tuning. Always pair with custom evals on your task.
 
@@ -2579,7 +2587,7 @@ Tools: **Ragas, TruLens, DeepEval, Phoenix** automate these via LLM-as-judge. Tr
 - **Recovery from errors**: did the agent handle a failure and continue?
 - **Calibration**: when the agent claims success, is it right?
 
-**Methods**: LLM-as-judge on trajectories with rubrics, programmatic checks (tests pass, schema valid), human eval on samples. Benchmarks: SWE-bench, WebArena, GAIA, τ-bench. Critical to evaluate **trajectories**, not just final outputs—two agents can both succeed but one took 30 steps and the other took 5.
+**Methods**: LLM-as-judge on trajectories with rubrics, programmatic checks (tests pass, schema valid), human eval on samples. Benchmarks: **SWE-bench Verified**, WebArena, GAIA, τ-bench, LiveCodeBench. Critical to evaluate **trajectories**, not just final outputs—two agents can both succeed but one took 30 steps and the other took 5.
 
 ### Offline vs online evaluation?
 - **Offline**: on static datasets, before deploying. Catches regressions; cheap to iterate. Limitations: doesn't reflect real user behavior, dataset may not cover all production patterns.
@@ -2740,7 +2748,7 @@ Use a combined adversarial test set across modalities; recruit experts in each m
 ## 10. AI Safety, Ethics, and Responsible AI
 
 ### Hallucinations—mitigate?
-Layered approach since no single fix is reliable:
+Layered approach since no single fix is reliable. Taxonomy (Maynez et al. 2020): **intrinsic** = contradicts the source; **extrinsic** = not verifiable from the source. Don't swap them.
 - **RAG grounding**: provide source context; instruct "answer only from context, cite sources."
 - **Faithfulness scoring + retry**: post-generation NLI or LLM check; regenerate if unfaithful.
 - **Lower temperature** (0–0.2).
@@ -2804,7 +2812,7 @@ Key principles applying to AI:
 - **Cross-border transfer restrictions**: Schrems II, regional data residency.
 - **Data Protection Impact Assessment (DPIA)** for high-risk processing.
 - **Vendor compliance**: LLM providers must offer DPAs, sub-processor lists; use enterprise tiers with zero retention; consider on-prem.
-- **Automated decision-making**: GDPR Article 22 right to explanation and human review.
+- **Automated decision-making**: GDPR **Article 22** is the right *not to be subject to solely automated decisions* plus human intervention/contest. **Articles 13–15** require "meaningful information about the logic involved." EU AI Act **Article 86** is a separate explanation right for high-risk systems (including many human-in-the-loop cases). Don't collapse all three into "Art 22 right to explanation."
 - **Breach notification**: 72-hour clock for GDPR.
 
 ### PII handling?
@@ -2822,7 +2830,7 @@ Key principles applying to AI:
 The ability to explain why a model produced a specific output. Important for:
 - **Trust**: users want to understand decisions affecting them.
 - **Debugging**: developers need to know why systems fail.
-- **Compliance**: GDPR Article 22 (right to explanation), EU AI Act, EEOC.
+- **Compliance**: GDPR Arts. 13–15 + 22 (information + human intervention), EU AI Act Art. 86 (high-risk explanation), EEOC.
 - **Stakeholder communication**: justifying decisions to non-technical audiences.
 
 **Methods**:
@@ -2920,7 +2928,7 @@ Mandatory for regulated industries; best practice everywhere. Capture:
 - **Decisions made** (approved/denied, score, classification).
 - **Reasoning** (if available).
 
-Store in **immutable / WORM storage** (S3 Object Lock, append-only logs) for tamper resistance. Retention per regulation (7 years for financial, etc.). Access controls; encryption. Enables post-hoc explanation for users, regulatory review, incident investigation, bias audits, debugging. Critical for GDPR Article 22, EU AI Act, EEOC, financial regulations.
+Store in **immutable / WORM storage** (S3 Object Lock, append-only logs) for tamper resistance. Retention per regulation (7 years for financial, etc.). Access controls; encryption. Enables post-hoc explanation for users, regulatory review, incident investigation, bias audits, debugging. Critical for GDPR Arts. 13–15/22, EU AI Act (logging + Art. 86), EEOC, financial regulations.
 
 ### Model cards?
 A standardized doc (Mitchell et al., 2018) describing a model's intended use, training data, evaluation results, limitations, ethical considerations, known biases, and risks. Like a "spec sheet" for ML models.
@@ -2943,7 +2951,7 @@ Proactive defenses:
 ### Differential privacy?
 DP (Dwork et al., 2006) is a mathematical framework guaranteeing that the output of a computation doesn't reveal whether any single individual's data was included. Quantified by **privacy budget ε** (epsilon): smaller ε = stronger privacy, more noise added.
 
-**For AI**: DP-SGD adds calibrated Gaussian noise to gradients during training; per-example clipping bounds influence. Result: a model with formal privacy guarantees—no training example can be reconstructed. **Trade-off**: lower ε → more noise → lower accuracy. Practical privacy budgets (ε=1-10) often cost 1-10% accuracy.
+**For AI**: DP-SGD adds calibrated Gaussian noise to gradients during training; per-example clipping bounds influence. Result: a model with formal privacy guarantees against membership inference / reconstruction at the stated ε. **Trade-off**: lower ε → more noise → lower accuracy. The "ε=1–10 costs 1–10% accuracy" rule of thumb is **too tidy for LLMs**—utility hits are often larger and task-dependent. Report ε, δ, clipping, and *your* eval delta; don't quote a universal percent.
 
 Implementations: Opacus (PyTorch), TF Privacy. Used for: training on sensitive data (medical, finance), federated learning, synthetic data generation. Beyond training: DP can be applied to query answering, statistical releases, recommendation systems.
 
@@ -3000,7 +3008,7 @@ Plus a companion **Generative AI Profile** with LLM-specific guidance. Voluntary
 - **Fairness constraints** during training (adversarial debiasing, equalized odds optimization).
 - **Human review** of all hiring decisions; AI is advisory at most.
 - **Bias bounties** / external audits.
-- **Compliance**: EEOC (US), GDPR Article 22, NYC AEDT law (algorithmic hiring decisions audited), EU AI Act high-risk classification.
+- **Compliance**: EEOC (US), GDPR Arts. 13–15/22, NYC AEDT (Local Law 144—bias audits for automated employment tools), EU AI Act high-risk classification.
 - **Continuous monitoring** of selection rates by demographic.
 - **Diverse hiring team** building the system.
 
@@ -3014,7 +3022,7 @@ A model fair by gender AND fair by race separately can still be unfair to women-
 - **External audits** with diverse perspectives.
 
 ### Loan denied—GDPR explanation?
-GDPR Article 22 requires meaningful explanation for automated decisions with legal/significant effect.
+GDPR **Article 22** covers *solely* automated decisions with legal/similarly significant effect (right to human intervention, to contest). The "meaningful information about the logic" duty is **Arts. 13–15**. For high-risk AI, EU AI Act **Art. 86** can apply even with a human in the loop. Practical answer for a loan denial:
 - **Top factors**: SHAP/LIME feature attribution, highlight the 3-5 features most influencing the decision.
 - **Decision boundary explanation**: what would need to change for approval.
 - **Counterfactual**: "if your income were $X higher, your application would have been approved."
@@ -3066,7 +3074,7 @@ In FL, clients send model updates to a central aggregator; a malicious client ca
 - **Anomaly detection** on client updates (norm, direction).
 - **Client reputation**: track reliability; weight or exclude bad actors.
 - **Differential privacy**: limit per-client influence.
-- **Secure aggregation**: cryptographic protocols so server sees only aggregated updates, not individual clients (defends individual privacy + hides outliers).
+- **Secure aggregation**: cryptographic protocols so the server sees only the *sum* of updates, not individuals. This is a **privacy** control. It **conflicts** with poisoning detection (you cannot run Krum/cosine/norm checks on plaintext updates). Interview answer: privacy vs robustness is a trade-off; research combines them with extra crypto (secure cosine, dual-server). Don't list SecAgg as a poisoning defense.
 - **Client authentication**: only known/verified participants.
 - **Backdoor scans** post-aggregation.
 - **Norm clipping**: cap update magnitude per client.
@@ -3262,7 +3270,7 @@ Tasks via special tokens: transcription, translation (to English), language iden
 
 ### Multi-modal RAG vs text-only?
 Extends RAG to retrieve and consume images, tables, audio, video alongside text. Two main patterns:
-- **Multimodal embeddings**: CLIP/SigLIP/Voyage-Multimodal embed images and text in a shared space; retrieve mixed-modality chunks; consume with a multimodal LLM (GPT-4V, Gemini, Claude).
+- **Multimodal embeddings**: CLIP/SigLIP/Voyage-Multimodal embed images and text in a shared space; retrieve mixed-modality chunks; consume with a multimodal LLM (GPT-4o-class, Gemini, Claude).
 - **Caption-then-embed**: use a vision-LLM to generate textual descriptions of images at index time; embed and retrieve with text models; works with text-only LLMs.
 
 Use cases: product catalogs (images + descriptions), slide decks, manuals with diagrams, scientific papers with figures, e-commerce visual search, video archives. Challenges: vision tokens are expensive at LLM time; multimodal embeddings are domain-sensitive (often need fine-tuning); evaluation is harder (no clean ground-truth).
@@ -3322,7 +3330,7 @@ Documents (invoices, forms, contracts, scientific papers) have semantic structur
 - **Donut**: end-to-end OCR-free; image → structured output directly.
 - **Pix2Struct**: image-to-text pretrained on web screenshots.
 - **ColPali / ColQwen**: vision encoder embeds full page images; retrieval over visual layout without parsing.
-- **Vision-LLMs** (GPT-4V, Gemini, Claude): pass page images directly; very good at complex layouts.
+- **Vision-LLMs** (GPT-4o-class, Gemini, Claude): pass page images directly; very good at complex layouts.
 
 Used heavily in finance (statements), legal (contracts), healthcare (forms), automation of paperwork.
 
@@ -3342,7 +3350,7 @@ Vision tokens are expensive—one image often equals 500-2000 tokens at inferenc
 - **Smaller vision encoders** (lower-res or distilled).
 - **Route by complexity**: text-only queries skip vision entirely; vision only invoked when needed.
 - **Streaming**: start LLM generation as vision encoding completes.
-- **Cheaper multimodal models** for simple tasks (Phi-3 Vision, Pixtral) vs frontier (GPT-4o, Claude).
+- **Cheaper multimodal models** for simple tasks (Phi-4-class vision, Pixtral) vs frontier (GPT-4o/5-class, Claude).
 - **Batch processing** for non-real-time (50% cost savings).
 - **Page-level (vs full-doc) embeddings** for documents.
 
@@ -3360,16 +3368,9 @@ Multi-channel pipeline:
 Each modality has unique attack surface (steganographic instructions in images, adversarial audio perturbations); design defense in depth.
 
 ### Text-to-video—state of the art?
-Diffusion-based models extending T2I to the time axis. Key models (2024-2025):
-- **OpenAI Sora**: 1-minute high-quality clips; DiT architecture.
-- **Google Veo, Veo 2**: high realism, longer clips.
-- **Runway Gen-3**: production-ready commercial tool.
-- **Kling (Kuaishou)**: high-quality from China.
-- **Pika, Pika 2**: consumer-focused.
-- **HunyuanVideo, Mochi**: open-source models catching up.
-- **Adobe Firefly Video**: enterprise / commercially safe.
+Diffusion / flow models extended along time (DiT, spatio-temporal attention, rectified flow). Names churn (Sora, Veo, Runway, Kling, Firefly Video, open models like HunyuanVideo)—cite the *class*, not last year's SKU.
 
-Architectures: 3D / spatio-temporal attention; diffusion in latent space; rectified flow; massive datasets of paired video-text. Still: expensive (minutes of compute per video), short duration (5–60s typical), quality varies, physics often wrong, motion can be inconsistent. Rapidly improving; commercial deployment growing in advertising, content, gaming.
+What to say: still expensive (seconds to minutes of GPU per clip), typically short (seconds to about a minute), physics and identity consistency are the failure modes, commercial use is ads/content/previz. For production, add shot lists, image/video conditioning (first-frame), and a human review queue. Watermark / C2PA if the use case needs provenance.
 
 ### Early vs late fusion?
 - **Early fusion**: combine modalities at the input level—concatenate or interleave embeddings before joint processing. The model learns cross-modal interactions from the start. Examples: native multimodal Transformers (GPT-4o, Gemini), LLaVA. Higher quality on tasks needing tight cross-modal reasoning; more compute.
@@ -3461,6 +3462,11 @@ The toolkit:
 
 Most production LLM serving combines several of these; vLLM is the open-source default that bundles paged attention + continuous batching.
 
+Add two 2025–2026 levers interviewers expect:
+- **Prefill/decode disaggregation**: prefill (prompt, compute-bound) and decode (token-by-token, memory-bound) on different GPU pools so neither starves. Mentioned in "cold start" too—this is the serving design, not just serverless.
+- **Test-time compute routing**: cheap/fast model by default; spend reasoning tokens (LRM / longer traces) only when a classifier or low-confidence signal says the query is hard.
+- **MLA (Multi-head Latent Attention)**: DeepSeek-V2/V3 compress KV into a low-rank latent; cache is much smaller than GQA. If they ask "how does DeepSeek serve long context cheaply?", MLA + MoE expert parallel, not just GQA.
+
 ### Selecting GPUs for LLM inference?
 Key dimensions:
 - **VRAM**: must hold model weights + KV cache + activations. 70B in BF16 = ~140GB just weights; quantized to INT4 ~35GB.
@@ -3504,16 +3510,18 @@ Inference is sequential—one token per forward pass. Speculative decoding (Levi
 Result: 2-3× speedup on average with **identical output distribution to the big model** (mathematically equivalent). Variants: Medusa (multi-head speculation without separate model), EAGLE (draft model trained from target). Standard in TensorRT-LLM, vLLM, llama.cpp.
 
 ### KV cache and memory management?
-KV cache memory = `2 × layers × heads × head_dim × seq_len × batch × bytes_per_val`. For Llama-70B at 4K context, batch 32: ~50GB just for KV cache (more than weights in quantized form).
+KV cache memory = `2 × layers × kv_heads × head_dim × seq_len × batch × bytes_per_val`. Llama-70B GQA (8 KV heads) at 4K, batch 32, FP16 is ~43GB—on the order of **~50GB**, often more than quantized weights. Using **query heads** instead of **kv_heads** overstates GQA models by 8×.
 
 **Management techniques**:
-- **GQA/MQA**: share K, V across query heads (4-8× shrinkage).
-- **Paged attention**: fragmentation-free memory allocation.
-- **KV cache quantization**: INT8 or INT4 (2-4× shrinkage).
-- **Sliding window attention** (Mistral): only attend to recent W tokens, drop older.
-- **Eviction policies** (H2O, StreamingLLM): drop least-important tokens.
-- **CPU/disk offload**: idle KV moved off GPU.
-- **Prefix sharing**: identical prefixes share one KV cache across requests.
+- **GQA/MQA**: share K, V across query heads (4–8× shrinkage).
+- **MLA**: latent compression of KV (DeepSeek); even smaller than GQA.
+- **Paged attention**: fragmentation-free allocation.
+- **KV cache quantization**: INT8 or INT4 (2–4×).
+- **Sliding window** (Mistral): drop older than W.
+- **Eviction** (H2O, StreamingLLM).
+- **CPU/disk offload** for idle KV.
+- **Prefix sharing** / automatic prefix caching across requests.
+- **Prefill/decode split** so long-prompt KV production doesn't block decode replicas.
 
 ### What is Paged Attention?
 Paged Attention (vLLM, Kwon et al., 2023) manages KV cache like OS virtual memory. Cache is split into **fixed-size blocks** (e.g., 16 tokens each); a **block table** maps logical token positions to physical blocks; blocks can be non-contiguous in memory.
@@ -3523,7 +3531,7 @@ Benefits: (1) **Zero memory fragmentation** (no waste from variable-length seque
 ### Edge/mobile inference optimization?
 On-device LLMs (phones, laptops, embedded):
 - **Quantization**: INT4/INT8 essential; binary in extreme cases.
-- **Distillation** to SLMs (1-8B): Phi-3, Gemma 2, Llama 3 8B, Qwen 2.5.
+- **Distillation** to SLMs (1–8B): Phi-3/4, Gemma 2/3, Llama 3.1/4 8B-class, Qwen 2.5/3.
 - **On-device runtimes**: llama.cpp (cross-platform), Core ML (Apple), TensorFlow Lite, MediaPipe (Google), ONNX Runtime, MLX (Apple Silicon), MLC LLM.
 - **Hardware acceleration**: Apple Neural Engine, Snapdragon NPU, GPU (Metal, Vulkan).
 - **Pruning**: remove redundant weights (less common for LLMs).
@@ -3600,7 +3608,7 @@ Use tensor parallel within a node (fast NVLink), pipeline parallel across nodes 
 - Data sent to provider (zero-retention modes available).
 - Best for: prototyping, low/variable volume, leveraging best-in-class models.
 
-**Hybrid pattern**: API for prototyping and complex / low-volume; self-host for high-volume, narrow, latency-critical paths. Break-even is roughly 1B+ tokens/month for self-hosting to pay off.
+**Hybrid pattern**: API for prototyping and complex / low-volume; self-host for high-volume, narrow, latency-critical paths. Compute break-even from your token mix and GPU utilization; "1B tokens/month" is only a starting guess for expensive APIs.
 
 ### Cold start latency for serverless AI?
 Loading a 70B model from disk takes minutes; cold start ruins serverless economics for LLMs.
@@ -3608,7 +3616,7 @@ Loading a 70B model from disk takes minutes; cold start ruins serverless economi
 - **Warm pool of replicas**: keep N always-on at min cost.
 - **Model snapshotting** (CRIU): snapshot a warm process; restore is faster than load.
 - **Smaller models**: SLMs cold-start in seconds.
-- **Always-warm tiers**: providers (Modal, Replicate, Banana) offer pre-warmed instances.
+- **Always-warm tiers**: providers (Modal, Replicate, and similar) offer pre-warmed instances.
 - **Model streaming**: load weights in chunks, start serving partially.
 - **Disaggregated serving**: separate prefill (cold-start expensive) from decode (cheaper).
 
@@ -3664,7 +3672,7 @@ Tools: **LiteLLM, Portkey, RouteLLM (LMSYS), Martian**. Routing can cut costs 5-
 
 ## 13. Coding and Practical Implementation
 
-> Code skeletons with explanations of design choices. Production-ready patterns, not toy snippets.
+> Interview-sized skeletons. Comments mark what production adds. These are not drop-in services.
 
 ### Basic RAG pipeline
 A minimal RAG has an offline indexing phase and an online query phase. Key design decisions: chunk size (300-500 tokens typical), embedding model (start with text-embedding-3-small or BGE), vector DB (start with pgvector or Qdrant), top-k (3-10), and prompt grounding rules.
@@ -3745,19 +3753,42 @@ def semantic_search(query: str, vectors: np.ndarray, texts: list, k: int = 5):
 Three patterns from simple to sophisticated. Choose based on content type and downstream model.
 
 ```python
-# Fixed-size: simple but breaks structure
+# Fixed-size: simple but breaks structure. `size` is characters here;
+# production counts tokens with the model tokenizer.
 def fixed_chunk(text, size=500, overlap=50):
-    return [text[i:i+size] for i in range(0, len(text), size - overlap)]
+    step = max(1, size - overlap)
+    return [text[i:i+size] for i in range(0, len(text), step)]
 
-# Recursive: try larger separators first; LangChain default
-def recursive_chunk(text, size=500, separators=["\n\n", "\n", ". ", " "]):
-    if len(text) <= size:
-        return [text]
-    for sep in separators:
-        parts = text.split(sep)
-        if len(parts) > 1:
-            return [c for p in parts for c in recursive_chunk(p, size, separators)]
-    return [text[i:i+size] for i in range(0, len(text), size)]
+# Recursive: split on coarsest separator, then MERGE pieces back up to `size`.
+# Naive "split and recurse only" yields tiny chunks (one paragraph each).
+def recursive_chunk(text, size=500, overlap=50, separators=("\n\n", "\n", ". ", " ")):
+    def split(s, seps):
+        if len(s) <= size:
+            return [s]
+        if not seps:
+            step = max(1, size - overlap)
+            return [s[i:i+size] for i in range(0, len(s), step)]
+        sep, *rest = seps
+        parts = s.split(sep)
+        if len(parts) == 1:
+            return split(s, rest)
+        chunks, buf = [], ""
+        for p in parts:
+            candidate = p if not buf else buf + sep + p
+            if len(candidate) <= size:
+                buf = candidate
+            else:
+                if buf:
+                    chunks.append(buf)
+                if len(p) > size:
+                    chunks.extend(split(p, rest))
+                    buf = ""
+                else:
+                    buf = p
+        if buf:
+            chunks.append(buf)
+        return chunks
+    return split(text, list(separators))
 
 # Semantic: split where embedding similarity drops
 def semantic_chunk(sentences, threshold=0.7):
@@ -3828,7 +3859,8 @@ def judge(context, question, answer, n_samples=3):
 Server side streams tokens; client renders incrementally. Use SSE for HTTP, WebSockets for full-duplex.
 
 ```python
-# Server (FastAPI + SSE)
+# Server (FastAPI + SSE). EventSource is GET-only — a POST handler cannot
+# be consumed with `new EventSource("/chat")`. Use fetch+stream for POST.
 from fastapi.responses import StreamingResponse
 
 @app.post("/chat")
@@ -3838,13 +3870,22 @@ def chat(req: ChatRequest):
             yield f"data: {json.dumps({'delta': chunk.delta})}\n\n"
         yield "data: [DONE]\n\n"
     return StreamingResponse(event_stream(), media_type="text/event-stream")
+```
 
-# Client
-const evtSource = new EventSource("/chat");
-evtSource.onmessage = (e) => {
-    if (e.data === "[DONE]") evtSource.close();
-    else document.getElementById("out").innerText += JSON.parse(e.data).delta;
-};
+```javascript
+// Client: POST + ReadableStream (not EventSource)
+const res = await fetch("/chat", {
+  method: "POST",
+  headers: {"Content-Type": "application/json"},
+  body: JSON.stringify({prompt}),
+});
+const reader = res.body.getReader();
+const dec = new TextDecoder();
+while (true) {
+  const {done, value} = await reader.read();
+  if (done) break;
+  // parse SSE lines from dec.decode(value, {stream: true})
+}
 ```
 
 ### Vector similarity from scratch
@@ -3898,14 +3939,14 @@ def detect_hallucination(answer: str, context: str) -> float:
     judgments = llm.complete(prompt, response_format=JudgmentList)
     return sum(1 for j in judgments if j.supported) / len(judgments)
 
-def answer_with_guard(question, context):
+def answer_with_guard(question, context, retries_left=1):
     answer = llm.complete(rag_prompt(question, context))
     score = detect_hallucination(answer, context)
-    if score < 0.7:
-        return answer_with_guard(question, context)  # retry once
-    if score < 0.5:
-        return "I'm not confident in the answer from the provided sources."
-    return answer
+    if score >= 0.7:
+        return answer
+    if retries_left > 0:
+        return answer_with_guard(question, context, retries_left=retries_left - 1)
+    return "I'm not confident in the answer from the provided sources."
 ```
 
 ### Retry with exponential backoff
@@ -3964,7 +4005,7 @@ def rerank(query, candidates, top_k=5):
 ```
 
 ### Basic PDF parser + chunker
-PyPDF works for simple text PDFs; for complex layouts use Unstructured or LlamaParse; for tables/forms consider GPT-4V or specialized parsers.
+PyPDF works for simple text PDFs; for complex layouts use Unstructured or LlamaParse; for tables/forms consider a vision LLM or specialized parsers.
 
 ```python
 from pypdf import PdfReader
@@ -4013,16 +4054,18 @@ def count_tokens(text: str) -> int:
     return len(enc.encode(text))
 
 def fit_messages(messages: list, max_tokens: int = 4000) -> list:
-    """Drop oldest non-system messages until total fits."""
-    while sum(count_tokens(m["content"]) for m in messages) > max_tokens:
-        # Find first non-system message and drop it
-        for i, m in enumerate(messages):
+    """Drop oldest non-system messages until total fits. Copy — don't mutate caller."""
+    msgs = list(messages)
+    while sum(count_tokens(m.get("content") or "") for m in msgs) > max_tokens:
+        dropped = False
+        for i, m in enumerate(msgs):
             if m["role"] != "system":
-                messages.pop(i)
+                msgs.pop(i)
+                dropped = True
                 break
-        else:
+        if not dropped:
             raise ValueError("Cannot fit even system messages")
-    return messages
+    return msgs
 ```
 
 ### Prompt versioning system
@@ -4209,8 +4252,8 @@ For high-stakes domains (medical, legal, finance), add HITL review for any uncer
 
 ### LLM API vs self-hosting OSS?
 Decision factors:
-- **Quality**: frontier closed models (GPT-4, Claude, Gemini) still beat open-weights on the hardest tasks; gap is narrowing fast.
-- **Volume**: high volume tilts toward self-hosting (break-even ~1B tokens/month); low/spiky volume favors API.
+- **Quality**: frontier closed models (GPT-4o / GPT-5-class, Claude 4.x, Gemini) still beat most open-weights on the hardest tasks; the gap is narrower on narrow, fine-tuned workloads.
+- **Volume**: high volume tilts toward self-hosting. "~1B tokens/month" is a **rough** heuristic for expensive API models vs a dedicated GPU; cheap small-model APIs and expensive 70B self-hosting flip that number. Compute it for *your* $/1M tokens vs GPU $/hr × utilization.
 - **Latency**: self-hosting can win on latency (no internet round-trip, dedicated capacity); APIs have variable latency.
 - **Privacy / data residency**: self-host or enterprise providers (with BAA, zero-retention) for regulated data.
 - **Customization**: self-host enables fine-tuning, custom architectures.
@@ -4301,7 +4344,7 @@ Long-term (weeks):
 ### AI system over budget—cost optimization?
 Cost optimization checklist (apply in order of leverage):
 - **Model routing**: small for easy, big for hard. 5-10× savings possible.
-- **Caching**: semantic + exact + prompt prefix. 30-60% hit rates typical.
+- **Caching**: exact + prefix first; semantic only with a high threshold. Hit rate is workload-specific—measure it.
 - **Shorten prompts**: remove redundant context, fewer few-shot examples, compress.
 - **Limit output**: explicit length caps; smaller `max_tokens`.
 - **Trim RAG**: better re-ranking → fewer chunks → less context.
@@ -4377,7 +4420,7 @@ Drift sources:
 - **Multimodal default**: text-only is the exception; voice, image, video are integrated.
 - **On-device SLMs everywhere**: phones, browsers, embedded devices run capable models.
 - **Better evaluation**: rigorous, automated, broadly trusted.
-- **Standardized protocols**: MCP for tools, A2A for agents, structured output across providers.
+- **Standardized protocols**: MCP for tools, A2A for agents, structured output across providers (now GA on the major APIs, still pin versions).
 - **Regulation**: EU AI Act compliance becomes routine; other regions follow.
 - **Specialized AI engineers**: alignment, evals, agent orchestration, multimodal, infrastructure.
 - **Compound AI systems**: many models + tools + retrievers, orchestrated.
